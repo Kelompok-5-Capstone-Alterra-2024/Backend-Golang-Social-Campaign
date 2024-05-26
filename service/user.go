@@ -3,12 +3,14 @@ package service
 import (
 	"capstone/dto"
 	"capstone/entities"
+	middleware "capstone/middlewares"
 	"capstone/repositories"
 	"fmt"
 )
 
 type UserService interface {
 	Register(request dto.RegisterRequest) (entities.User, error)
+	Login(request dto.LoginRequest) (entities.User, error)
 }
 
 type userService struct {
@@ -34,4 +36,22 @@ func (s *userService) Register(request dto.RegisterRequest) (entities.User, erro
 	}
 
 	return s.userRepository.Save(user)
+}
+
+func (s *userService) Login(request dto.LoginRequest) (entities.User, error) {
+	username := request.Username
+	password := request.Password
+
+	user, err := s.userRepository.FindByUsername(username)
+	if err != nil && user.Password != password {
+		return user, err
+	}
+
+	if user.Password != password {
+		return user, fmt.Errorf("wrong password")
+	}
+
+	user.Token = middleware.GenerateToken(user.ID, user.Username, "user")
+
+	return user, nil
 }
