@@ -33,6 +33,8 @@ func NewRouter(router *echo.Echo) {
 
 	api.POST("/register", userHandler.Register)
 	api.POST("/login", userHandler.Login)
+	api.POST("/forget-password", userHandler.ForgetPassword)
+	api.POST("/reset-password", userHandler.ResetPassword)
 	api.Use(jwt, routeMiddleware.UserMiddleware)
 
 	api.GET("/home", func(c echo.Context) error {

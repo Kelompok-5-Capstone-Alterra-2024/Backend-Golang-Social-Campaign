@@ -1,10 +1,16 @@
 package helper
 
 import (
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"os"
+	"strconv"
 	"strings"
+
+	"gopkg.in/gomail.v2"
 )
 
 type generalResponse struct {
@@ -77,4 +83,34 @@ func DecodePayload(token string) (map[string]interface{}, error) {
 	}
 
 	return payloadMap, nil
+}
+
+func SendTokenRestPassword(email string, token string) error {
+	port, err := strconv.Atoi(os.Getenv("SMTP_PORT"))
+	if err != nil {
+		return err
+	}
+
+	dialer := gomail.NewDialer(
+		os.Getenv("SMTP_HOST"),
+		port,
+		os.Getenv("SMTP_USER"),
+		os.Getenv("SMTP_PASS"),
+	)
+
+	resetURL := fmt.Sprintf("%s/reset-password?token=%s", "http://localhost:8080", token)
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", os.Getenv("SMTP_USER"))
+	m.SetHeader("To", email)
+	m.SetHeader("Subject", "Password Reset Request")
+	m.SetBody("text/plain", "Click the link to reset your password: "+resetURL)
+
+	return dialer.DialAndSend(m)
+}
+
+func GenerateToken() string {
+	b := make([]byte, 32)
+	rand.Read(b)
+	return base64.URLEncoding.EncodeToString(b)
 }

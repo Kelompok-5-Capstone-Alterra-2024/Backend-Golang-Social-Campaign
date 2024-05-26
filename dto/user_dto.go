@@ -16,3 +16,12 @@ type LoginRequest struct {
 type LoginResponse struct {
 	Token string `json:"token"`
 }
+
+type ForgetPasswordRequest struct {
+	Email string `json:"email"`
+}
+
+type ResetPasswordRequest struct {
+	Password    string `json:"new_password"`
+	ConfirmPass string `json:"confirm_password"`
+}

@@ -4,6 +4,7 @@ import (
 	"capstone/dto"
 	"capstone/helper"
 	"capstone/service"
+	"errors"
 
 	"github.com/labstack/echo/v4"
 )
@@ -35,4 +36,34 @@ func (h *UserHandler) Login(c echo.Context) error {
 	}
 
 	return c.JSON(200, helper.ResponseWithData("success", "User logged in successfully", loggedUser.Token))
+}
+
+func (h *UserHandler) ForgetPassword(c echo.Context) error {
+	var request dto.ForgetPasswordRequest
+	c.Bind(&request)
+	err := h.userService.GenerateResetToken(request.Email)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse("failed", "validation failed", err.Error()))
+	}
+	return c.JSON(200, helper.GeneralResponse("success", "Reset password link sent to your email"))
+}
+
+func (h *UserHandler) ResetPassword(c echo.Context) error {
+	var request dto.ResetPasswordRequest
+	c.Bind(&request)
+
+	if request.Password != request.ConfirmPass {
+		return c.JSON(500, helper.ErrorResponse("failed", "validation failed", errors.New("password doesn't match").Error()))
+	}
+
+	resetToken := c.QueryParam("token")
+	if resetToken == "" {
+		return c.JSON(500, helper.ErrorResponse("failed", "validation failed", errors.New("invalid reset token").Error()))
+	}
+
+	err := h.userService.ResetPassword(resetToken, request.Password)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse("failed", "validation failed", err.Error()))
+	}
+	return c.JSON(200, helper.GeneralResponse("success", "Password reset successfully"))
 }

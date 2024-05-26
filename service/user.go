@@ -3,14 +3,19 @@ package service
 import (
 	"capstone/dto"
 	"capstone/entities"
+	"capstone/helper"
 	middleware "capstone/middlewares"
 	"capstone/repositories"
+	"errors"
 	"fmt"
+	"time"
 )
 
 type UserService interface {
 	Register(request dto.RegisterRequest) (entities.User, error)
 	Login(request dto.LoginRequest) (entities.User, error)
+	GenerateResetToken(email string) error
+	ResetPassword(resetToken, newPassword string) error
 }
 
 type userService struct {
@@ -43,7 +48,7 @@ func (s *userService) Login(request dto.LoginRequest) (entities.User, error) {
 	password := request.Password
 
 	user, err := s.userRepository.FindByUsername(username)
-	if err != nil && user.Password != password {
+	if err != nil {
 		return user, err
 	}
 
@@ -54,4 +59,37 @@ func (s *userService) Login(request dto.LoginRequest) (entities.User, error) {
 	user.Token = middleware.GenerateToken(user.ID, user.Username, "user")
 
 	return user, nil
+}
+
+func (s *userService) GenerateResetToken(email string) error {
+	user, err := s.userRepository.FindByEmail(email)
+	if err != nil {
+		return err
+	}
+
+	resetToken := helper.GenerateToken()
+	user.ResetToken = resetToken
+	user.ResetTokenExpire = time.Now().Add(1 * time.Hour)
+	err = s.userRepository.Update(user)
+	if err != nil {
+		return err
+	}
+
+	return helper.SendTokenRestPassword(email, resetToken)
+}
+
+func (s *userService) ResetPassword(resetToken, newPassword string) error {
+	user, err := s.userRepository.FindByResetToken(resetToken)
+	if err != nil {
+		return err
+	}
+
+	if user.ResetToken != resetToken {
+		return errors.New("invalid or expired reset token")
+	}
+
+	user.Password = newPassword
+	user.ResetToken = ""
+	user.ResetTokenExpire = time.Time{}
+	return s.userRepository.Update(user)
 }
