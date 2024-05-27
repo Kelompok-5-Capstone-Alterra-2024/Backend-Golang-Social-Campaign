@@ -23,7 +23,7 @@ func NewUserRepository(db *gorm.DB) *userRepository {
 }
 
 func (r *userRepository) Save(user entities.User) (entities.User, error) {
-	if err := r.db.Create(&user).Error; err != nil {
+	if err := r.db.Omit("ResetTokenExpire").Create(&user).Error; err != nil {
 		return user, err
 	}
 	return user, nil
