@@ -33,8 +33,8 @@ jobs:
 
       - name: "Build and push container"
         run: |-
-          docker build . -t asia-southeast1-docker.pkg.dev/capstone-alterra-424313/app
-          docker push asia-southeast1-docker.pkg.dev/capstone-alterra-424313/app
+          docker build . -t asia-southeast1-docker.pkg.dev/capstone-alterra-424313/my-repo/my-app:latest
+          docker push asia-southeast1-docker.pkg.dev/capstone-alterra-424313/my-repo/my-app:latest
 
       - name: "Deploy based on docker image"
         run: |-
