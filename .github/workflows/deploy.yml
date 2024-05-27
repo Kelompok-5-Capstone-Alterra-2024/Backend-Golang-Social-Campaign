@@ -33,10 +33,10 @@ jobs:
 
       - name: "Build and push container"
         run: |-
-          docker build . -t asia-southeast1-docker.pkg.dev/capstone-alterra-424313/my-repo/my-app:latest
-          docker push asia-southeast1-docker.pkg.dev/capstone-alterra-424313/my-repo/my-app:latest
+          docker build . -t asia-southeast1-docker.pkg.dev/capstone-alterra-424313/app/my-app:latest
+          docker push asia-southeast1-docker.pkg.dev/capstone-alterra-424313/app/my-app:latest
 
       - name: "Deploy based on docker image"
         run: |-
           gcloud components install app-engine-go
-          gcloud app deploy --image-url=asia-southeast1-docker.pkg.dev/capstone-alterra-424313/app
+          gcloud app deploy --image-url=asia-southeast1-docker.pkg.dev/capstone-alterra-424313/app/my-app:latest
