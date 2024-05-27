@@ -1,0 +1,42 @@
+name: build and push to google cloud platform
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  build-and-push-gcp:
+    name: build and push to GCP
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_ID: capstone-alterra-424313
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v3"
+
+      - name: "Google auth"
+        id: "auth"
+        uses: "google-github-actions/auth@v1"
+        with:
+          project_id: capstone-alterra-424313
+          credentials_json: "${{ secrets.CREDENTIALS_JSON }}"
+
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v1"
+        with:
+          project_id: capstone-alterra-424313
+
+      - name: "Docker auth"
+        run: |-
+          gcloud auth configure-docker asia-southeast1-docker.pkg.dev
+
+      - name: "Build and push container"
+        run: |-
+          docker build . -t asia-southeast1-docker.pkg.dev/capstone-alterra-424313/app
+          docker push asia-southeast1-docker.pkg.dev/capstone-alterra-424313/app
+
+      - name: "Deploy based on docker image"
+        run: |-
+          gcloud components install app-engine-go
+          gcloud app deploy --image-url=asia-southeast1-docker.pkg.dev/capstone-alterra-424313/app
