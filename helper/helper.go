@@ -86,26 +86,22 @@ func DecodePayload(token string) (map[string]interface{}, error) {
 }
 
 func SendTokenRestPassword(email string, token string) error {
-	smtpHost := os.Getenv("SMTP_HOST")
-	smtpPort := os.Getenv("SMTP_PORT")
-	smtpUser := os.Getenv("SMTP_USER")
-	smtpPass := os.Getenv("SMTP_PASS")
-
-	if smtpHost == "" || smtpPort == "" || smtpUser == "" || smtpPass == "" {
-		return errors.New("missing SMTP configuration environment variables")
-	}
-
-	port, err := strconv.Atoi(smtpPort)
+	port, err := strconv.Atoi(os.Getenv("SMTP_PORT"))
 	if err != nil {
-		return fmt.Errorf("invalid SMTP port: %v", err)
+		return err
 	}
 
-	dialer := gomail.NewDialer(smtpHost, port, smtpUser, smtpPass)
+	dialer := gomail.NewDialer(
+		os.Getenv("SMTP_HOST"),
+		port,
+		os.Getenv("SMTP_USER"),
+		os.Getenv("SMTP_PASS"),
+	)
 
-	resetURL := fmt.Sprintf("http://localhost:8080/reset-password?token=%s", token)
+	resetURL := fmt.Sprintf("%s/reset-password?token=%s", "http://localhost:8080", token)
 
 	m := gomail.NewMessage()
-	m.SetHeader("From", smtpUser)
+	m.SetHeader("From", os.Getenv("SMTP_USER"))
 	m.SetHeader("To", email)
 	m.SetHeader("Subject", "Password Reset Request")
 	m.SetBody("text/plain", "Click the link to reset your password: "+resetURL)

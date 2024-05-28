@@ -10,16 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PROJECT_ID: capstone-alterra-424313
-      SMTP_HOST: ${{ secrets.SMTP_HOST }}
-      SMTP_PORT: ${{ secrets.SMTP_PORT }}
-      SMTP_USER: ${{ secrets.SMTP_USER }}
-      SMTP_PASS: ${{ secrets.SMTP_PASS }}
 
     steps:
       - name: "Checkout"
         uses: "actions/checkout@v3"
 
       - name: "Google auth"
+        id: "auth"
         uses: "google-github-actions/auth@v1"
         with:
           project_id: capstone-alterra-424313
@@ -36,11 +33,7 @@ jobs:
 
       - name: "Build and push container"
         run: |-
-          docker build . -t asia-southeast1-docker.pkg.dev/capstone-alterra-424313/app/my-app:latest \
-            --build-arg SMTP_HOST=${{ secrets.SMTP_HOST }} \
-            --build-arg SMTP_PORT=${{ secrets.SMTP_PORT }} \
-            --build-arg SMTP_USER=${{ secrets.SMTP_USER }} \
-            --build-arg SMTP_PASS=${{ secrets.SMTP_PASS }} &&
+          docker build . -t asia-southeast1-docker.pkg.dev/capstone-alterra-424313/app/my-app:latest
           docker push asia-southeast1-docker.pkg.dev/capstone-alterra-424313/app/my-app:latest
 
       - name: "Deploy based on docker image"
