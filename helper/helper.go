@@ -12,27 +12,27 @@ import (
 )
 
 type generalResponse struct {
-	Status  string `json:"status"`
+	Success bool   `json:"success"`
 	Message string `json:"message"`
 }
 
-func GeneralResponse(status, message string) generalResponse {
+func GeneralResponse(success bool, message string) generalResponse {
 	messageRes := generalResponse{
-		Status:  status,
+		Success: success,
 		Message: message,
 	}
 	return messageRes
 }
 
 type responseWithData struct {
-	Status  string      `json:"status"`
+	Success bool        `json:"success"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 }
 
-func ResponseWithData(status, message string, data interface{}) responseWithData {
+func ResponseWithData(success bool, message string, data interface{}) responseWithData {
 	messageRes := responseWithData{
-		Status:  status,
+		Success: success,
 		Message: message,
 		Data:    data,
 	}
@@ -41,14 +41,14 @@ func ResponseWithData(status, message string, data interface{}) responseWithData
 }
 
 type errorResponse struct {
-	Status  string `json:"status"`
+	Success bool   `json:"success"`
 	Message string `json:"message"`
 	Error   any    `json:"error"`
 }
 
-func ErrorResponse(status, message string, err any) errorResponse {
+func ErrorResponse(success bool, message string, err any) errorResponse {
 	messageRes := errorResponse{
-		Status:  status,
+		Success: success,
 		Message: message,
 		Error:   err,
 	}
