@@ -40,7 +40,7 @@ jobs:
             --build-arg SMTP_HOST=${{ secrets.SMTP_HOST }} \
             --build-arg SMTP_PORT=${{ secrets.SMTP_PORT }} \
             --build-arg SMTP_USER=${{ secrets.SMTP_USER }} \
-            --build-arg SMTP_PASS=${{ secrets.SMTP_PASS }}
+            --build-arg SMTP_PASS=${{ secrets.SMTP_PASS }} &&
           docker push asia-southeast1-docker.pkg.dev/capstone-alterra-424313/app/my-app:latest
 
       - name: "Deploy based on docker image"
