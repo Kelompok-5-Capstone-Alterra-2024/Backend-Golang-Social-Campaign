@@ -22,9 +22,9 @@ func (h *UserHandler) Register(c echo.Context) error {
 	c.Bind(&request)
 	_, err := h.userService.Register(request)
 	if err != nil {
-		return c.JSON(500, helper.ErrorResponse("failed", "validation failed", err.Error()))
+		return c.JSON(500, helper.ErrorResponse(false, "validation failed", err.Error()))
 	}
-	return c.JSON(200, helper.GeneralResponse("success", "User registered successfully"))
+	return c.JSON(200, helper.GeneralResponse(true, "User registered successfully"))
 }
 
 func (h *UserHandler) Login(c echo.Context) error {
@@ -32,10 +32,10 @@ func (h *UserHandler) Login(c echo.Context) error {
 	c.Bind(&request)
 	loggedUser, err := h.userService.Login(request)
 	if err != nil {
-		return c.JSON(500, helper.ErrorResponse("failed", "validation failed", "invalid credentials"))
+		return c.JSON(500, helper.ErrorResponse(false, "validation failed", "invalid credentials"))
 	}
 
-	return c.JSON(200, helper.ResponseWithData("success", "User logged in successfully", loggedUser.Token))
+	return c.JSON(200, helper.ResponseWithData(true, "User logged in successfully", loggedUser.Token))
 }
 
 func (h *UserHandler) ForgetPassword(c echo.Context) error {
@@ -43,9 +43,9 @@ func (h *UserHandler) ForgetPassword(c echo.Context) error {
 	c.Bind(&request)
 	err := h.userService.GenerateResetToken(request.Email)
 	if err != nil {
-		return c.JSON(500, helper.ErrorResponse("failed", "validation failed", err.Error()))
+		return c.JSON(500, helper.ErrorResponse(false, "validation failed", err.Error()))
 	}
-	return c.JSON(200, helper.GeneralResponse("success", "Reset password link sent to your email"))
+	return c.JSON(200, helper.GeneralResponse(true, "Reset password link sent to your email"))
 }
 
 func (h *UserHandler) ResetPassword(c echo.Context) error {
@@ -53,17 +53,17 @@ func (h *UserHandler) ResetPassword(c echo.Context) error {
 	c.Bind(&request)
 
 	if request.Password != request.ConfirmPass {
-		return c.JSON(500, helper.ErrorResponse("failed", "validation failed", errors.New("password doesn't match").Error()))
+		return c.JSON(500, helper.ErrorResponse(false, "validation failed", errors.New("password doesn't match").Error()))
 	}
 
 	resetToken := c.QueryParam("token")
 	if resetToken == "" {
-		return c.JSON(500, helper.ErrorResponse("failed", "validation failed", "token not found"))
+		return c.JSON(500, helper.ErrorResponse(false, "validation failed", "token not found"))
 	}
 
 	err := h.userService.ResetPassword(resetToken, request.Password)
 	if err != nil {
-		return c.JSON(500, helper.ErrorResponse("failed", "validation failed", "invalid token"))
+		return c.JSON(500, helper.ErrorResponse(false, "validation failed", "invalid token"))
 	}
-	return c.JSON(200, helper.GeneralResponse("success", "Password reset successfully"))
+	return c.JSON(200, helper.GeneralResponse(true, "Password reset successfully"))
 }
