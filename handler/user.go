@@ -43,7 +43,7 @@ func (h *UserHandler) ForgetPassword(c echo.Context) error {
 	c.Bind(&request)
 	err := h.userService.GenerateResetToken(request.Email)
 	if err != nil {
-		return c.JSON(500, helper.ErrorResponse("failed", "validation failed", "email not found"))
+		return c.JSON(500, helper.ErrorResponse("failed", "validation failed", err.Error()))
 	}
 	return c.JSON(200, helper.GeneralResponse("success", "Reset password link sent to your email"))
 }

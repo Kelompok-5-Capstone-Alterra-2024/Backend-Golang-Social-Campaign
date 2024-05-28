@@ -32,6 +32,11 @@ func (s *userService) Register(request dto.RegisterRequest) (entities.User, erro
 		return entities.User{}, fmt.Errorf("password doesn't match")
 	}
 
+	userDB, _ := s.userRepository.FindByEmail(request.Email)
+	if userDB.Email == request.Email {
+		return entities.User{}, errors.New("email already exists")
+	}
+
 	user := entities.User{
 		Fullname: request.Fullname,
 		Username: request.Username,
