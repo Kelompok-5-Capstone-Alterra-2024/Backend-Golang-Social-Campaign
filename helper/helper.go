@@ -92,7 +92,7 @@ func SendTokenRestPassword(email string, token string) error {
 		"pcxf rviq wvfz nfyy",
 	)
 
-	resetURL := fmt.Sprintf("%s/reset-password?token=%s", "https://capstone-alterra-424313.as.r.appspot.com", token)
+	resetURL := fmt.Sprintf("%s/reset-password?token=%s", "https://capstone-alterra-424313.as.r.appspot.com/api/v1", token)
 
 	m := gomail.NewMessage()
 	m.SetHeader("From", "hanggoroseto8@gmail.com")
