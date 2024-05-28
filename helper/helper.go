@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 
 	"gopkg.in/gomail.v2"
@@ -86,22 +84,18 @@ func DecodePayload(token string) (map[string]interface{}, error) {
 }
 
 func SendTokenRestPassword(email string, token string) error {
-	port, err := strconv.Atoi(os.Getenv("SMTP_PORT"))
-	if err != nil {
-		return err
-	}
 
 	dialer := gomail.NewDialer(
-		os.Getenv("SMTP_HOST"),
-		port,
-		os.Getenv("SMTP_USER"),
-		os.Getenv("SMTP_PASS"),
+		"smtp.gmail.com",
+		587,
+		"hanggoroseto8@gmail.com",
+		"pcxf rviq wvfz nfyy",
 	)
 
 	resetURL := fmt.Sprintf("%s/reset-password?token=%s", "http://localhost:8080", token)
 
 	m := gomail.NewMessage()
-	m.SetHeader("From", os.Getenv("SMTP_USER"))
+	m.SetHeader("From", "hanggoroseto8@gmail.com")
 	m.SetHeader("To", email)
 	m.SetHeader("Subject", "Password Reset Request")
 	m.SetBody("text/plain", "Click the link to reset your password: "+resetURL)
