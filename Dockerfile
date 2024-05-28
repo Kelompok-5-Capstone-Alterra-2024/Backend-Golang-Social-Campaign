@@ -36,5 +36,10 @@ ENV DB_USER=root
 ENV DB_PASSWORD=password
 ENV DB_NAME=capstone5
 
+ENV SMTP_HOST=${SMTP_HOST}
+ENV SMTP_PORT=${SMTP_PORT}
+ENV SMTP_USER=${SMTP_USER}
+ENV SMTP_PASS=${SMTP_PASS}
+
 # Run the web service on container startup.
 CMD ["./myapp"]
