@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"gopkg.in/gomail.v2"
@@ -54,6 +55,28 @@ func ErrorResponse(status, message string, err any) errorResponse {
 	}
 
 	return messageRes
+}
+
+type DataResponse struct {
+	Status  string      `json:"status"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
+}
+
+func NewDataResponse(status string, data interface{}) *DataResponse {
+	return &DataResponse{
+		Status:  status,
+		Message: "success",
+		Data:    data,
+	}
+}
+
+func StringToUint(s string) (uint, error) {
+	id, err := strconv.ParseUint(strings.TrimSpace(s), 10, 32)
+	if err != nil {
+		return 0, err
+	}
+	return uint(id), nil
 }
 
 func GetToken(auth string) string {
