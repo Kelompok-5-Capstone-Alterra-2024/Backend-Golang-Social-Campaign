@@ -1,13 +1,16 @@
 package helper
 
 import (
+	"capstone/entities"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
+	"github.com/veritrans/go-midtrans"
 	"gopkg.in/gomail.v2"
 )
 
@@ -83,6 +86,28 @@ func DecodePayload(token string) (map[string]interface{}, error) {
 	return payloadMap, nil
 }
 
+// func GetUserIDFromJWT(c echo.Context) (entities.User, error) {
+// 	authorization := c.Request().Header.Get("Authorization")
+// 	if authorization == "" {
+// 		return entities.User{}, errors.New("unauthorized")
+// 	}
+
+// 	jwtToken := GetToken(authorization)
+
+// 	jwt_payload, err := DecodePayload(jwtToken)
+// 	if err != nil {
+// 		return entities.User{}, err
+// 	}
+
+// 	// Get user id from jwt payload
+// 	user_id, ok := jwt_payload["id"].(float64)
+// 	if !ok {
+// 		return entities.User{}, errors.New("unauthorized")
+// 	}
+
+// 	return int(user_id), nil
+// }
+
 func SendTokenRestPassword(email string, token string) error {
 
 	dialer := gomail.NewDialer(
@@ -107,4 +132,35 @@ func GenerateToken() string {
 	b := make([]byte, 32)
 	rand.Read(b)
 	return base64.URLEncoding.EncodeToString(b)
+}
+
+func GetPaymentUrl(donation entities.Donation, user entities.User) (string, error) {
+	midClient := midtrans.NewClient()
+	server := "SB-Mid-server-x_R3_BBoJmSU_bRRxcBWV9pg"
+	client := "SB-Mid-client-YStDTAnO_VeyBKdH"
+	midClient.ServerKey = server
+	midClient.ClientKey = client
+	midClient.APIEnvType = midtrans.Sandbox
+	orderID := donation.ID
+	snapGateway := midtrans.SnapGateway{
+		Client: midClient,
+	}
+
+	snapReq := &midtrans.SnapReq{
+		CustomerDetail: &midtrans.CustDetail{
+			Email: user.Email,
+			FName: user.Fullname,
+		},
+		TransactionDetails: midtrans.TransactionDetails{
+			OrderID:  strconv.Itoa(int(orderID)),
+			GrossAmt: int64(donation.Amount),
+		},
+	}
+
+	snapTokenResp, err := snapGateway.GetToken(snapReq)
+	if err != nil {
+		return "", err
+	}
+	return snapTokenResp.RedirectURL, nil
+
 }

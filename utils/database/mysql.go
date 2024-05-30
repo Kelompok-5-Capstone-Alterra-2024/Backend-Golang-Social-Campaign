@@ -25,6 +25,46 @@ func InitDB() {
 		log.Fatal("Database connection failed")
 	}
 
+	// fundraising := &entities.Fundraising{
+	// 	FundraisingCategoryID: 1,
+	// 	OrganizationID:        1,
+	// 	Title:                 "Judul Fundraising 3",
+	// 	ImageUrl:              "http://example.com/image.jpg",
+	// 	Description:           "Deskripsi Fundraising",
+	// 	Status:                "Started",
+	// 	GoalAmount:            1000000,
+	// 	CurrentProgress:       500000,
+	// 	StartDate:             time.Now(),
+	// 	EndDate:               time.Now().AddDate(0, 0, 20),
+	// }
+
+	// organization := &entities.Organization{
+	// 	Name:        "Yayasan Berbagai kasih",
+	// 	Description: "Deskripsi Organisasi",
+	// 	Avatar:      "http://example.com/avatar.jpg",
+	// 	IsVerified:  true,
+	// }
+
+	// category := &entities.FundraisingCategory{
+	// 	Name:     "Alam",
+	// 	ImageUrl: "http://example.com/image.jpg",
+	// }
+
+	// resultFund := DB.Create(&fundraising)
+	// if resultFund.Error != nil {
+	// 	panic("failed to create fundraising")
+	// }
+
+	// resultOrg := DB.Create(&organization)
+	// if resultOrg.Error != nil {
+	// 	panic("failed to create organization")
+	// }
+
+	// resultCat := DB.Create(&category)
+	// if resultCat.Error != nil {
+	// 	panic("failed to create category")
+	// }
+
 	fmt.Println("Database connection successful!")
 
 }
