@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/labstack/echo/v4"
 	"gopkg.in/gomail.v2"
 )
 
@@ -81,6 +82,28 @@ func DecodePayload(token string) (map[string]interface{}, error) {
 	}
 
 	return payloadMap, nil
+}
+
+func GetUserIDFromJWT(c echo.Context) (int, error) {
+	authorization := c.Request().Header.Get("Authorization")
+	if authorization == "" {
+		return 0, errors.New("unauthorized")
+	}
+
+	jwtToken := GetToken(authorization)
+
+	jwt_payload, err := DecodePayload(jwtToken)
+	if err != nil {
+		return 0, err
+	}
+
+	// Get user id from jwt payload
+	user_id, ok := jwt_payload["id"].(float64)
+	if !ok {
+		return 0, errors.New("unauthorized")
+	}
+
+	return int(user_id), nil
 }
 
 func SendTokenRestPassword(email string, token string) error {
