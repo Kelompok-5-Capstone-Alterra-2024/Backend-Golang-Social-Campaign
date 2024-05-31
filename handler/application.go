@@ -14,7 +14,7 @@ type ApplicationHandler struct {
 }
 
 func NewApplicationHandler(applicationService service.ApplicationService) *ApplicationHandler {
-	return &ApplicationHandler{applicationService}
+	return &ApplicationHandler{applicationService: applicationService}
 }
 
 func (h *ApplicationHandler) RegisterApplication(c echo.Context) error {
@@ -24,10 +24,11 @@ func (h *ApplicationHandler) RegisterApplication(c echo.Context) error {
 	}
 
 	application := request.ToEntity()
-	_, err := h.applicationService.RegisterApplication(application)
+
+	createdApplication, err := h.applicationService.RegisterApplication(application)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed", "registration failed", err.Error()))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed", "failed to create application", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.GeneralResponse("success", "Application registered successfully"))
+	return c.JSON(http.StatusOK, helper.ResponseWithData("success", "application created successfully", createdApplication))
 }

@@ -5,6 +5,7 @@ import (
 	"capstone/helper"
 	"capstone/service"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -23,32 +24,48 @@ func (h *VolunteerHandler) CreateVolunteer(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("failed", "invalid request", err.Error()))
 	}
 
-	volunteer := request.ToEntity()
+	volunteer, err := request.ToEntity()
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("failed", "invalid date format", err.Error()))
+	}
+
 	createdVolunteer, err := h.volunteerService.CreateVolunteer(volunteer)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed", "failed to create volunteer", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.NewDataResponse("success", createdVolunteer))
+	return c.JSON(http.StatusOK, helper.ResponseWithData("success", "volunteer created successfully", createdVolunteer))
 }
 
 func (h *VolunteerHandler) GetVolunteerByID(c echo.Context) error {
-	id, err := helper.StringToUint(c.Param("id"))
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("failed", "invalid request", err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("failed", "invalid ID format", err.Error()))
 	}
 
-	volunteer, err := h.volunteerService.FindByID(id)
+	volunteer, err := h.volunteerService.FindByID(uint(id))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed", "failed to get volunteer", err.Error()))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse("failed", "volunteer not found", err.Error()))
 	}
-	return c.JSON(http.StatusOK, helper.NewDataResponse("success", volunteer))
+
+	return c.JSON(http.StatusOK, helper.ResponseWithData("success", "volunteer retrieved successfully", volunteer))
 }
 
-func (h *VolunteerHandler) GetAllVolunteer(c echo.Context) error {
-	volunteers, err := h.volunteerService.FindAll()
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed", "failed to get volunteers", err.Error()))
+func (h *VolunteerHandler) GetAllVolunteers(c echo.Context) error {
+	page, _ := strconv.Atoi(c.QueryParam("page"))
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+
+	if page <= 0 {
+		page = 1
 	}
-	return c.JSON(http.StatusOK, helper.NewDataResponse("success", volunteers))
+	if limit <= 0 || limit > 6 {
+		limit = 6
+	}
+
+	volunteers, total, err := h.volunteerService.FindAll(page, limit)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed", "failed to retrieve volunteers", err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "volunteers retrieved successfully", volunteers, page, limit, total))
 }

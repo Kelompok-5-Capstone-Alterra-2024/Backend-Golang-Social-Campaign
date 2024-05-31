@@ -6,7 +6,7 @@ import (
 )
 
 type VolunteerService interface {
-	FindAll() ([]entities.Volunteer, error)
+	FindAll(page, limit int) ([]entities.Volunteer, int64, error)
 	FindByID(id uint) (entities.Volunteer, error)
 	CreateVolunteer(volunteer entities.Volunteer) (entities.Volunteer, error)
 }
@@ -19,8 +19,8 @@ func NewVolunteerService(volunteerRepository repositories.VolunteerRepository) *
 	return &volunteerService{volunteerRepository}
 }
 
-func (s *volunteerService) FindAll() ([]entities.Volunteer, error) {
-	return s.volunteerRepository.FindAll()
+func (s *volunteerService) FindAll(page, limit int) ([]entities.Volunteer, int64, error) {
+	return s.volunteerRepository.FindAll(page, limit)
 }
 
 func (s *volunteerService) FindByID(id uint) (entities.Volunteer, error) {

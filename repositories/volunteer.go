@@ -7,7 +7,7 @@ import (
 )
 
 type VolunteerRepository interface {
-	FindAll() ([]entities.Volunteer, error)
+	FindAll(page, limit int) ([]entities.Volunteer, int64, error)
 	FindByID(id uint) (entities.Volunteer, error)
 	Save(volunteer entities.Volunteer) (entities.Volunteer, error)
 }
@@ -20,12 +20,17 @@ func NewVolunteerRepository(db *gorm.DB) *volunteerRepository {
 	return &volunteerRepository{db}
 }
 
-func (r *volunteerRepository) FindAll() ([]entities.Volunteer, error) {
+func (r *volunteerRepository) FindAll(page, limit int) ([]entities.Volunteer, int64, error) {
 	var volunteers []entities.Volunteer
-	if err := r.db.Find(&volunteers).Error; err != nil {
-		return volunteers, err
+	var totalCount int64
+
+	offset := (page - 1) * limit
+
+	if err := r.db.Offset(offset).Limit(limit).Find(&volunteers).Count(&totalCount).Error; err != nil {
+		return nil, 0, err
 	}
-	return volunteers, nil
+
+	return volunteers, totalCount, nil
 }
 
 func (r *volunteerRepository) FindByID(id uint) (entities.Volunteer, error) {

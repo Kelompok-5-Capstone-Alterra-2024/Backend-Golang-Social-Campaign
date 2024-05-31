@@ -71,6 +71,29 @@ func NewDataResponse(status string, data interface{}) *DataResponse {
 	}
 }
 
+type PaginationResponse struct {
+	Status       string      `json:"status"`
+	Message      string      `json:"message"`
+	Data         interface{} `json:"data"`
+	TotalRecords int64       `json:"total_records"`
+	TotalPages   int         `json:"total_pages"`
+	CurrentPage  int         `json:"current_page"`
+	PageSize     int         `json:"page_size"`
+}
+
+func ResponseWithPagination(status, message string, data interface{}, page, limit int, totalRecords int64) PaginationResponse {
+	totalPages := int((totalRecords + int64(limit) - 1) / int64(limit))
+	return PaginationResponse{
+		Status:       status,
+		Message:      message,
+		Data:         data,
+		TotalRecords: totalRecords,
+		TotalPages:   totalPages,
+		CurrentPage:  page,
+		PageSize:     limit,
+	}
+}
+
 func StringToUint(s string) (uint, error) {
 	id, err := strconv.ParseUint(strings.TrimSpace(s), 10, 32)
 	if err != nil {
@@ -85,7 +108,6 @@ func GetToken(auth string) string {
 }
 
 func DecodePayload(token string) (map[string]interface{}, error) {
-
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {
 		return nil, errors.New("invalid JWT token format")
@@ -107,7 +129,6 @@ func DecodePayload(token string) (map[string]interface{}, error) {
 }
 
 func SendTokenRestPassword(email string, token string) error {
-
 	dialer := gomail.NewDialer(
 		"smtp.gmail.com",
 		587,
