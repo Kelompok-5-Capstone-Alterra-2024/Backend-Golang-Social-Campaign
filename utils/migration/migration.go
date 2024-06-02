@@ -4,7 +4,6 @@ import (
 	"capstone/entities"
 	"capstone/utils/database"
 	"fmt"
-	"log"
 )
 
 func Migration() {
@@ -13,13 +12,21 @@ func Migration() {
 		&entities.User{},
 		&entities.Volunteer{},
 		&entities.Application{},
+		&entities.Article{},
+		&entities.Comment{},
+		&entities.LikesComment{},
+		&entities.TestimoniVolunteer{},
 	}
 
 	// Loop through each entity and migrate
 	for _, entity := range entitiesToMigrate {
-		if err := database.DB.AutoMigrate(entity); err != nil {
-			log.Fatalf("Database migration failed for %T: %v", entity, err)
+		if database.DB.Migrator().HasTable(entity) == false {
+			database.DB.Migrator().CreateTable(entity)
 		}
+
+		// if err := database.DB.AutoMigrate(entity); err != nil {
+		// 	log.Fatalf("Database migration failed for %T: %v", entity, err)
+		// }
 	}
 
 	fmt.Println("Successful database migration")
