@@ -65,6 +65,7 @@ func NewRouter(router *echo.Echo) {
 
 	api.GET("/organizations", organizatonHandler.GetOrganizations)
 	api.GET("/organizations/:id", organizatonHandler.GetOrganizationByID)
+	api.POST("/organizations", organizatonHandler.CreateOrganization)
 
 	api.GET("/fundraisings", fundraisingHandler.GetFundraisings)
 	api.GET("/fundraising/:id", fundraisingHandler.GetFundraisingByID)
