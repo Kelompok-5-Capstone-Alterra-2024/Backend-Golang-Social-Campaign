@@ -24,6 +24,5 @@ type Fundraising struct {
 
 type FundraisingCategory struct {
 	gorm.Model
-	Name     string `json:"name" gorm:"type:varchar(255)"`
-	ImageUrl string `json:"image_url" gorm:"type:varchar(255)"`
+	Name string `json:"name" gorm:"type:varchar(255)"`
 }

@@ -8,7 +8,7 @@ import (
 )
 
 func Migration() {
-	if err := database.DB.AutoMigrate(&entities.User{}, &entities.Fundraising{}, &entities.FundraisingCategory{}, &entities.Organization{}); err != nil {
+	if err := database.DB.AutoMigrate(&entities.User{}, &entities.Fundraising{}, &entities.FundraisingCategory{}, &entities.Organization{}, &entities.Donation{}, &entities.DonationComment{}, &entities.LikeDonationComment{}); err != nil {
 		log.Fatal("Database migration failed")
 	}
 

@@ -25,14 +25,17 @@ func NewRouter(router *echo.Echo) {
 	userRepo := repositories.NewUserRepository(database.DB)
 	fundraisingRepo := repositories.NewFundraisingRepository(database.DB)
 	donationRepo := repositories.NewDonationRepository(database.DB)
+	organizationRepo := repositories.NewOrganizationRepository(database.DB)
 
 	userService := service.NewUserService(userRepo)
 	fundraisingService := service.NewFundraisingService(fundraisingRepo)
-	donationService := service.NewDonationService(donationRepo)
+	donationService := service.NewDonationService(donationRepo, fundraisingRepo)
+	organizationService := service.NewOrganizationService(organizationRepo)
 
 	userHandler := handler.NewUserHandler(userService)
-	fundraisingHandler := handler.NewFundraisingHandler(fundraisingService)
-	donationHandler := handler.NewDonationHandler(donationService)
+	fundraisingHandler := handler.NewFundraisingHandler(fundraisingService, donationService)
+	donationHandler := handler.NewDonationHandler(donationService, userService)
+	organizatonHandler := handler.NewOrganizationHandler(organizationService)
 
 	api := router.Group("api/v1")
 
@@ -41,14 +44,24 @@ func NewRouter(router *echo.Echo) {
 	api.POST("/forget-password", userHandler.ForgetPassword)
 	api.POST("/reset-password", userHandler.ResetPassword)
 
+	api.GET("/organizations", organizatonHandler.GetOrganizations)
+	api.GET("/organizations/:id", organizatonHandler.GetOrganizationByID)
+
 	api.GET("/fundraisings", fundraisingHandler.GetFundraisings)
 	api.GET("/fundraising/:id", fundraisingHandler.GetFundraisingByID)
 	api.GET("/fundraising-categories", fundraisingHandler.GetAllFundraisingCategories)
 	api.GET("/fundraisings/:category_id", fundraisingHandler.GetFundraisingsByCategoryID)
+	api.POST("/transactions/notification", donationHandler.GetPaymentCallback)
 
 	api.Use(jwt, routeMiddleware.UserMiddleware)
 
 	api.POST("/fundraising/:id/donations", donationHandler.CreateDonation)
+
+	api.GET("/history/donations", donationHandler.GetUserDonation)
+	api.GET("/history/donations/:id", donationHandler.GetDonationByID)
+
+	api.POST("/comments/:comment_id/like", donationHandler.LikeComment)
+	api.DELETE("/comments/:comment_id/unlike", donationHandler.UnLikeComment)
 
 	api.GET("/home", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, "Hello, World!")

@@ -10,7 +10,7 @@ type FundraisingService interface {
 	FindFundraisings(ctx context.Context, limit int, offset int) ([]entities.Fundraising, error)
 	FindFundraisingByID(id int) (entities.Fundraising, error)
 	FindAllFundraisingCategories() ([]entities.FundraisingCategory, error)
-	FindFundraisingByCategoryID(id int) ([]entities.Fundraising, error)
+	FindFundraisingByCategoryID(id int, limit int, offset int) ([]entities.Fundraising, error)
 }
 
 type fundraisingService struct {
@@ -33,6 +33,6 @@ func (s *fundraisingService) FindAllFundraisingCategories() ([]entities.Fundrais
 	return s.fundraisingRepository.FindAllCategories()
 }
 
-func (s *fundraisingService) FindFundraisingByCategoryID(id int) ([]entities.Fundraising, error) {
-	return s.fundraisingRepository.FindByCategoryID(id)
+func (s *fundraisingService) FindFundraisingByCategoryID(id int, limit int, offset int) ([]entities.Fundraising, error) {
+	return s.fundraisingRepository.FindByCategoryID(id, limit, offset)
 }

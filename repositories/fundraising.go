@@ -10,7 +10,7 @@ type FundraisingRepository interface {
 	FindAll(limit int, offset int) ([]entities.Fundraising, error)
 	FindByID(id int) (entities.Fundraising, error)
 	FindAllCategories() ([]entities.FundraisingCategory, error)
-	FindByCategoryID(id int) ([]entities.Fundraising, error)
+	FindByCategoryID(id int, limit int, offset int) ([]entities.Fundraising, error)
 }
 
 type fundraisingRepository struct {
@@ -46,9 +46,9 @@ func (r *fundraisingRepository) FindAllCategories() ([]entities.FundraisingCateg
 	return categories, nil
 }
 
-func (r *fundraisingRepository) FindByCategoryID(id int) ([]entities.Fundraising, error) {
+func (r *fundraisingRepository) FindByCategoryID(id int, limit int, offset int) ([]entities.Fundraising, error) {
 	var fundraisings []entities.Fundraising
-	if err := r.db.Preload("FundraisingCategory").Where("fundraising_category_id = ?", id).Find(&fundraisings).Error; err != nil {
+	if err := r.db.Preload("FundraisingCategory").Limit(limit).Offset(offset).Where("fundraising_category_id = ?", id).Find(&fundraisings).Error; err != nil {
 		return []entities.Fundraising{}, err
 	}
 	return fundraisings, nil

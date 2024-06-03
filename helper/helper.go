@@ -2,13 +2,14 @@ package helper
 
 import (
 	"capstone/entities"
-	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/veritrans/go-midtrans"
@@ -135,7 +136,21 @@ func GenerateToken() string {
 	return base64.URLEncoding.EncodeToString(b)
 }
 
-func GetPaymentUrl(donation entities.Donation, user entities.User) (string, error) {
+func GenerateRandomOTP(otpLent int) string {
+	src := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(src)
+
+	const n = "0123456789"
+
+	otp := make([]byte, otpLent)
+	for i := range otp {
+		otp[i] = n[r.Intn(len(n))]
+	}
+
+	return string(otp)
+}
+
+func GetPaymentUrl(donation entities.PaymentTransaction, user entities.User) (string, error) {
 	midClient := midtrans.NewClient()
 	server := "SB-Mid-server-x_R3_BBoJmSU_bRRxcBWV9pg"
 	client := "SB-Mid-client-YStDTAnO_VeyBKdH"
@@ -153,8 +168,15 @@ func GetPaymentUrl(donation entities.Donation, user entities.User) (string, erro
 			FName: user.Fullname,
 		},
 		TransactionDetails: midtrans.TransactionDetails{
-			OrderID:  strconv.Itoa(int(orderID)),
+			OrderID:  strconv.Itoa(orderID),
 			GrossAmt: int64(donation.Amount),
+		},
+		Items: &[]midtrans.ItemDetail{
+			{
+				Name:  donation.FundraisingName,
+				Qty:   1,
+				Price: int64(donation.Amount),
+			},
 		},
 	}
 
