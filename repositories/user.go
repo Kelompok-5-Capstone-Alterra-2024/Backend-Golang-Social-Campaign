@@ -9,6 +9,7 @@ import (
 type UserRepository interface {
 	Save(user entities.User) (entities.User, error)
 	FindByUsername(username string) (entities.User, error)
+	FindByID(id uint) (entities.User, error)
 	FindByEmail(email string) (entities.User, error)
 	FindByResetToken(token string) (entities.User, error)
 	Update(user entities.User) error
@@ -32,6 +33,14 @@ func (r *userRepository) Save(user entities.User) (entities.User, error) {
 func (r *userRepository) FindByUsername(username string) (entities.User, error) {
 	var user entities.User
 	if err := r.db.Where("username = ?", username).First(&user).Error; err != nil {
+		return user, err
+	}
+	return user, nil
+}
+
+func (r *userRepository) FindByID(id uint) (entities.User, error) {
+	var user entities.User
+	if err := r.db.Where("id = ?", id).First(&user).Error; err != nil {
 		return user, err
 	}
 	return user, nil

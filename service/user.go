@@ -14,6 +14,7 @@ import (
 type UserService interface {
 	Register(request dto.RegisterRequest) (entities.User, error)
 	Login(request dto.LoginRequest) (entities.User, error)
+	GetUserByID(id uint) (entities.User, error)
 	GenerateResetToken(email string) error
 	ResetPassword(resetToken, newPassword string) error
 }
@@ -97,4 +98,8 @@ func (s *userService) ResetPassword(resetToken, newPassword string) error {
 	user.ResetToken = ""
 	user.ResetTokenExpire = time.Time{}
 	return s.userRepository.Update(user)
+}
+
+func (s *userService) GetUserByID(id uint) (entities.User, error) {
+	return s.userRepository.FindByID(id)
 }

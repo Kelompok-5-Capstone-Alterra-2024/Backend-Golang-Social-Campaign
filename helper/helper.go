@@ -1,14 +1,18 @@
 package helper
 
 import (
-	"crypto/rand"
+	"capstone/entities"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/labstack/echo/v4"
+	"github.com/veritrans/go-midtrans"
 	"gopkg.in/gomail.v2"
 )
 
@@ -128,6 +132,28 @@ func DecodePayload(token string) (map[string]interface{}, error) {
 	return payloadMap, nil
 }
 
+func GetUserIDFromJWT(c echo.Context) (int, error) {
+	authorization := c.Request().Header.Get("Authorization")
+	if authorization == "" {
+		return 0, errors.New("unauthorized")
+	}
+
+	jwtToken := GetToken(authorization)
+
+	jwt_payload, err := DecodePayload(jwtToken)
+	if err != nil {
+		return 0, err
+	}
+
+	// Get user id from jwt payload
+	user_id, ok := jwt_payload["id"].(float64)
+	if !ok {
+		return 0, errors.New("unauthorized")
+	}
+
+	return int(user_id), nil
+}
+
 func SendTokenRestPassword(email string, token string) error {
 	dialer := gomail.NewDialer(
 		"smtp.gmail.com",
@@ -151,4 +177,56 @@ func GenerateToken() string {
 	b := make([]byte, 32)
 	rand.Read(b)
 	return base64.URLEncoding.EncodeToString(b)
+}
+
+func GenerateRandomOTP(otpLent int) string {
+	src := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(src)
+
+	const n = "0123456789"
+
+	otp := make([]byte, otpLent)
+	for i := range otp {
+		otp[i] = n[r.Intn(len(n))]
+	}
+
+	return string(otp)
+}
+
+func GetPaymentUrl(donation entities.PaymentTransaction, user entities.User) (string, error) {
+	midClient := midtrans.NewClient()
+	server := "SB-Mid-server-x_R3_BBoJmSU_bRRxcBWV9pg"
+	client := "SB-Mid-client-YStDTAnO_VeyBKdH"
+	midClient.ServerKey = server
+	midClient.ClientKey = client
+	midClient.APIEnvType = midtrans.Sandbox
+	orderID := donation.ID
+	snapGateway := midtrans.SnapGateway{
+		Client: midClient,
+	}
+
+	snapReq := &midtrans.SnapReq{
+		CustomerDetail: &midtrans.CustDetail{
+			Email: user.Email,
+			FName: user.Fullname,
+		},
+		TransactionDetails: midtrans.TransactionDetails{
+			OrderID:  strconv.Itoa(orderID),
+			GrossAmt: int64(donation.Amount),
+		},
+		Items: &[]midtrans.ItemDetail{
+			{
+				Name:  donation.FundraisingName,
+				Qty:   1,
+				Price: int64(donation.Amount),
+			},
+		},
+	}
+
+	snapTokenResp, err := snapGateway.GetToken(snapReq)
+	if err != nil {
+		return "", err
+	}
+	return snapTokenResp.RedirectURL, nil
+
 }
