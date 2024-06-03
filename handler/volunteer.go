@@ -21,34 +21,34 @@ func NewVolunteerHandler(volunteerService service.VolunteerService) *VolunteerHa
 func (h *VolunteerHandler) CreateVolunteer(c echo.Context) error {
 	var request dto.VolunteerRequest
 	if err := c.Bind(&request); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("failed", "invalid request", err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
 	volunteer, err := request.ToEntity()
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("failed", "invalid date format", err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid date format", err.Error()))
 	}
 
 	createdVolunteer, err := h.volunteerService.CreateVolunteer(volunteer)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed", "failed to create volunteer", err.Error()))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to create volunteer", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.ResponseWithData("success", "volunteer created successfully", createdVolunteer))
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "volunteer created successfully", createdVolunteer))
 }
 
 func (h *VolunteerHandler) GetVolunteerByID(c echo.Context) error {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("failed", "invalid ID format", err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid ID format", err.Error()))
 	}
 
 	volunteer, err := h.volunteerService.FindByID(uint(id))
 	if err != nil {
-		return c.JSON(http.StatusNotFound, helper.ErrorResponse("failed", "volunteer not found", err.Error()))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(false, "volunteer not found", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.ResponseWithData("success", "volunteer retrieved successfully", volunteer))
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "volunteer retrieved successfully", volunteer))
 }
 
 func (h *VolunteerHandler) GetAllVolunteers(c echo.Context) error {
@@ -64,7 +64,7 @@ func (h *VolunteerHandler) GetAllVolunteers(c echo.Context) error {
 
 	volunteers, total, err := h.volunteerService.FindAll(page, limit)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed", "failed to retrieve volunteers", err.Error()))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to retrieve volunteers", err.Error()))
 	}
 
 	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "volunteers retrieved successfully", volunteers, page, limit, total))

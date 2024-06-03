@@ -21,28 +21,28 @@ func NewArticleHandler(articleService service.ArticleService) *ArticleHandler {
 func (h *ArticleHandler) CreateArticle(c echo.Context) error {
 	var request dto.ArticleRequest
 	if err := c.Bind(&request); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("failed", "invalid request", err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
 	article := request.ToEntity()
 
 	createdArticle, err := h.articleService.CreateArticle(article)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed", "failed to create article", err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.ResponseWithData("success", "article created successfully", createdArticle))
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "article created successfully", createdArticle))
 }
 
 func (h *ArticleHandler) UpdateArticle(c echo.Context) error {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("failed", "invalid ID format", err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
 	var request dto.ArticleRequest
 	if err := c.Bind(&request); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("failed", "invalid request", err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
 	article := request.ToEntity()
@@ -50,24 +50,24 @@ func (h *ArticleHandler) UpdateArticle(c echo.Context) error {
 
 	updatedArticle, err := h.articleService.UpdateArticle(article)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed", "failed to update article", err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.ResponseWithData("success", "article updated successfully", updatedArticle))
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "article updated successfully", updatedArticle))
 }
 
 func (h *ArticleHandler) GetArticleByID(c echo.Context) error {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("failed", "invalid ID format", err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
 	article, err := h.articleService.FindByID(uint(id))
 	if err != nil {
-		return c.JSON(http.StatusNotFound, helper.ErrorResponse("failed", "article not found", err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.ResponseWithData("success", "article retrieved successfully", article))
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "article retrieved successfully", article))
 }
 
 func (h *ArticleHandler) GetAllArticles(c echo.Context) error {
@@ -83,7 +83,7 @@ func (h *ArticleHandler) GetAllArticles(c echo.Context) error {
 
 	articles, total, err := h.articleService.FindAll(page, limit)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed", "failed to retrieve articles", err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
 	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "articles retrieved successfully", articles, page, limit, int64(total)))
@@ -92,13 +92,13 @@ func (h *ArticleHandler) GetAllArticles(c echo.Context) error {
 func (h *ArticleHandler) DeleteArticle(c echo.Context) error {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("failed", "invalid ID format", err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
 	err = h.articleService.DeleteArticle(uint(id))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed", "failed to delete article", err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.GeneralResponse("success", "article deleted successfully"))
+	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "article deleted successfully"))
 }

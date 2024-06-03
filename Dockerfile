@@ -30,10 +30,10 @@ COPY --from=builder /app/myapp .
 
 # Set default environment variables for the database connection
 # These can be overridden by docker run -e
-ENV DB_HOST=35.198.212.107
+ENV DB_HOST=34.126.74.53
 ENV DB_PORT=3306
 ENV DB_USER=root
-ENV DB_PASSWORD=password
+ENV DB_PASSWORD=@Kris0624Capstone5
 ENV DB_NAME=capstone5
 
 # Run the web service on container startup.

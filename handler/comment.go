@@ -21,47 +21,47 @@ func NewCommentHandler(commentService service.CommentService) *CommentHandler {
 func (h *CommentHandler) CreateComment(c echo.Context) error {
 	var request dto.CommentRequest
 	if err := c.Bind(&request); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("failed", "invalid request", err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
 	comment := request.ToEntity()
 
 	createdComment, err := h.commentService.CreateComment(comment)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed", "failed to create comment", err.Error()))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to create comment", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.ResponseWithData("success", "comment created successfully", createdComment))
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "comment created successfully", createdComment))
 }
 
 func (h *CommentHandler) UpdateComment(c echo.Context) error {
 	var request dto.CommentRequest
 	if err := c.Bind(&request); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("failed", "invalid request", err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
 	comment := request.ToEntity()
 
 	updatedComment, err := h.commentService.UpdateComment(comment)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed", "failed to update comment", err.Error()))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to update comment", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.ResponseWithData("success", "comment updated successfully", updatedComment))
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "comment updated successfully", updatedComment))
 }
 
 func (h *CommentHandler) GetCommentByID(c echo.Context) error {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("failed", "invalid ID format", err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid ID format", err.Error()))
 	}
 
 	comment, err := h.commentService.FindByID(uint(id))
 	if err != nil {
-		return c.JSON(http.StatusNotFound, helper.ErrorResponse("failed", "comment not found", err.Error()))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(false, "comment not found", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.ResponseWithData("success", "comment retrieved successfully", comment))
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "comment retrieved successfully", comment))
 }
 
 func (h *CommentHandler) GetAllComments(c echo.Context) error {
@@ -77,7 +77,7 @@ func (h *CommentHandler) GetAllComments(c echo.Context) error {
 
 	comments, total, err := h.commentService.FindAll(page, limit)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed", "failed to retrieve comments", err.Error()))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to retrieve comments", err.Error()))
 	}
 
 	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "comments retrieved successfully", comments, page, limit, int64(total)))
@@ -86,13 +86,13 @@ func (h *CommentHandler) GetAllComments(c echo.Context) error {
 func (h *CommentHandler) DeleteComment(c echo.Context) error {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("failed", "invalid ID format", err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid ID format", err.Error()))
 	}
 
 	err = h.commentService.DeleteComment(uint(id))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed", "failed to delete comment", err.Error()))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to delete comment", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.GeneralResponse("success", "comment deleted successfully"))
+	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "comment deleted successfully"))
 }
