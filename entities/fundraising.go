@@ -14,7 +14,7 @@ type Fundraising struct {
 	Organization          Organization        `json:"organization" gorm:"foreignKey:OrganizationID"`
 	Title                 string              `json:"title" gorm:"type:varchar(255)"`
 	ImageUrl              string              `json:"image_url" gorm:"type:varchar(255)"`
-	Description           string              `json:"description" gorm:"type:varchar(255)"`
+	Description           string              `json:"description" gorm:"type:text"`
 	Status                interface{}         `json:"status" gorm:"type:varchar(255)"`
 	GoalAmount            int                 `json:"goal_amount" gorm:"type:int"`
 	CurrentProgress       int                 `json:"current_progress" gorm:"type:int"`

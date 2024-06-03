@@ -1,6 +1,7 @@
 package database
 
 import (
+	"capstone/entities"
 	"fmt"
 	"log"
 	"os"
@@ -45,10 +46,12 @@ func InitDB() {
 	// 	IsVerified:  true,
 	// }
 
-	// category := &entities.FundraisingCategory{
-	// 	Name:     "Alam",
-	// 	ImageUrl: "http://example.com/image.jpg",
-	// }
+	category := []entities.FundraisingCategory{
+		{Name: "Edukasi"},
+		{Name: "Bencana"},
+		{Name: "Sosial"},
+		{Name: "Alam"},
+	}
 
 	// resultFund := DB.Create(&fundraising)
 	// if resultFund.Error != nil {
@@ -60,10 +63,10 @@ func InitDB() {
 	// 	panic("failed to create organization")
 	// }
 
-	// resultCat := DB.Create(&category)
-	// if resultCat.Error != nil {
-	// 	panic("failed to create category")
-	// }
+	resultCat := DB.Create(&category)
+	if resultCat.Error != nil {
+		panic("failed to create category")
+	}
 
 	fmt.Println("Database connection successful!")
 
