@@ -162,11 +162,9 @@ func (s *donationService) PaymentProcess(request dto.TransactionNotificationRequ
 		donation.Status = "paid"
 	} else if request.TransactionStatus == "deny" || request.TransactionStatus == "expire" || request.TransactionStatus == "cancel" {
 		donation.Status = "failed"
-	} else if request.TransactionStatus == "pending" || request.TransactionStatus == "challenge" {
-		donation.Status = "pending"
 	}
 
-	_, err = s.donationRepository.Update(donation)
+	updatedDonation, err := s.donationRepository.Update(donation)
 	if err != nil {
 		return err
 	}
@@ -176,11 +174,17 @@ func (s *donationService) PaymentProcess(request dto.TransactionNotificationRequ
 		return err
 	}
 
-	fundraising.CurrentProgress = fundraising.CurrentProgress + donation.Amount
+	if updatedDonation.Status == "paid" {
+		fundraising.CurrentProgress = fundraising.CurrentProgress + donation.Amount
 
-	_, err = s.fundraisingRepo.Update(fundraising)
-	if err != nil {
-		return err
+		if fundraising.CurrentProgress >= fundraising.GoalAmount {
+			fundraising.Status = "Achived"
+		}
+
+		_, err = s.fundraisingRepo.Update(fundraising)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
