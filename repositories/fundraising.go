@@ -10,6 +10,7 @@ type FundraisingRepository interface {
 	Create(fundraising entities.Fundraising) (entities.Fundraising, error)
 	Update(fundraising entities.Fundraising) (entities.Fundraising, error)
 	FindAll(limit int, offset int) ([]entities.Fundraising, error)
+	FindTopFundraisings() ([]entities.Fundraising, error)
 	FindByID(id int) (entities.Fundraising, error)
 	FindAllCategories() ([]entities.FundraisingCategory, error)
 	FindByCategoryID(id int, limit int, offset int) ([]entities.Fundraising, error)
@@ -40,6 +41,14 @@ func (r *fundraisingRepository) Update(fundraising entities.Fundraising) (entiti
 func (r *fundraisingRepository) FindAll(limit int, offset int) ([]entities.Fundraising, error) {
 	var fundraisings []entities.Fundraising
 	if err := r.db.Preload("FundraisingCategory").Preload("Organization").Limit(limit).Offset(offset).Find(&fundraisings).Error; err != nil {
+		return []entities.Fundraising{}, err
+	}
+	return fundraisings, nil
+}
+
+func (r *fundraisingRepository) FindTopFundraisings() ([]entities.Fundraising, error) {
+	var fundraisings []entities.Fundraising
+	if err := r.db.Preload("FundraisingCategory").Preload("Organization").Order("current_amount desc").Limit(3).Find(&fundraisings).Error; err != nil {
 		return []entities.Fundraising{}, err
 	}
 	return fundraisings, nil
