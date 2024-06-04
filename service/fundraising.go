@@ -9,6 +9,7 @@ import (
 type FundraisingService interface {
 	CreateFudraising(ctx context.Context, fundraising entities.Fundraising) (entities.Fundraising, error)
 	FindFundraisings(ctx context.Context, limit int, offset int) ([]entities.Fundraising, error)
+	FindTopFundraisings() ([]entities.Fundraising, error)
 	FindFundraisingByID(id int) (entities.Fundraising, error)
 	FindAllFundraisingCategories() ([]entities.FundraisingCategory, error)
 	FindFundraisingByCategoryID(id int, limit int, offset int) ([]entities.Fundraising, error)
@@ -28,6 +29,10 @@ func (s *fundraisingService) CreateFudraising(ctx context.Context, fundraising e
 
 func (s *fundraisingService) FindFundraisings(ctx context.Context, limit int, offset int) ([]entities.Fundraising, error) {
 	return s.fundraisingRepository.FindAll(limit, offset)
+}
+
+func (s *fundraisingService) FindTopFundraisings() ([]entities.Fundraising, error) {
+	return s.fundraisingRepository.FindTopFundraisings()
 }
 
 func (s *fundraisingService) FindFundraisingByID(id int) (entities.Fundraising, error) {

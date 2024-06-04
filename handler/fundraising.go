@@ -49,6 +49,15 @@ func (h *FundraisingHandler) GetFundraisings(c echo.Context) error {
 
 }
 
+func (h *FundraisingHandler) GetTopFundraisings(c echo.Context) error {
+	fundraisings, err := h.fundraisingService.FindTopFundraisings()
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get fundraisings", err.Error()))
+	}
+	response := dto.ToAllFundraisingsResponse(fundraisings)
+	return c.JSON(200, helper.ResponseWithData(true, "fundraisings retrieved successfully", response))
+}
+
 func (h *FundraisingHandler) GetFundraisingByID(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 	fundraising, err := h.fundraisingService.FindFundraisingByID(id)
