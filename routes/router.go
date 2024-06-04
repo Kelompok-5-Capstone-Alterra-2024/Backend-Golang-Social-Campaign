@@ -63,6 +63,8 @@ func NewRouter(router *echo.Echo) {
 	api.POST("/forget-password", userHandler.ForgetPassword)
 	api.POST("/reset-password", userHandler.ResetPassword)
 
+	api.POST("/transactions/notification", donationHandler.GetPaymentCallback)
+
 	api.Use(jwt, routeMiddleware.UserMiddleware)
 
 	api.GET("/organizations", organizatonHandler.GetOrganizations)
@@ -74,7 +76,6 @@ func NewRouter(router *echo.Echo) {
 	api.GET("/fundraising/:id", fundraisingHandler.GetFundraisingByID)
 	api.GET("/fundraising-categories", fundraisingHandler.GetAllFundraisingCategories)
 	api.GET("/fundraisings/:category_id", fundraisingHandler.GetFundraisingsByCategoryID)
-	api.POST("/transactions/notification", donationHandler.GetPaymentCallback)
 
 	api.POST("/fundraisings", fundraisingHandler.CreateFundraisingContent)
 
