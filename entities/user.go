@@ -15,5 +15,5 @@ type User struct {
 	Avatar           string    `json:"avatar" gorm:"type:varchar(255)"`
 	Token            string    `gorm:"-"`
 	ResetToken       string    `gorm:"type:varchar(255)"`
-	ResetTokenExpire time.Time `gorm:"type:datetime;default:null"`
+	ResetTokenExpire time.Time `gorm:"default:null"`
 }
