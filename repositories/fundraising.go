@@ -48,7 +48,7 @@ func (r *fundraisingRepository) FindAll(limit int, offset int) ([]entities.Fundr
 
 func (r *fundraisingRepository) FindTopFundraisings() ([]entities.Fundraising, error) {
 	var fundraisings []entities.Fundraising
-	if err := r.db.Preload("FundraisingCategory").Preload("Organization").Order("current_amount desc").Limit(3).Find(&fundraisings).Error; err != nil {
+	if err := r.db.Preload("FundraisingCategory").Preload("Organization").Order("current_progress desc").Limit(3).Find(&fundraisings).Error; err != nil {
 		return []entities.Fundraising{}, err
 	}
 	return fundraisings, nil
