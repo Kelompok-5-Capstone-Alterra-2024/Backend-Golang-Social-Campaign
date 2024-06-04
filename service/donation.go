@@ -178,6 +178,11 @@ func (s *donationService) PaymentProcess(request dto.TransactionNotificationRequ
 
 	fundraising.CurrentProgress = fundraising.CurrentProgress + donation.Amount
 
+	_, err = s.fundraisingRepo.Update(fundraising)
+	if err != nil {
+		return err
+	}
+
 	return nil
 
 }
