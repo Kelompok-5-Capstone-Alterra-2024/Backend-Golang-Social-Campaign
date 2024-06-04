@@ -42,6 +42,7 @@ func (s *userService) Register(request dto.RegisterRequest) (entities.User, erro
 		Username: request.Username,
 		Email:    request.Email,
 		Password: request.Password,
+		NoTelp:   request.NoTelp,
 		Avatar:   "https://res.cloudinary.com/dvrhf8d9t/image/upload/v1715517059/default-avatar_yt6eua.png",
 	}
 
