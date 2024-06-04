@@ -8,7 +8,6 @@ import (
 	"capstone/repositories"
 	"errors"
 	"fmt"
-	"time"
 )
 
 type UserService interface {
@@ -75,7 +74,6 @@ func (s *userService) GenerateResetToken(email string) error {
 
 	resetToken := helper.GenerateToken()
 	user.ResetToken = resetToken
-	user.ResetTokenExpire = time.Now().Add(1 * time.Hour)
 	err = s.userRepository.Update(user)
 	if err != nil {
 		return err
@@ -96,7 +94,6 @@ func (s *userService) ResetPassword(resetToken, newPassword string) error {
 
 	user.Password = newPassword
 	user.ResetToken = ""
-	user.ResetTokenExpire = time.Time{}
 	return s.userRepository.Update(user)
 }
 
