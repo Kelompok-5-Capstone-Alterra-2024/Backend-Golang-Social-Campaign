@@ -5,6 +5,17 @@ import (
 	"time"
 )
 
+type CreateFundraisingRequest struct {
+	ImageUrl       string `json:"image_url"`
+	Title          string `json:"title"`
+	TargetAmount   int    `json:"target_amount"`
+	StartDate      string `json:"start_date"`
+	EndDate        string `json:"end_date"`
+	Description    string `json:"description"`
+	CategoryID     uint   `json:"category_id"`
+	OrganizationID uint   `json:"organization_id"`
+}
+
 type FundraisingsResponse struct {
 	ID              uint   `json:"id"`
 	ImageUrl        string `json:"image_url"`

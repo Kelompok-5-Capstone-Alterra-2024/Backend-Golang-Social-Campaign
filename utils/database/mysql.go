@@ -1,7 +1,6 @@
 package database
 
 import (
-	"capstone/entities"
 	"fmt"
 	"log"
 	"os"
@@ -39,12 +38,12 @@ func InitDB() {
 	// 		EndDate:         time.Now().AddDate(0, 0, 20)},
 	// }
 
-	organization := &entities.Organization{
-		Name:        "Yayasan Berbagai kasih",
-		Description: "Tentang Yayasan Berbagi Kasih merupakan Yayasan Independen yang lahir dari inisiatif PeduliPintar untuk mengelola dan mengimplementasikan program sosial secara profesional dan transparan. Sebagai yayasan independen, Social Project tidak hanya mengimplementasikan donasi dari PeduliPintar, melainkan juga berkolaborasi dengan beragam pihak untuk menjalankan, mengimplementasikan, dan menyalurkan donasi beragam program sosial. Telah menghubungkan jutaan dampak sosial. Sampai saat ini, Yayasan Berbagi Kasih telah menjalankan ratusan program sosial dan berkolaborasi dengan ratusan mitra kolaborator. Mulai dari pemulihan bencana alam sampai bantuan kebutuhan pokok. ",
-		Avatar:      "https://res.cloudinary.com/dvrhf8d9t/image/upload/v1717434715/d2cb2595f0ac5557f5c6bda8028ce4b4_jixcwa.png",
-		IsVerified:  true,
-	}
+	// organization := &entities.Organization{
+	// 	Name:        "Yayasan Berbagai kasih",
+	// 	Description: "Tentang Yayasan Berbagi Kasih merupakan Yayasan Independen yang lahir dari inisiatif PeduliPintar untuk mengelola dan mengimplementasikan program sosial secara profesional dan transparan. Sebagai yayasan independen, Social Project tidak hanya mengimplementasikan donasi dari PeduliPintar, melainkan juga berkolaborasi dengan beragam pihak untuk menjalankan, mengimplementasikan, dan menyalurkan donasi beragam program sosial. Telah menghubungkan jutaan dampak sosial. Sampai saat ini, Yayasan Berbagi Kasih telah menjalankan ratusan program sosial dan berkolaborasi dengan ratusan mitra kolaborator. Mulai dari pemulihan bencana alam sampai bantuan kebutuhan pokok. ",
+	// 	Avatar:      "https://res.cloudinary.com/dvrhf8d9t/image/upload/v1717434715/d2cb2595f0ac5557f5c6bda8028ce4b4_jixcwa.png",
+	// 	IsVerified:  true,
+	// }
 
 	// category := []entities.FundraisingCategory{
 	// 	{Name: "Edukasi"},
@@ -58,10 +57,10 @@ func InitDB() {
 	// 	panic("failed to create fundraising")
 	// }
 
-	resultOrg := DB.Create(&organization)
-	if resultOrg.Error != nil {
-		panic("failed to create organization")
-	}
+	// resultOrg := DB.Create(&organization)
+	// if resultOrg.Error != nil {
+	// 	panic("failed to create organization")
+	// }
 
 	// resultCat := DB.Create(&category)
 	// if resultCat.Error != nil {

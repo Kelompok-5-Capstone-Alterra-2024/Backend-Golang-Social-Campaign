@@ -7,6 +7,7 @@ import (
 )
 
 type FundraisingRepository interface {
+	Create(fundraising entities.Fundraising) (entities.Fundraising, error)
 	FindAll(limit int, offset int) ([]entities.Fundraising, error)
 	FindByID(id int) (entities.Fundraising, error)
 	FindAllCategories() ([]entities.FundraisingCategory, error)
@@ -19,6 +20,13 @@ type fundraisingRepository struct {
 
 func NewFundraisingRepository(db *gorm.DB) *fundraisingRepository {
 	return &fundraisingRepository{db}
+}
+
+func (r *fundraisingRepository) Create(fundraising entities.Fundraising) (entities.Fundraising, error) {
+	if err := r.db.Create(&fundraising).Error; err != nil {
+		return entities.Fundraising{}, err
+	}
+	return fundraising, nil
 }
 
 func (r *fundraisingRepository) FindAll(limit int, offset int) ([]entities.Fundraising, error) {
