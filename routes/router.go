@@ -72,6 +72,8 @@ func NewRouter(router *echo.Echo) {
 	api.GET("/fundraisings/:category_id", fundraisingHandler.GetFundraisingsByCategoryID)
 	api.POST("/transactions/notification", donationHandler.GetPaymentCallback)
 
+	api.POST("/fundraisings", fundraisingHandler.CreateFundraisingContent)
+
 	api.Use(jwt, routeMiddleware.UserMiddleware)
 
 	api.POST("/fundraising/:id/donations", donationHandler.CreateDonation)
