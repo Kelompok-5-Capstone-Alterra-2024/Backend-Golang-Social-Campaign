@@ -20,6 +20,7 @@ func NewRouter(router *echo.Echo) {
 
 	// Repositories
 	userRepo := repositories.NewUserRepository(database.DB)
+	adminRepo := repositories.NewAdminRepository(database.DB)
 	volunteerRepo := repositories.NewVolunteerRepository(database.DB)
 	applicationRepo := repositories.NewApplicationRepository(database.DB)
 	articleRepo := repositories.NewArticleRepository(database.DB)
@@ -33,6 +34,7 @@ func NewRouter(router *echo.Echo) {
 	organizationRepo := repositories.NewOrganizationRepository(database.DB)
 
 	userService := service.NewUserService(userRepo)
+	adminService := service.NewAdminService(adminRepo)
 	volunteerService := service.NewVolunteerService(volunteerRepo)
 	applicationService := service.NewApplicationService(applicationRepo)
 	articleService := service.NewArticleService(articleRepo)
@@ -46,6 +48,7 @@ func NewRouter(router *echo.Echo) {
 	organizationService := service.NewOrganizationService(organizationRepo)
 
 	userHandler := handler.NewUserHandler(userService)
+	adminHandler := handler.NewAdminHandler(adminService)
 	volunteerHandler := handler.NewVolunteerHandler(volunteerService)
 	applicationHandler := handler.NewApplicationHandler(applicationService)
 	articleHandler := handler.NewArticleHandler(articleService)
@@ -119,4 +122,9 @@ func NewRouter(router *echo.Echo) {
 	api.GET("/testimoni-volunteers/:id", testimoniVolunteerHandler.GetTestimoniVolunteerByID)
 	api.GET("/testimoni-volunteers", testimoniVolunteerHandler.GetAllTestimoniVolunteers)
 	api.DELETE("/testimoni-volunteers/:id", testimoniVolunteerHandler.DeleteTestimoniVolunteer)
+
+	admin := router.Group("api/v1/admin")
+
+	admin.Use(jwt, routeMiddleware.AdminMiddleware)
+	admin.POST("/login", adminHandler.Login)
 }
