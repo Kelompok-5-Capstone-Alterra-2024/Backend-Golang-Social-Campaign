@@ -78,7 +78,7 @@ func NewRouter(router *echo.Echo) {
 	api.GET("/fundraisings/top", fundraisingHandler.GetTopFundraisings)
 	api.GET("/fundraising/:id", fundraisingHandler.GetFundraisingByID)
 	api.GET("/fundraising-categories", fundraisingHandler.GetAllFundraisingCategories)
-	api.GET("/fundraisings/:category_id", fundraisingHandler.GetFundraisingsByCategoryID)
+	api.GET("/fundraisings/categories/:category_id", fundraisingHandler.GetFundraisingsByCategoryID)
 
 	api.POST("/fundraising/:id/donations", donationHandler.CreateDonation)
 
