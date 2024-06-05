@@ -32,20 +32,23 @@ func (s *userService) Register(request dto.RegisterRequest) (entities.User, erro
 		return entities.User{}, fmt.Errorf("password doesn't match")
 	}
 
-	userDB, _ := s.userRepository.FindByEmail(request.Email)
-	if userDB.Email == request.Email {
+	userEmail, _ := s.userRepository.FindByEmail(request.Email)
+	if userEmail.Email == request.Email {
 		return entities.User{}, errors.New("email already exists")
 	}
 
-	if userDB.Username == request.Username {
+	userName, _ := s.userRepository.FindByUsername(request.Username)
+	if userName.Username == request.Username {
 		return entities.User{}, errors.New("username already exists")
 	}
 
-	if userDB.NoTelp == request.NoTelp {
+	userTelp, _ := s.userRepository.FindByNoTelp(request.NoTelp)
+	if userTelp.NoTelp == request.NoTelp {
 		return entities.User{}, errors.New("phone number already exists")
 	}
 
-	if userDB.Fullname == request.Fullname {
+	userFull, _ := s.userRepository.FindByFullName(request.Fullname)
+	if userFull.Fullname == request.Fullname {
 		return entities.User{}, errors.New("fullname already exists")
 	}
 
