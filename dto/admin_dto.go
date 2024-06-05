@@ -83,3 +83,29 @@ func ToAdminAllFundraisingDonationResponse(donations []entities.Donation) []Admi
 	}
 	return result
 }
+
+type AdminOrganizationsResponse struct {
+	ID         uint   `json:"id"`
+	Name       string `json:"name"`
+	JoinDate   string `json:"join_date"`
+	Contact    string `json:"contact"`
+	IsVerified bool   `json:"is_verified"`
+}
+
+func ToAdminOrganizationsResponse(organization entities.Organization) AdminOrganizationsResponse {
+	return AdminOrganizationsResponse{
+		ID:         organization.ID,
+		Name:       organization.Name,
+		JoinDate:   organization.CreatedAt.Format("2006-01-02"),
+		Contact:    organization.Contact,
+		IsVerified: organization.IsVerified,
+	}
+}
+
+func ToAdminAllOrganizationsResponse(organizations []entities.Organization) []AdminOrganizationsResponse {
+	var result []AdminOrganizationsResponse
+	for _, organization := range organizations {
+		result = append(result, ToAdminOrganizationsResponse(organization))
+	}
+	return result
+}

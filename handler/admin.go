@@ -175,3 +175,28 @@ func (h *AdminHandler) GetDonationsByFundraisingID(c echo.Context) error {
 	response := dto.ToAdminAllFundraisingDonationResponse(donations)
 	return c.JSON(200, helper.ResponseWithData(true, "donation retrieved successfully", response))
 }
+
+func (h *AdminHandler) GetAllOrganizations(c echo.Context) error {
+
+	limitStr := c.QueryParam("limit")
+	pageStr := c.QueryParam("page")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		limit = 6
+	}
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	offset := (page - 1) * limit
+	organizations, err := h.adminService.GetOrganizations(limit, offset)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get organization", err.Error()))
+	}
+
+	response := dto.ToAdminAllOrganizationsResponse(organizations)
+	return c.JSON(200, helper.ResponseWithData(true, "organization retrieved successfully", response))
+}

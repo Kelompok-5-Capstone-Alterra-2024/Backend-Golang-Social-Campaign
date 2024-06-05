@@ -14,6 +14,8 @@ type AdminRepository interface {
 	UpdateFundraisingByID(id uint, fundraising entities.Fundraising) (entities.Fundraising, error)
 	FindFundraisingByID(id int) (entities.Fundraising, error)
 	FindDonationsByFundraisingID(id int, limit int, offset int) ([]entities.Donation, error)
+
+	FindOrganizations(limit int, offset int) ([]entities.Organization, error)
 }
 
 type adminRepository struct {
@@ -75,4 +77,12 @@ func (r *adminRepository) FindDonationsByFundraisingID(id int, limit int, offset
 		return []entities.Donation{}, err
 	}
 	return donations, nil
+}
+
+func (r *adminRepository) FindOrganizations(limit int, offset int) ([]entities.Organization, error) {
+	var organizations []entities.Organization
+	if err := r.db.Limit(limit).Offset(offset).Find(&organizations).Error; err != nil {
+		return []entities.Organization{}, err
+	}
+	return organizations, nil
 }
