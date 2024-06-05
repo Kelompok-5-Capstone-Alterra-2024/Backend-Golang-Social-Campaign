@@ -15,7 +15,7 @@ type Fundraising struct {
 	Title                 string              `json:"title" gorm:"type:varchar(255)"`
 	ImageUrl              string              `json:"image_url" gorm:"type:varchar(255)"`
 	Description           string              `json:"description" gorm:"type:text"`
-	Status                interface{}         `json:"status" gorm:"type:varchar(255)"`
+	Status                string              `json:"status" gorm:"type:varchar(255)"`
 	GoalAmount            int                 `json:"goal_amount" gorm:"type:int"`
 	CurrentProgress       int                 `json:"current_progress" gorm:"type:int"`
 	StartDate             time.Time           `json:"start_date" gorm:"datetime"`

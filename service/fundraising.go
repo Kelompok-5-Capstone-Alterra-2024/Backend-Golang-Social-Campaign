@@ -7,7 +7,6 @@ import (
 )
 
 type FundraisingService interface {
-	CreateFudraising(ctx context.Context, fundraising entities.Fundraising) (entities.Fundraising, error)
 	FindFundraisings(ctx context.Context, limit int, offset int) ([]entities.Fundraising, error)
 	FindTopFundraisings() ([]entities.Fundraising, error)
 	FindFundraisingByID(id int) (entities.Fundraising, error)
@@ -21,10 +20,6 @@ type fundraisingService struct {
 
 func NewFundraisingService(fundraisingRepository repositories.FundraisingRepository) *fundraisingService {
 	return &fundraisingService{fundraisingRepository}
-}
-
-func (s *fundraisingService) CreateFudraising(ctx context.Context, fundraising entities.Fundraising) (entities.Fundraising, error) {
-	return s.fundraisingRepository.Create(fundraising)
 }
 
 func (s *fundraisingService) FindFundraisings(ctx context.Context, limit int, offset int) ([]entities.Fundraising, error) {
