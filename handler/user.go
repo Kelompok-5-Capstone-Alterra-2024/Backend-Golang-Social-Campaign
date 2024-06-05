@@ -63,7 +63,7 @@ func (h *UserHandler) ResetPassword(c echo.Context) error {
 
 	err := h.userService.ResetPassword(resetToken, request.Password)
 	if err != nil {
-		return c.JSON(500, helper.ErrorResponse(false, "validation failed", "invalid token"))
+		return c.JSON(500, helper.ErrorResponse(false, "validation failed", err.Error()))
 	}
 	return c.JSON(200, helper.GeneralResponse(true, "Password reset successfully"))
 }

@@ -17,6 +17,21 @@ func NewOrganizationHandler(organizationService service.OrganizationService) *Or
 	return &OrganizationHandler{organizationService}
 }
 
+func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
+	var organization dto.OrganizationRequest
+	err := c.Bind(&organization)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to create organization", err.Error()))
+	}
+
+	newOrganization, err := h.organizationService.CreateOrganization(organization)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to create organization", err.Error()))
+	}
+
+	return c.JSON(201, helper.ResponseWithData(true, "organization created successfully", newOrganization))
+}
+
 func (h *OrganizationHandler) GetOrganizations(c echo.Context) error {
 	organizations, err := h.organizationService.FindOrganizations()
 	if err != nil {

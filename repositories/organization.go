@@ -7,6 +7,7 @@ import (
 )
 
 type OrganizationRepository interface {
+	Save(organization entities.Organization) (entities.Organization, error)
 	FindAll() ([]entities.Organization, error)
 	FindByID(id int) (entities.Organization, error)
 	FindFundraisingByOrganizationID(id int) ([]entities.Fundraising, error)
@@ -18,6 +19,13 @@ type organizationRepository struct {
 
 func NewOrganizationRepository(db *gorm.DB) *organizationRepository {
 	return &organizationRepository{db}
+}
+
+func (r *organizationRepository) Save(organization entities.Organization) (entities.Organization, error) {
+	if err := r.db.Create(&organization).Error; err != nil {
+		return entities.Organization{}, err
+	}
+	return organization, nil
 }
 
 func (r *organizationRepository) FindAll() ([]entities.Organization, error) {

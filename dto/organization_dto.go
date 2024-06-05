@@ -5,6 +5,13 @@ import (
 	"time"
 )
 
+type OrganizationRequest struct {
+	Name        string `json:"name" `
+	Avatar      string `json:"avatar" `
+	Description string `json:"description" `
+	IsVerified  bool   `json:"is_verified" `
+}
+
 type OrganizationResponse struct {
 	ID          uint                   `json:"id" `
 	Name        string                 `json:"name" `
