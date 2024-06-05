@@ -6,7 +6,10 @@ import (
 	"capstone/helper"
 	"capstone/repositories"
 	"context"
+	"fmt"
 	"strconv"
+
+	"github.com/go-resty/resty/v2"
 )
 
 type DonationService interface {
@@ -18,6 +21,7 @@ type DonationService interface {
 	LikeComment(ctx context.Context, commentID uint, userID uint) error
 	UnlikeComment(ctx context.Context, commentID uint, userID uint) error
 	PaymentProcess(request dto.TransactionNotificationRequest) error
+	FetchStatusFromMidtrans(orderID string) (dto.TransactionNotificationRequest, error)
 }
 
 type donationService struct {
@@ -142,6 +146,28 @@ func (s *donationService) UnlikeComment(ctx context.Context, commentID uint, use
 	return s.donationRepository.DecrementLike(ctx, commentID)
 }
 
+func (s *donationService) FetchStatusFromMidtrans(orderID string) (dto.TransactionNotificationRequest, error) {
+	client := resty.New()
+	var statusResponse dto.TransactionNotificationRequest
+
+	url := fmt.Sprintf("https://api.midtrans.com/v2/%s/status", orderID)
+	resp, err := client.R().
+		SetHeader("Accept", "application/json").
+		SetHeader("Authorization", "Basic U0ItTWlkLXNlcnZlci14X1IzX0JCb0ptU1VfYlJSeGNCV1Y5cGc6").
+		SetResult(&statusResponse).
+		Get(url)
+
+	if err != nil {
+		return statusResponse, err
+	}
+
+	if resp.IsError() {
+		return statusResponse, fmt.Errorf("error fetching status: %v", resp.String())
+	}
+
+	return statusResponse, nil
+}
+
 func (s *donationService) PaymentProcess(request dto.TransactionNotificationRequest) error {
 	code := request.OrderID
 
@@ -169,7 +195,7 @@ func (s *donationService) PaymentProcess(request dto.TransactionNotificationRequ
 		return err
 	}
 
-	fundraising, err := s.fundraisingRepo.FindByID(int(donation.FundraisingID))
+	fundraising, err := s.fundraisingRepo.FindByID(int(updatedDonation.FundraisingID))
 	if err != nil {
 		return err
 	}

@@ -137,7 +137,16 @@ func (h *DonationHandler) GetPaymentCallback(c echo.Context) error {
 
 	err := h.donationService.PaymentProcess(request)
 	if err != nil {
-		return c.JSON(500, helper.ErrorResponse(false, "failed to process payment", err.Error()))
+		status, err := h.donationService.FetchStatusFromMidtrans(request.OrderID)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "failed to process payment and failed to fetch status from Midtrans", "details": err.Error()})
+		}
+
+		err = h.donationService.PaymentProcess(status)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "failed to process payment with fetched status", "details": err.Error()})
+		}
+
 	}
 	return c.JSON(200, helper.GeneralResponse(true, "payment processed successfully"))
 }
