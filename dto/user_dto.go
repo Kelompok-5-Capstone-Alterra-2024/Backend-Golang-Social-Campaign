@@ -4,7 +4,7 @@ type RegisterRequest struct {
 	Fullname    string `json:"fullname"`
 	Username    string `json:"username"`
 	Email       string `json:"email"`
-	NoTelp      int    `json:"no_telp"`
+	NoTelp      string `json:"no_telp"`
 	Password    string `json:"password"`
 	ConfirmPass string `json:"confirm_password"`
 }

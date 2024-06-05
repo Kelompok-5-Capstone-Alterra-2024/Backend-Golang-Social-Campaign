@@ -37,6 +37,18 @@ func (s *userService) Register(request dto.RegisterRequest) (entities.User, erro
 		return entities.User{}, errors.New("email already exists")
 	}
 
+	if userDB.Username == request.Username {
+		return entities.User{}, errors.New("username already exists")
+	}
+
+	if userDB.NoTelp == request.NoTelp {
+		return entities.User{}, errors.New("phone number already exists")
+	}
+
+	if userDB.Fullname == request.Fullname {
+		return entities.User{}, errors.New("fullname already exists")
+	}
+
 	user := entities.User{
 		Fullname: request.Fullname,
 		Username: request.Username,
