@@ -11,6 +11,8 @@ type UserRepository interface {
 	FindByUsername(username string) (entities.User, error)
 	FindByID(id uint) (entities.User, error)
 	FindByEmail(email string) (entities.User, error)
+	FindByFullName(fullname string) (entities.User, error)
+	FindByNoTelp(notel string) (entities.User, error)
 	FindByResetToken(token string) (entities.User, error)
 	Update(user entities.User) error
 }
@@ -33,6 +35,22 @@ func (r *userRepository) Save(user entities.User) (entities.User, error) {
 func (r *userRepository) FindByUsername(username string) (entities.User, error) {
 	var user entities.User
 	if err := r.db.Where("username = ?", username).First(&user).Error; err != nil {
+		return user, err
+	}
+	return user, nil
+}
+
+func (r *userRepository) FindByFullName(fullname string) (entities.User, error) {
+	var user entities.User
+	if err := r.db.Where("fullname = ?", fullname).First(&user).Error; err != nil {
+		return user, err
+	}
+	return user, nil
+}
+
+func (r *userRepository) FindByNoTelp(notel string) (entities.User, error) {
+	var user entities.User
+	if err := r.db.Where("no_telp = ?", notel).First(&user).Error; err != nil {
 		return user, err
 	}
 	return user, nil
