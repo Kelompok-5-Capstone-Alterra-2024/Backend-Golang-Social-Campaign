@@ -72,6 +72,7 @@ func NewRouter(router *echo.Echo) {
 
 	api.GET("/organizations", organizatonHandler.GetOrganizations)
 	api.GET("/organizations/:id", organizatonHandler.GetOrganizationByID)
+	api.POST("/organizations", organizatonHandler.CreateOrganization)
 
 	api.GET("/fundraisings", fundraisingHandler.GetFundraisings)
 	api.GET("/fundraisings/top", fundraisingHandler.GetTopFundraisings)
@@ -121,7 +122,6 @@ func NewRouter(router *echo.Echo) {
 	api.DELETE("/testimoni-volunteers/:id", testimoniVolunteerHandler.DeleteTestimoniVolunteer)
 
 	// Admin
-
 	admin := router.Group("api/v1/admin")
 
 	admin.POST("/login", adminHandler.Login)
@@ -133,4 +133,5 @@ func NewRouter(router *echo.Echo) {
 	admin.GET("/fundraisings/:id/donations", adminHandler.GetDonationsByFundraisingID)
 	admin.DELETE("/fundraisings/:id", adminHandler.DeleteFundraising)
 	admin.PUT("/fundraisings/:id", adminHandler.EditFundraising)
+
 }

@@ -1,19 +1,17 @@
 package entities
 
 import (
-	"time"
-
 	"gorm.io/gorm"
 )
 
 type User struct {
 	gorm.Model
-	Fullname         string    `json:"fullname" gorm:"type:varchar(255)"`
-	Username         string    `json:"username" gorm:"type:varchar(255)"`
-	Email            string    `json:"email" gorm:"type:varchar(255)"`
-	Password         string    `json:"password" gorm:"type:varchar(255)"`
-	Avatar           string    `json:"avatar" gorm:"type:varchar(255)"`
-	Token            string    `gorm:"-"`
-	ResetToken       string    `gorm:"type:varchar(255)"`
-	ResetTokenExpire time.Time `gorm:"type:datetime"`
+	Fullname   string `json:"fullname" gorm:"type:varchar(255)"`
+	Username   string `json:"username" gorm:"type:varchar(255)"`
+	Email      string `json:"email" gorm:"type:varchar(255)"`
+	Password   string `json:"password" gorm:"type:varchar(255)"`
+	Avatar     string `json:"avatar" gorm:"type:varchar(255)"`
+	NoTelp     string `json:"no_telp"`
+	Token      string `gorm:"-"`
+	ResetToken string `gorm:"type:varchar(255)"`
 }

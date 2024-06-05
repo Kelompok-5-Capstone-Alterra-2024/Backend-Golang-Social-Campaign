@@ -8,7 +8,6 @@ import (
 	"capstone/repositories"
 	"errors"
 	"fmt"
-	"time"
 )
 
 type UserService interface {
@@ -33,9 +32,24 @@ func (s *userService) Register(request dto.RegisterRequest) (entities.User, erro
 		return entities.User{}, fmt.Errorf("password doesn't match")
 	}
 
-	userDB, _ := s.userRepository.FindByEmail(request.Email)
-	if userDB.Email == request.Email {
+	userEmail, _ := s.userRepository.FindByEmail(request.Email)
+	if userEmail.Email == request.Email {
 		return entities.User{}, errors.New("email already exists")
+	}
+
+	userName, _ := s.userRepository.FindByUsername(request.Username)
+	if userName.Username == request.Username {
+		return entities.User{}, errors.New("username already exists")
+	}
+
+	userTelp, _ := s.userRepository.FindByNoTelp(request.NoTelp)
+	if userTelp.NoTelp == request.NoTelp {
+		return entities.User{}, errors.New("phone number already exists")
+	}
+
+	userFull, _ := s.userRepository.FindByFullName(request.Fullname)
+	if userFull.Fullname == request.Fullname {
+		return entities.User{}, errors.New("fullname already exists")
 	}
 
 	user := entities.User{
@@ -43,6 +57,7 @@ func (s *userService) Register(request dto.RegisterRequest) (entities.User, erro
 		Username: request.Username,
 		Email:    request.Email,
 		Password: request.Password,
+		NoTelp:   request.NoTelp,
 		Avatar:   "https://res.cloudinary.com/dvrhf8d9t/image/upload/v1715517059/default-avatar_yt6eua.png",
 	}
 
@@ -75,7 +90,6 @@ func (s *userService) GenerateResetToken(email string) error {
 
 	resetToken := helper.GenerateToken()
 	user.ResetToken = resetToken
-	user.ResetTokenExpire = time.Now().Add(1 * time.Hour)
 	err = s.userRepository.Update(user)
 	if err != nil {
 		return err
@@ -96,7 +110,6 @@ func (s *userService) ResetPassword(resetToken, newPassword string) error {
 
 	user.Password = newPassword
 	user.ResetToken = ""
-	user.ResetTokenExpire = time.Time{}
 	return s.userRepository.Update(user)
 }
 
