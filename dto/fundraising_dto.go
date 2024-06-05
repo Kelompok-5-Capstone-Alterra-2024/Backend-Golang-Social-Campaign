@@ -45,6 +45,7 @@ func ToAllFundraisingsResponse(fundraisings []entities.Fundraising) []Fundraisin
 }
 
 type FundraisingResponse struct {
+	ID               uint                         `json:"id"`
 	ImageUrl         string                       `json:"image_url"`
 	Title            string                       `json:"title"`
 	GoalAmount       int                          `json:"goal_amount"`
@@ -115,6 +116,7 @@ func ToFundraisingResponse(fundraising entities.Fundraising, comments []entities
 	}
 
 	return FundraisingResponse{
+		ID:               fundraising.ID,
 		ImageUrl:         fundraising.ImageUrl,
 		Title:            fundraising.Title,
 		GoalAmount:       fundraising.GoalAmount,

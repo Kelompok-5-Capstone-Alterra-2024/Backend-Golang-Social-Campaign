@@ -80,8 +80,6 @@ func NewRouter(router *echo.Echo) {
 	api.GET("/fundraising-categories", fundraisingHandler.GetAllFundraisingCategories)
 	api.GET("/fundraisings/:category_id", fundraisingHandler.GetFundraisingsByCategoryID)
 
-	api.POST("/fundraisings", fundraisingHandler.CreateFundraisingContent)
-
 	api.POST("/fundraising/:id/donations", donationHandler.CreateDonation)
 
 	api.GET("/history/donations", donationHandler.GetUserDonation)
@@ -123,8 +121,17 @@ func NewRouter(router *echo.Echo) {
 	api.GET("/testimoni-volunteers", testimoniVolunteerHandler.GetAllTestimoniVolunteers)
 	api.DELETE("/testimoni-volunteers/:id", testimoniVolunteerHandler.DeleteTestimoniVolunteer)
 
+	// Admin
 	admin := router.Group("api/v1/admin")
 
 	admin.POST("/login", adminHandler.Login)
 	admin.Use(jwt, routeMiddleware.AdminMiddleware)
+
+	admin.GET("/fundraisings", adminHandler.GetFundraisings)
+	admin.POST("/fundraisings", adminHandler.CreateFundraisingContent)
+	admin.GET("/fundraisings/:id", adminHandler.GetDetailFundraising)
+	admin.GET("/fundraisings/:id/donations", adminHandler.GetDonationsByFundraisingID)
+	admin.DELETE("/fundraisings/:id", adminHandler.DeleteFundraising)
+	admin.PUT("/fundraisings/:id", adminHandler.EditFundraising)
+
 }

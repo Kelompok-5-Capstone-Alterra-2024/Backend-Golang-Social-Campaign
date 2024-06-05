@@ -2,12 +2,9 @@ package handler
 
 import (
 	"capstone/dto"
-	"capstone/entities"
 	"capstone/helper"
 	"capstone/service"
-	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -109,42 +106,4 @@ func (h *FundraisingHandler) GetFundraisingsByCategoryID(c echo.Context) error {
 	response := dto.ToAllFundraisingsResponse(fundraisings)
 
 	return c.JSON(200, helper.ResponseWithData(true, "fundraisings retrieved successfully", response))
-}
-
-func (h *FundraisingHandler) CreateFundraisingContent(c echo.Context) error {
-
-	var req dto.CreateFundraisingRequest
-	if err := c.Bind(&req); err != nil {
-		return c.JSON(400, helper.ErrorResponse(false, "invalid request", err.Error()))
-	}
-
-	startDate, err := time.Parse("2006-01-02", req.StartDate)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Invalid start date format")
-	}
-
-	endDate, err := time.Parse("2006-01-02", req.EndDate)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Invalid end date format")
-	}
-
-	fundraising := entities.Fundraising{
-		ImageUrl:              req.ImageUrl,
-		Title:                 req.Title,
-		GoalAmount:            req.TargetAmount,
-		Description:           req.Description,
-		StartDate:             startDate,
-		EndDate:               endDate,
-		FundraisingCategoryID: req.CategoryID,
-		OrganizationID:        req.OrganizationID,
-	}
-
-	_, err = h.fundraisingService.CreateFudraising(c.Request().Context(), fundraising)
-
-	if err != nil {
-		return c.JSON(500, helper.ErrorResponse(false, "failed to create fundraising", err.Error()))
-	}
-
-	return c.JSON(200, helper.GeneralResponse(true, "fundraising created successfully"))
-
 }
