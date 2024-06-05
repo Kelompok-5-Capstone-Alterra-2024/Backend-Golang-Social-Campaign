@@ -8,4 +8,5 @@ type Organization struct {
 	Description string `json:"description" gorm:"type:text"`
 	Avatar      string `json:"avatar" gorm:"type:varchar(255)"`
 	IsVerified  bool   `json:"is_verified"`
+	Contact     string `json:"contact" gorm:"type:varchar(255)"`
 }

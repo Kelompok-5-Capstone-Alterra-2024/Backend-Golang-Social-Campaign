@@ -18,6 +18,8 @@ type AdminService interface {
 	UpdateFundraising(id uint, fundraising entities.Fundraising) (entities.Fundraising, error)
 	GetFundraisingByID(id int) (entities.Fundraising, error)
 	GetDonationByFundraisingID(id int, limit int, offset int) ([]entities.Donation, error)
+
+	GetOrganizations(limit int, offset int) ([]entities.Organization, error)
 }
 
 type adminService struct {
@@ -68,4 +70,8 @@ func (s *adminService) GetFundraisingByID(id int) (entities.Fundraising, error) 
 
 func (s *adminService) GetDonationByFundraisingID(id int, limit int, offset int) ([]entities.Donation, error) {
 	return s.adminRepository.FindDonationsByFundraisingID(id, limit, offset)
+}
+
+func (s *adminService) GetOrganizations(limit int, offset int) ([]entities.Organization, error) {
+	return s.adminRepository.FindOrganizations(limit, offset)
 }

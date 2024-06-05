@@ -6,17 +6,23 @@ import (
 	"capstone/repositories"
 	"capstone/service"
 	"capstone/utils/database"
-	"net/http"
 	"os"
 
 	echojwt "github.com/labstack/echo-jwt"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func NewRouter(router *echo.Echo) {
 	var jwt = echojwt.JWT([]byte(os.Getenv("SECRET_KEY")))
 
 	routeMiddleware.LogMiddleware(router)
+
+	router.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"http://localhost:5173"},
+		AllowMethods: []string{echo.GET, echo.POST, echo.PUT, echo.DELETE, echo.OPTIONS},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+	}))
 
 	// Repositories
 	userRepo := repositories.NewUserRepository(database.DB)
@@ -72,7 +78,6 @@ func NewRouter(router *echo.Echo) {
 
 	api.GET("/organizations", organizatonHandler.GetOrganizations)
 	api.GET("/organizations/:id", organizatonHandler.GetOrganizationByID)
-	api.POST("/organizations", organizatonHandler.CreateOrganization)
 
 	api.GET("/fundraisings", fundraisingHandler.GetFundraisings)
 	api.GET("/fundraisings/top", fundraisingHandler.GetTopFundraisings)
@@ -87,10 +92,6 @@ func NewRouter(router *echo.Echo) {
 
 	api.POST("/comments/:comment_id/like", donationHandler.LikeComment)
 	api.DELETE("/comments/:comment_id/unlike", donationHandler.UnLikeComment)
-
-	api.GET("/home", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, "Hello, World!")
-	})
 
 	api.POST("/volunteer/register", volunteerHandler.CreateVolunteer)
 	api.GET("/volunteer/:id", volunteerHandler.GetVolunteerByID)
@@ -134,4 +135,6 @@ func NewRouter(router *echo.Echo) {
 	admin.DELETE("/fundraisings/:id", adminHandler.DeleteFundraising)
 	admin.PUT("/fundraisings/:id", adminHandler.EditFundraising)
 
+	admin.POST("/organizations", organizatonHandler.CreateOrganization)
+	admin.GET("/organizations", adminHandler.GetAllOrganizations)
 }
