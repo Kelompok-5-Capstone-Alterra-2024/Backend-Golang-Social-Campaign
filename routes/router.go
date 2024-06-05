@@ -125,6 +125,6 @@ func NewRouter(router *echo.Echo) {
 
 	admin := router.Group("api/v1/admin")
 
-	admin.Use(jwt, routeMiddleware.AdminMiddleware)
 	admin.POST("/login", adminHandler.Login)
+	admin.Use(jwt, routeMiddleware.AdminMiddleware)
 }
