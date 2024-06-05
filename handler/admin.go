@@ -76,6 +76,7 @@ func (h *AdminHandler) CreateFundraisingContent(c echo.Context) error {
 		EndDate:               endDate,
 		FundraisingCategoryID: req.CategoryID,
 		OrganizationID:        req.OrganizationID,
+		Status:                "unachieved",
 	}
 
 	_, err = h.adminService.CreateFudraising(c.Request().Context(), fundraising)
@@ -174,4 +175,3 @@ func (h *AdminHandler) GetDonationsByFundraisingID(c echo.Context) error {
 	response := dto.ToAdminAllFundraisingDonationResponse(donations)
 	return c.JSON(200, helper.ResponseWithData(true, "donation retrieved successfully", response))
 }
-
