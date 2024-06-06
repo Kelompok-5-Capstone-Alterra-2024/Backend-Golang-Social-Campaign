@@ -24,7 +24,7 @@ func NewApplicationService(applicationRepository repositories.ApplicationReposit
 
 func (s *applicationService) RegisterApplication(application entities.Application) (entities.Application, error) {
 	// Check if application already exists for the given customer and vacancy
-	existingApplication, err := s.applicationRepository.FindByCustomerIDAndVacancyID(application.UserID, application.VolunteerVacancyID)
+	existingApplication, err := s.applicationRepository.FindByCustomerIDAndVacancyID(application.UserID, application.VacancyID)
 	if err == nil && existingApplication.ID != 0 {
 		return entities.Application{}, errors.New("customer has already applied for this vacancy")
 	}

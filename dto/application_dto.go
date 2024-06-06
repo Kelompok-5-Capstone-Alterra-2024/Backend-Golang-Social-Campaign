@@ -12,13 +12,13 @@ type ApplicationRequest struct {
 
 func (req *ApplicationRequest) ToEntity(igUrl, ytUrl string, userID uint, vacancy_id uint) entities.Application {
 	return entities.Application{
-		IgImageURL:         igUrl,
-		YtImageURL:         ytUrl,
-		UserID:             userID,
-		VolunteerVacancyID: vacancy_id,
-		Reason:             req.Reason,
-		Age:                req.Age,
-		Job:                req.Job,
+		IgImageURL: igUrl,
+		YtImageURL: ytUrl,
+		UserID:     userID,
+		VacancyID:  vacancy_id,
+		Reason:     req.Reason,
+		Age:        req.Age,
+		Job:        req.Job,
 	}
 }
 
@@ -39,7 +39,7 @@ func ToApplicationResponse(application entities.Application) ApplicationResponse
 		IgImageURL: application.IgImageURL,
 		YtImageURL: application.YtImageURL,
 		UserID:     application.UserID,
-		VacancyID:  application.VolunteerVacancyID,
+		VacancyID:  application.VacancyID,
 		Reason:     application.Reason,
 		Age:        application.Age,
 		Job:        application.Job,

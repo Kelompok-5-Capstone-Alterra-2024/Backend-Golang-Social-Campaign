@@ -8,7 +8,7 @@ import (
 
 type Volunteer struct {
 	gorm.Model
-	OrganizationID       uint         `json:"organization_id" gorm:"type:bigint"`
+	OrganizationID       uint         `json:"-"`
 	Organization         Organization `json:"organization" gorm:"foreignKey:OrganizationID"`
 	Title                string       `json:"title" gorm:"type:varchar(255)"`
 	ContentActivity      string       `json:"content_activity" gorm:"type:text"`
