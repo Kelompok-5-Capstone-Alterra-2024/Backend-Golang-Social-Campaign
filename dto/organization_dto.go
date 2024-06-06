@@ -6,11 +6,11 @@ import (
 )
 
 type OrganizationRequest struct {
-	Name        string `json:"name" `
-	Avatar      string `json:"avatar" `
-	Description string `json:"description" `
-	IsVerified  bool   `json:"is_verified" `
-	Contact     string `json:"contact" `
+	Name        string `json:"name" form:"name" validate:"required"`
+	Avatar      string `json:"avatar" form:"avatar" validate:"required"`
+	Description string `json:"description" form:"description" validate:"required"`
+	IsVerified  bool   `json:"is_verified" form:"is_verified" validate:"required"`
+	Contact     string `json:"contact" form:"contact" validate:"required"`
 }
 
 type OrganizationResponse struct {
