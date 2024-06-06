@@ -10,6 +10,7 @@ type OrganizationRequest struct {
 	Avatar      string `json:"avatar" `
 	Description string `json:"description" `
 	IsVerified  bool   `json:"is_verified" `
+	Contact     string `json:"contact" `
 }
 
 type OrganizationResponse struct {

@@ -20,6 +20,9 @@ type AdminService interface {
 	GetDonationByFundraisingID(id int, limit int, offset int) ([]entities.Donation, error)
 
 	GetOrganizations(limit int, offset int) ([]entities.Organization, error)
+	UpdateOrganization(id uint, organization entities.Organization) (entities.Organization, error)
+	DeleteOrganization(id uint) error
+	SaveImageOraganization(id uint, image string) (entities.Organization, error)
 }
 
 type adminService struct {
@@ -74,4 +77,29 @@ func (s *adminService) GetDonationByFundraisingID(id int, limit int, offset int)
 
 func (s *adminService) GetOrganizations(limit int, offset int) ([]entities.Organization, error) {
 	return s.adminRepository.FindOrganizations(limit, offset)
+}
+
+func (s *adminService) UpdateOrganization(id uint, organization entities.Organization) (entities.Organization, error) {
+	return s.adminRepository.UpdateOrganizationByID(id, organization)
+}
+
+func (s *adminService) DeleteOrganization(id uint) error {
+	return s.adminRepository.DeleteOrganizationByID(id)
+}
+
+func (s *adminService) SaveImageOraganization(id uint, image string) (entities.Organization, error) {
+	org, err := s.adminRepository.FindOrganizationByID(int(id))
+
+	if err != nil {
+		return org, err
+	}
+
+	org.Avatar = image
+	updatedOrg, err := s.adminRepository.UpdateOrganizationByID(id, org)
+
+	if err != nil {
+		return updatedOrg, err
+	}
+
+	return updatedOrg, nil
 }
