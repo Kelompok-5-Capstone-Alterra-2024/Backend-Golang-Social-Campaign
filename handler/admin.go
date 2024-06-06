@@ -224,6 +224,7 @@ func (h *AdminHandler) EditOrganization(c echo.Context) error {
 		Description: req.Description,
 		IsVerified:  req.IsVerified,
 		Contact:     req.Contact,
+		Avatar:      response.SecureURL,
 	}
 
 	_, err := h.adminService.SaveImageOraganization(uint(id), response.SecureURL)
@@ -231,12 +232,12 @@ func (h *AdminHandler) EditOrganization(c echo.Context) error {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to edit organization", err.Error()))
 	}
 
-	updatedOrganization, err := h.adminService.UpdateOrganization(uint(id), organization)
+	_, err = h.adminService.UpdateOrganization(uint(id), organization)
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to edit organization", err.Error()))
 	}
 
-	return c.JSON(200, helper.ResponseWithData(true, "organization edited successfully", updatedOrganization))
+	return c.JSON(200, helper.GeneralResponse(true, "organization edited successfully"))
 }
 
 func (h *AdminHandler) DeleteOrganization(c echo.Context) error {
