@@ -56,6 +56,6 @@ func (r *applicationRepository) DeleteByID(id uint) error {
 
 func (r *applicationRepository) FindByVacancyID(vacancyID uint) ([]entities.Application, error) {
 	var applications []entities.Application
-	err := r.db.Where("vacancy_id = ?", vacancyID).Find(&applications).Error
+	err := r.db.Preload("User").Where("vacancy_id = ?", vacancyID).Find(&applications).Error
 	return applications, err
 }

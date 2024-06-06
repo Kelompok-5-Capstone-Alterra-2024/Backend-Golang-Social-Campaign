@@ -2,6 +2,7 @@ package helper
 
 import (
 	"capstone/entities"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -235,21 +236,11 @@ func GetPaymentUrl(donation entities.PaymentTransaction, user entities.User) (st
 }
 
 func UploadToCloudinary(file *multipart.FileHeader) (string, error) {
-	cld, err := cloudinary.NewFromURL("cloudinary://633714464826515:u1W6hqq-Gb8y-SMpXe7tzs4mH44@dvrhf8d9t")
-	if err != nil {
-		return "", err
-	}
+	cld, _ := cloudinary.NewFromURL("cloudinary://633714464826515:u1W6hqq-Gb8y-SMpXe7tzs4mH44@dvrhf8d9t")
 
-	f, err := file.Open()
-	if err != nil {
-		return "", err
-	}
-	defer f.Close()
-
-	uploadResult, err := cld.Upload.Upload(nil, f, uploader.UploadParams{})
-	if err != nil {
-		return "", err
-	}
+	f, _ := file.Open()
+	ctx := context.Background()
+	uploadResult, _ := cld.Upload.Upload(ctx, f, uploader.UploadParams{})
 
 	return uploadResult.SecureURL, nil
 }

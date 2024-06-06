@@ -32,7 +32,7 @@ func (r *volunteerRepository) Create(volunteer entities.Volunteer) (entities.Vol
 
 func (r *volunteerRepository) FindByID(id uint) (entities.Volunteer, error) {
 	var volunteer entities.Volunteer
-	err := r.db.First(&volunteer, id).Error
+	err := r.db.Preload("Organization").First(&volunteer, id).Error
 	return volunteer, err
 }
 
