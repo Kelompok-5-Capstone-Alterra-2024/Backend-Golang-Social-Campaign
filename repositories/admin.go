@@ -126,7 +126,7 @@ func (r *adminRepository) FindUsers(limit int, offset int) ([]entities.User, err
 
 func (r *adminRepository) FindDonationsByUserID(id int, limit int, offset int) ([]entities.Donation, error) {
 	var donations []entities.Donation
-	if err := r.db.Preload("Fundraising.Oraganization").Where("user_id = ?", id).Limit(limit).Offset(offset).Find(&donations).Error; err != nil {
+	if err := r.db.Preload("Fundraising.Organization").Where("user_id = ?", id).Limit(limit).Offset(offset).Find(&donations).Error; err != nil {
 		return []entities.Donation{}, err
 	}
 	return donations, nil
