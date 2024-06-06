@@ -25,7 +25,7 @@ func Migration() {
 		&entities.LikeDonationComment{},
 	}
 
-	if err := database.DB.AutoMigrate(&entities.User{}, &entities.Fundraising{}, &entities.FundraisingCategory{}, &entities.Organization{}, &entities.Donation{}, &entities.DonationComment{}, &entities.LikeDonationComment{}, &entities.Admin{}); err != nil {
+	if err := database.DB.AutoMigrate(&entities.User{}, &entities.Fundraising{}, &entities.FundraisingCategory{}, &entities.Organization{}, &entities.Donation{}, &entities.DonationComment{}, &entities.LikeDonationComment{}, &entities.Admin{}, &entities.Volunteer{}, &entities.Application{}, &entities.Article{}, &entities.Comment{}, &entities.LikesComment{}, &entities.TestimoniVolunteer{}); err != nil {
 		log.Fatal("Database migration failed")
 	}
 
