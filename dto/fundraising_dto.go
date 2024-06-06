@@ -6,14 +6,14 @@ import (
 )
 
 type CreateFundraisingRequest struct {
-	ImageUrl       string `json:"image_url"`
-	Title          string `json:"title"`
-	TargetAmount   int    `json:"target_amount"`
-	StartDate      string `json:"start_date"`
-	EndDate        string `json:"end_date"`
-	Description    string `json:"description"`
-	CategoryID     uint   `json:"category_id"`
-	OrganizationID uint   `json:"organization_id"`
+	ImageUrl       string `json:"image_url" form:"image_url" required:"true"`
+	Title          string `json:"title" form:"title" required:"true"`
+	TargetAmount   int    `json:"target_amount" form:"target_amount" required:"true"`
+	StartDate      string `json:"start_date" form:"start_date" required:"true"`
+	EndDate        string `json:"end_date" form:"end_date" required:"true"`
+	Description    string `json:"description" form:"description" required:"true"`
+	CategoryID     uint   `json:"category_id" form:"category_id" required:"true"`
+	OrganizationID uint   `json:"organization_id" form:"organization_id" required:"true"`
 }
 
 type FundraisingsResponse struct {
