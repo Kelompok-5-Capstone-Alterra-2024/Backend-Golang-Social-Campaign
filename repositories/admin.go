@@ -16,6 +16,9 @@ type AdminRepository interface {
 	FindDonationsByFundraisingID(id int, limit int, offset int) ([]entities.Donation, error)
 
 	FindOrganizations(limit int, offset int) ([]entities.Organization, error)
+	FindOrganizationByID(id int) (entities.Organization, error)
+	UpdateOrganizationByID(id uint, organization entities.Organization) (entities.Organization, error)
+	DeleteOrganizationByID(id uint) error
 }
 
 type adminRepository struct {
@@ -85,4 +88,26 @@ func (r *adminRepository) FindOrganizations(limit int, offset int) ([]entities.O
 		return []entities.Organization{}, err
 	}
 	return organizations, nil
+}
+
+func (r *adminRepository) FindOrganizationByID(id int) (entities.Organization, error) {
+	var organization entities.Organization
+	if err := r.db.Where("id = ?", id).First(&organization).Error; err != nil {
+		return entities.Organization{}, err
+	}
+	return organization, nil
+}
+
+func (r *adminRepository) UpdateOrganizationByID(id uint, organization entities.Organization) (entities.Organization, error) {
+	if err := r.db.Model(&organization).Where("id = ?", id).Updates(&organization).Error; err != nil {
+		return entities.Organization{}, err
+	}
+	return organization, nil
+}
+
+func (r *adminRepository) DeleteOrganizationByID(id uint) error {
+	if err := r.db.Delete(&entities.Organization{}, id).Error; err != nil {
+		return err
+	}
+	return nil
 }

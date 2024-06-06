@@ -5,10 +5,13 @@ import (
 	"capstone/entities"
 	"capstone/helper"
 	"capstone/service"
+	"context"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/cloudinary/cloudinary-go/v2"
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/labstack/echo/v4"
 )
 
@@ -199,4 +202,51 @@ func (h *AdminHandler) GetAllOrganizations(c echo.Context) error {
 
 	response := dto.ToAdminAllOrganizationsResponse(organizations)
 	return c.JSON(200, helper.ResponseWithData(true, "organization retrieved successfully", response))
+}
+
+func (h *AdminHandler) EditOrganization(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	var req dto.OrganizationRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(400, helper.ErrorResponse(false, "invalid request", err.Error()))
+	}
+
+	fileHeader, _ := c.FormFile("avatar")
+	file, _ := fileHeader.Open()
+	ctx := context.Background()
+	urlCloudinary := "cloudinary://633714464826515:u1W6hqq-Gb8y-SMpXe7tzs4mH44@dvrhf8d9t"
+	cloudinaryUsecase, _ := cloudinary.NewFromURL(urlCloudinary)
+	response, _ := cloudinaryUsecase.Upload.Upload(ctx, file, uploader.UploadParams{})
+
+	organization := entities.Organization{
+		Name:        req.Name,
+		Description: req.Description,
+		IsVerified:  req.IsVerified,
+		Contact:     req.Contact,
+	}
+
+	_, err := h.adminService.SaveImageOraganization(uint(id), response.SecureURL)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to edit organization", err.Error()))
+	}
+
+	updatedOrganization, err := h.adminService.UpdateOrganization(uint(id), organization)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to edit organization", err.Error()))
+	}
+
+	return c.JSON(200, helper.ResponseWithData(true, "organization edited successfully", updatedOrganization))
+}
+
+func (h *AdminHandler) DeleteOrganization(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	err := h.adminService.DeleteOrganization(uint(id))
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to delete organization", err.Error()))
+	}
+
+	return c.JSON(200, helper.GeneralResponse(true, "organization deleted successfully"))
+
 }
