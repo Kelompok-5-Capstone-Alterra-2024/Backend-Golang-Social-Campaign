@@ -10,6 +10,8 @@ type TestimoniVolunteerService interface {
 	FindByID(id uint) (entities.TestimoniVolunteer, error)
 	FindAll(page, limit int) ([]entities.TestimoniVolunteer, int, error)
 	DeleteTestimoniVolunteer(id uint) error
+	CustomerJoinedVolunteer(customerID, volunteerID uint) bool
+	HasCustomerGivenTestimony(customerID, volunteerID uint) bool
 }
 
 type testimoniVolunteerService struct {
@@ -34,4 +36,20 @@ func (s *testimoniVolunteerService) FindAll(page, limit int) ([]entities.Testimo
 
 func (s *testimoniVolunteerService) DeleteTestimoniVolunteer(id uint) error {
 	return s.repo.Delete(id)
+}
+
+func (s *testimoniVolunteerService) CustomerJoinedVolunteer(customerID, volunteerID uint) bool {
+	joined, err := s.repo.CustomerJoinedVolunteer(customerID, volunteerID)
+	if err != nil {
+		return false
+	}
+	return joined
+}
+
+func (s *testimoniVolunteerService) HasCustomerGivenTestimony(customerID, volunteerID uint) bool {
+	hasGiven, err := s.repo.HasCustomerGivenTestimony(customerID, volunteerID)
+	if err != nil {
+		return false
+	}
+	return hasGiven
 }

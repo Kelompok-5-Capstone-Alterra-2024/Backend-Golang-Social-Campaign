@@ -5,15 +5,15 @@ import (
 )
 
 type CommentRequest struct {
-	CustomerID uint   `json:"customer_id"`
+	CustomerID uint   `json:"user_id"` // Mapping user_id to CustomerID
 	ArticleID  uint   `json:"article_id"`
-	Comment    string `json:"comment"`
+	Content    string `json:"content"` // Rename to Content to match input JSON
 }
 
 func (r *CommentRequest) ToEntity() entities.Comment {
 	return entities.Comment{
 		CustomerID: r.CustomerID,
 		ArticleID:  r.ArticleID,
-		Comment:    r.Comment,
+		Comment:    r.Content, // Map Content to Comment
 	}
 }

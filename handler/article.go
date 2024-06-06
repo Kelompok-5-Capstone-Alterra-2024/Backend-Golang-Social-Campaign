@@ -31,7 +31,8 @@ func (h *ArticleHandler) CreateArticle(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "article created successfully", createdArticle))
+	response := dto.ToArticleResponse(createdArticle)
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "article created successfully", response))
 }
 
 func (h *ArticleHandler) UpdateArticle(c echo.Context) error {
@@ -53,7 +54,8 @@ func (h *ArticleHandler) UpdateArticle(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "article updated successfully", updatedArticle))
+	response := dto.ToArticleResponse(updatedArticle)
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "article updated successfully", response))
 }
 
 func (h *ArticleHandler) GetArticleByID(c echo.Context) error {
@@ -67,7 +69,8 @@ func (h *ArticleHandler) GetArticleByID(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "article retrieved successfully", article))
+	response := dto.ToArticleResponse(article)
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "article retrieved successfully", response))
 }
 
 func (h *ArticleHandler) GetAllArticles(c echo.Context) error {
@@ -86,7 +89,9 @@ func (h *ArticleHandler) GetAllArticles(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "articles retrieved successfully", articles, page, limit, int64(total)))
+	response := dto.ToArticleResponseList(articles)
+	totalInt64 := int64(total)
+	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "articles retrieved successfully", response, page, limit, totalInt64))
 }
 
 func (h *ArticleHandler) DeleteArticle(c echo.Context) error {

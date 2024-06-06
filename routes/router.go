@@ -96,7 +96,15 @@ func NewRouter(router *echo.Echo) {
 	api.POST("/volunteer/register", volunteerHandler.CreateVolunteer)
 	api.GET("/volunteer/:id", volunteerHandler.GetVolunteerByID)
 	api.GET("/volunteers", volunteerHandler.GetAllVolunteers)
+	api.POST("/volunteer/:volunteer_id/apply/:customer_id", volunteerHandler.ApplyForVolunteer)
+	api.PUT("/volunteer/:id", volunteerHandler.UpdateVolunteer)
+	api.DELETE("/volunteer/:id", volunteerHandler.DeleteVolunteer)
+
+	// Application routes
 	api.POST("/volunteer/:id/register", applicationHandler.RegisterApplication)
+	api.GET("/volunteer/applications", applicationHandler.GetAllApplications)
+	api.GET("/volunteer/applications/:id", applicationHandler.GetApplicationByID)
+	api.DELETE("/volunteer/applications/:id", applicationHandler.DeleteApplicationByID)
 
 	// Article routes
 	api.POST("/articles", articleHandler.CreateArticle)
@@ -115,6 +123,8 @@ func NewRouter(router *echo.Echo) {
 	// LikesComment routes
 	api.POST("/likes-comments", likesCommentHandler.CreateLikesComment)
 	api.DELETE("/likes-comments/:id", likesCommentHandler.DeleteLikesComment)
+	api.GET("/likes-comments/:id", likesCommentHandler.GetLikesCommentByID)
+	api.GET("/likes-comments", likesCommentHandler.GetAllLikesComments)
 
 	// TestimoniVolunteer routes
 	api.POST("/testimoni-volunteers", testimoniVolunteerHandler.CreateTestimoniVolunteer)

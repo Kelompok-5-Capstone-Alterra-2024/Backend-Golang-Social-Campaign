@@ -24,6 +24,10 @@ func (h *CommentHandler) CreateComment(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
+	if request.CustomerID == 0 {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "customer_id is required", "customer_id is missing"))
+	}
+
 	comment := request.ToEntity()
 
 	createdComment, err := h.commentService.CreateComment(comment)
@@ -31,13 +35,25 @@ func (h *CommentHandler) CreateComment(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to create comment", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "comment created successfully", createdComment))
+	// Remove CreatedAt, UpdatedAt, DeletedAt from the response
+	response := map[string]interface{}{
+		"id":          createdComment.ID,
+		"customer_id": createdComment.CustomerID,
+		"article_id":  createdComment.ArticleID,
+		"comment":     createdComment.Comment,
+	}
+
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "comment created successfully", response))
 }
 
 func (h *CommentHandler) UpdateComment(c echo.Context) error {
 	var request dto.CommentRequest
 	if err := c.Bind(&request); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
+	}
+
+	if request.CustomerID == 0 {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "customer_id is required", "customer_id is missing"))
 	}
 
 	comment := request.ToEntity()
@@ -47,7 +63,15 @@ func (h *CommentHandler) UpdateComment(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to update comment", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "comment updated successfully", updatedComment))
+	// Remove CreatedAt, UpdatedAt, DeletedAt from the response
+	response := map[string]interface{}{
+		"id":          updatedComment.ID,
+		"customer_id": updatedComment.CustomerID,
+		"article_id":  updatedComment.ArticleID,
+		"comment":     updatedComment.Comment,
+	}
+
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "comment updated successfully", response))
 }
 
 func (h *CommentHandler) GetCommentByID(c echo.Context) error {
@@ -61,7 +85,15 @@ func (h *CommentHandler) GetCommentByID(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, helper.ErrorResponse(false, "comment not found", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "comment retrieved successfully", comment))
+	// Construct the response without unnecessary fields
+	response := map[string]interface{}{
+		"id":          comment.ID,
+		"customer_id": comment.CustomerID,
+		"article_id":  comment.ArticleID,
+		"comment":     comment.Comment,
+	}
+
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "comment retrieved successfully", response))
 }
 
 func (h *CommentHandler) GetAllComments(c echo.Context) error {
@@ -80,7 +112,18 @@ func (h *CommentHandler) GetAllComments(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to retrieve comments", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "comments retrieved successfully", comments, page, limit, int64(total)))
+	// Remove unnecessary fields from each comment
+	var responseData []map[string]interface{}
+	for _, comment := range comments {
+		responseData = append(responseData, map[string]interface{}{
+			"id":          comment.ID,
+			"customer_id": comment.CustomerID,
+			"article_id":  comment.ArticleID,
+			"comment":     comment.Comment,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "comments retrieved successfully", responseData, page, limit, int64(total)))
 }
 
 func (h *CommentHandler) DeleteComment(c echo.Context) error {

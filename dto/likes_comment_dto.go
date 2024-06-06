@@ -15,3 +15,9 @@ func (r *LikesCommentRequest) ToEntity() entities.LikesComment {
 		CommentID:  r.CommentID,
 	}
 }
+
+type LikesCommentResponse struct {
+	ID         uint `json:"id"`
+	CustomerID uint `json:"customer_id"`
+	CommentID  uint `json:"comment_id"`
+}

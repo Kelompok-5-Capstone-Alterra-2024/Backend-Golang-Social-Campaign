@@ -12,4 +12,5 @@ type Application struct {
 	VacancyID  uint   `json:"vacancy_id" gorm:"type:bigint"`
 	Reason     string `json:"reason" gorm:"type:varchar(255)"`
 	Age        int    `json:"age" gorm:"type:int"`
+	Job        string `json:"job" gorm:"type:varchar(255)"`
 }

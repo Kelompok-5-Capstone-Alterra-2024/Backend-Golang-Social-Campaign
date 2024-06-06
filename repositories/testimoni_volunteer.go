@@ -11,6 +11,8 @@ type TestimoniVolunteerRepository interface {
 	FindByID(id uint) (entities.TestimoniVolunteer, error)
 	FindAll(page, limit int) ([]entities.TestimoniVolunteer, int, error)
 	Delete(id uint) error
+	CustomerJoinedVolunteer(customerID, volunteerID uint) (bool, error)
+	HasCustomerGivenTestimony(customerID, volunteerID uint) (bool, error)
 }
 
 type testimoniVolunteerRepository struct {
@@ -42,4 +44,16 @@ func (r *testimoniVolunteerRepository) FindAll(page, limit int) ([]entities.Test
 func (r *testimoniVolunteerRepository) Delete(id uint) error {
 	err := r.db.Delete(&entities.TestimoniVolunteer{}, id).Error
 	return err
+}
+
+func (r *testimoniVolunteerRepository) CustomerJoinedVolunteer(customerID, volunteerID uint) (bool, error) {
+	var count int64
+	err := r.db.Model(&entities.Application{}).Where("customer_id = ? AND vacancy_id = ?", customerID, volunteerID).Count(&count).Error
+	return count > 0, err
+}
+
+func (r *testimoniVolunteerRepository) HasCustomerGivenTestimony(customerID, volunteerID uint) (bool, error) {
+	var count int64
+	err := r.db.Model(&entities.TestimoniVolunteer{}).Where("customer_id = ? AND volunteer_id = ?", customerID, volunteerID).Count(&count).Error
+	return count > 0, err
 }
