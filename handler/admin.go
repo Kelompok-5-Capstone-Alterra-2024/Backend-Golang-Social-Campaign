@@ -60,6 +60,13 @@ func (h *AdminHandler) CreateFundraisingContent(c echo.Context) error {
 		return c.JSON(400, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
+	fileHeader, _ := c.FormFile("image_url")
+	file, _ := fileHeader.Open()
+	ctx := context.Background()
+	urlCloudinary := "cloudinary://633714464826515:u1W6hqq-Gb8y-SMpXe7tzs4mH44@dvrhf8d9t"
+	cloudinaryUsecase, _ := cloudinary.NewFromURL(urlCloudinary)
+	response, _ := cloudinaryUsecase.Upload.Upload(ctx, file, uploader.UploadParams{})
+
 	startDate, err := time.Parse("2006-01-02", req.StartDate)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, "Invalid start date format")
@@ -71,7 +78,7 @@ func (h *AdminHandler) CreateFundraisingContent(c echo.Context) error {
 	}
 
 	fundraising := entities.Fundraising{
-		ImageUrl:              req.ImageUrl,
+		ImageUrl:              response.SecureURL,
 		Title:                 req.Title,
 		GoalAmount:            req.TargetAmount,
 		Description:           req.Description,
@@ -80,6 +87,10 @@ func (h *AdminHandler) CreateFundraisingContent(c echo.Context) error {
 		FundraisingCategoryID: req.CategoryID,
 		OrganizationID:        req.OrganizationID,
 		Status:                "unachieved",
+	}
+
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to create fundraising", err.Error()))
 	}
 
 	_, err = h.adminService.CreateFudraising(c.Request().Context(), fundraising)
@@ -113,6 +124,13 @@ func (h *AdminHandler) EditFundraising(c echo.Context) error {
 		return c.JSON(400, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
+	fileHeader, _ := c.FormFile("image_url")
+	file, _ := fileHeader.Open()
+	ctx := context.Background()
+	urlCloudinary := "cloudinary://633714464826515:u1W6hqq-Gb8y-SMpXe7tzs4mH44@dvrhf8d9t"
+	cloudinaryUsecase, _ := cloudinary.NewFromURL(urlCloudinary)
+	response, _ := cloudinaryUsecase.Upload.Upload(ctx, file, uploader.UploadParams{})
+
 	startDate, err := time.Parse("2006-01-02", req.StartDate)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, "Invalid start date format")
@@ -124,7 +142,7 @@ func (h *AdminHandler) EditFundraising(c echo.Context) error {
 	}
 
 	fundraising := entities.Fundraising{
-		ImageUrl:              req.ImageUrl,
+		ImageUrl:              response.SecureURL,
 		Title:                 req.Title,
 		GoalAmount:            req.TargetAmount,
 		Description:           req.Description,
@@ -134,12 +152,17 @@ func (h *AdminHandler) EditFundraising(c echo.Context) error {
 		OrganizationID:        req.OrganizationID,
 	}
 
-	updatedFundraising, err := h.adminService.UpdateFundraising(uint(id), fundraising)
+	_, err = h.adminService.SaveImageFundraising(uint(id), response.SecureURL)
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to edit fundraising", err.Error()))
 	}
 
-	return c.JSON(200, helper.ResponseWithData(true, "fundraising edited successfully", updatedFundraising))
+	_, err = h.adminService.UpdateFundraising(uint(id), fundraising)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to edit fundraising", err.Error()))
+	}
+
+	return c.JSON(200, helper.GeneralResponse(true, "fundraising edited successfully"))
 }
 
 func (h *AdminHandler) GetDetailFundraising(c echo.Context) error {

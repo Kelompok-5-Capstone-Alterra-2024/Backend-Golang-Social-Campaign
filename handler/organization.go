@@ -5,10 +5,13 @@ import (
 	"capstone/entities"
 	"capstone/helper"
 	"capstone/service"
+	"context"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/cloudinary/cloudinary-go/v2"
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/labstack/echo/v4"
 )
 
@@ -27,6 +30,13 @@ func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to create organization", err.Error()))
 	}
 
+	fileHeader, _ := c.FormFile("avatar")
+	file, _ := fileHeader.Open()
+	ctx := context.Background()
+	urlCloudinary := "cloudinary://633714464826515:u1W6hqq-Gb8y-SMpXe7tzs4mH44@dvrhf8d9t"
+	cloudinaryUsecase, _ := cloudinary.NewFromURL(urlCloudinary)
+	response, _ := cloudinaryUsecase.Upload.Upload(ctx, file, uploader.UploadParams{})
+
 	startDate, err := time.Parse("2006-01-02", req.StartDate)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, "Invalid start date format")
@@ -34,7 +44,7 @@ func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
 
 	organization := entities.Organization{
 		Name:        req.Name,
-		Avatar:      req.Avatar,
+		Avatar:      response.SecureURL,
 		Description: req.Description,
 		IsVerified:  req.IsVerified,
 		StartDate:   startDate,

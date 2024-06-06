@@ -14,6 +14,7 @@ type AdminService interface {
 	Login(request dto.LoginRequest) (entities.Admin, error)
 	GetFundraisings(limit int, offset int) ([]entities.Fundraising, error)
 	CreateFudraising(ctx context.Context, fundraising entities.Fundraising) (entities.Fundraising, error)
+	SaveImageFundraising(id uint, image string) (entities.Fundraising, error)
 	DeleteFundraising(id uint) error
 	UpdateFundraising(id uint, fundraising entities.Fundraising) (entities.Fundraising, error)
 	GetFundraisingByID(id int) (entities.Fundraising, error)
@@ -57,6 +58,22 @@ func (s *adminService) GetFundraisings(limit int, offset int) ([]entities.Fundra
 
 func (s *adminService) CreateFudraising(ctx context.Context, fundraising entities.Fundraising) (entities.Fundraising, error) {
 	return s.adminRepository.Create(fundraising)
+}
+
+func (s *adminService) SaveImageFundraising(id uint, image string) (entities.Fundraising, error) {
+	fund, err := s.adminRepository.FindFundraisingByID(int(id))
+
+	if err != nil {
+		return fund, err
+	}
+
+	fund.ImageUrl = image
+	updatedFund, err := s.adminRepository.UpdateFundraisingByID(id, fund)
+
+	if err != nil {
+		return updatedFund, err
+	}
+	return updatedFund, nil
 }
 
 func (s *adminService) DeleteFundraising(id uint) error {
