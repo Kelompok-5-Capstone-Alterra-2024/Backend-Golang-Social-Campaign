@@ -2,9 +2,12 @@ package handler
 
 import (
 	"capstone/dto"
+	"capstone/entities"
 	"capstone/helper"
 	"capstone/service"
+	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -18,18 +21,32 @@ func NewOrganizationHandler(organizationService service.OrganizationService) *Or
 }
 
 func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
-	var organization dto.OrganizationRequest
-	err := c.Bind(&organization)
+	var req dto.OrganizationRequest
+	err := c.Bind(&req)
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to create organization", err.Error()))
 	}
 
-	newOrganization, err := h.organizationService.CreateOrganization(organization)
+	startDate, err := time.Parse("2006-01-02", req.StartDate)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, "Invalid start date format")
+	}
+
+	organization := entities.Organization{
+		Name:        req.Name,
+		Avatar:      req.Avatar,
+		Description: req.Description,
+		IsVerified:  req.IsVerified,
+		StartDate:   startDate,
+		Contact:     req.Contact,
+	}
+
+	_, err = h.organizationService.CreateOrganization(organization)
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to create organization", err.Error()))
 	}
 
-	return c.JSON(201, helper.ResponseWithData(true, "organization created successfully", newOrganization))
+	return c.JSON(201, helper.GeneralResponse(true, "organization created successfully"))
 }
 
 func (h *OrganizationHandler) GetOrganizations(c echo.Context) error {
