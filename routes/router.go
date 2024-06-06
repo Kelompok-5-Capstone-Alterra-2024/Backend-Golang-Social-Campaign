@@ -40,7 +40,7 @@ func NewRouter(router *echo.Echo) {
 	organizationRepo := repositories.NewOrganizationRepository(database.DB)
 
 	userService := service.NewUserService(userRepo)
-	adminService := service.NewAdminService(adminRepo)
+	adminService := service.NewAdminService(adminRepo, userRepo)
 	volunteerService := service.NewVolunteerService(volunteerRepo)
 	applicationService := service.NewApplicationService(applicationRepo)
 	articleService := service.NewArticleService(articleRepo)
@@ -127,6 +127,10 @@ func NewRouter(router *echo.Echo) {
 
 	admin.POST("/login", adminHandler.Login)
 	admin.Use(jwt, routeMiddleware.AdminMiddleware)
+
+	admin.GET("/users", adminHandler.GetAllUsers)
+	admin.GET("/users/:id/donations", adminHandler.GetDetailUserWithDonations)
+	admin.DELETE("/users/:id", adminHandler.DeleteUser)
 
 	admin.GET("/fundraisings", adminHandler.GetFundraisings)
 	admin.POST("/fundraisings", adminHandler.CreateFundraisingContent)

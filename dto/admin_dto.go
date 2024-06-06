@@ -109,3 +109,48 @@ func ToAdminAllOrganizationsResponse(organizations []entities.Organization) []Ad
 	}
 	return result
 }
+
+type AdminAllUsersResponse struct {
+	ID        uint   `json:"id"`
+	Fullname  string `json:"fullname"`
+	Email     string `json:"email"`
+	NoTelp    string `json:"no_telp"`
+	CreatedAt string `json:"created_at"`
+}
+
+func ToAdminAllUsersResponse(user entities.User) AdminAllUsersResponse {
+	return AdminAllUsersResponse{
+		ID:        user.ID,
+		Fullname:  user.Fullname,
+		Email:     user.Email,
+		NoTelp:    user.NoTelp,
+		CreatedAt: user.CreatedAt.Format("2006-01-02"),
+	}
+}
+
+func ToAdminAllUsersResponses(users []entities.User) []AdminAllUsersResponse {
+	var result []AdminAllUsersResponse
+	for _, user := range users {
+		result = append(result, ToAdminAllUsersResponse(user))
+	}
+	return result
+}
+
+type AdminUserDetailResponse struct {
+	ID           uint                        `json:"id"`
+	Username     string                      `json:"username"`
+	Email        string                      `json:"email"`
+	Phone        string                      `json:"phone"`
+	RegisterDate string                      `json:"register_date"`
+	Avatar       string                      `json:"avatar"`
+	Donations    []AdminUserDonationResponse `json:"donations"`
+}
+
+type AdminUserDonationResponse struct {
+	DonationID       uint   `json:"donation_id"`
+	FundraisingID    uint   `json:"fundraising_id"`
+	Title            string `json:"title"`
+	OrganizationName string `json:"organization_name"`
+	Amount           int    `json:"amount"`
+	TransactionDate  string `json:"transaction_date"`
+}
