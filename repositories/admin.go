@@ -19,6 +19,10 @@ type AdminRepository interface {
 	FindOrganizationByID(id int) (entities.Organization, error)
 	UpdateOrganizationByID(id uint, organization entities.Organization) (entities.Organization, error)
 	DeleteOrganizationByID(id uint) error
+
+	FindUsers(limit int, offset int) ([]entities.User, error)
+	FindDonationsByUserID(id int, limit int, offset int) ([]entities.Donation, error)
+	DeleteUserWithDonations(id uint) error
 }
 
 type adminRepository struct {
@@ -107,6 +111,34 @@ func (r *adminRepository) UpdateOrganizationByID(id uint, organization entities.
 
 func (r *adminRepository) DeleteOrganizationByID(id uint) error {
 	if err := r.db.Delete(&entities.Organization{}, id).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *adminRepository) FindUsers(limit int, offset int) ([]entities.User, error) {
+	var users []entities.User
+	if err := r.db.Limit(limit).Offset(offset).Find(&users).Error; err != nil {
+		return []entities.User{}, err
+	}
+	return users, nil
+}
+
+func (r *adminRepository) FindDonationsByUserID(id int, limit int, offset int) ([]entities.Donation, error) {
+	var donations []entities.Donation
+	if err := r.db.Preload("Fundraising.Oraganization").Where("user_id = ?", id).Limit(limit).Offset(offset).Find(&donations).Error; err != nil {
+		return []entities.Donation{}, err
+	}
+	return donations, nil
+}
+
+func (r *adminRepository) DeleteUserWithDonations(id uint) error {
+	if err := r.db.Where("user_id = ?", id).Delete(&entities.Donation{}).Error; err != nil {
+		return err
+	}
+
+	// Hapus user
+	if err := r.db.Delete(&entities.User{}, id).Error; err != nil {
 		return err
 	}
 	return nil

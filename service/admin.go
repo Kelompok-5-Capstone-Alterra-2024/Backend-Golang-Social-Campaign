@@ -24,14 +24,19 @@ type AdminService interface {
 	UpdateOrganization(id uint, organization entities.Organization) (entities.Organization, error)
 	DeleteOrganization(id uint) error
 	SaveImageOraganization(id uint, image string) (entities.Organization, error)
+
+	GetUsers(limit int, offset int) ([]entities.User, error)
+	GetDonationsByUserID(id int, limit int, offset int) (dto.AdminUserDetailResponse, error)
+	DeleteUserWithDonations(id uint) error
 }
 
 type adminService struct {
 	adminRepository repositories.AdminRepository
+	userRepository  repositories.UserRepository
 }
 
-func NewAdminService(adminRepository repositories.AdminRepository) *adminService {
-	return &adminService{adminRepository}
+func NewAdminService(adminRepository repositories.AdminRepository, userRepository repositories.UserRepository) *adminService {
+	return &adminService{adminRepository, userRepository}
 }
 
 func (s *adminService) Login(request dto.LoginRequest) (entities.Admin, error) {
@@ -119,4 +124,49 @@ func (s *adminService) SaveImageOraganization(id uint, image string) (entities.O
 	}
 
 	return updatedOrg, nil
+}
+
+func (s *adminService) GetUsers(limit int, offset int) ([]entities.User, error) {
+	return s.adminRepository.FindUsers(limit, offset)
+}
+
+func (s *adminService) GetDonationsByUserID(id int, limit int, offset int) (dto.AdminUserDetailResponse, error) {
+	user, err := s.userRepository.FindByID(uint(id))
+	if err != nil {
+		return dto.AdminUserDetailResponse{}, err
+	}
+
+	donations, err := s.adminRepository.FindDonationsByUserID(id, limit, offset)
+	if err != nil {
+		return dto.AdminUserDetailResponse{}, err
+	}
+
+	donationResponses := []dto.AdminUserDonationResponse{}
+
+	for _, donation := range donations {
+		donationResponses = append(donationResponses, dto.AdminUserDonationResponse{
+			DonationID:       donation.ID,
+			FundraisingID:    donation.Fundraising.ID,
+			Title:            donation.Fundraising.Title,
+			OrganizationName: donation.Fundraising.Organization.Name,
+			Amount:           donation.Amount,
+			TransactionDate:  donation.CreatedAt.Format("2006-01-02"),
+		})
+	}
+
+	userDetailResponse := dto.AdminUserDetailResponse{
+		ID:           user.ID,
+		Username:     user.Username,
+		Email:        user.Email,
+		Phone:        user.NoTelp,
+		RegisterDate: user.CreatedAt.Format("2006-01-02"),
+		Avatar:       user.Avatar,
+		Donations:    donationResponses,
+	}
+
+	return userDetailResponse, nil
+}
+
+func (s *adminService) DeleteUserWithDonations(id uint) error {
+	return s.adminRepository.DeleteUserWithDonations(id)
 }

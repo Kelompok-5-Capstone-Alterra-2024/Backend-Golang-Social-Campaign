@@ -274,3 +274,72 @@ func (h *AdminHandler) DeleteOrganization(c echo.Context) error {
 	return c.JSON(200, helper.GeneralResponse(true, "organization deleted successfully"))
 
 }
+
+func (h *AdminHandler) GetAllUsers(c echo.Context) error {
+	limitStr := c.QueryParam("limit")
+	pageStr := c.QueryParam("page")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		limit = 10
+	}
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	offset := (page - 1) * limit
+	users, err := h.adminService.GetUsers(limit, offset)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get users", err.Error()))
+	}
+
+	response := dto.ToAdminAllUsersResponses(users)
+	return c.JSON(200, helper.ResponseWithData(true, "users retrieved successfully", response))
+
+}
+
+func (h *AdminHandler) GetDetailUserWithDonations(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(400, helper.ErrorResponse(false, "invalid user id", err.Error()))
+	}
+
+	limitStr := c.QueryParam("limit")
+	pageStr := c.QueryParam("page")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		limit = 5
+	}
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	offset := (page - 1) * limit
+
+	userDonations, err := h.adminService.GetDonationsByUserID(id, limit, offset)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get user donations", err.Error()))
+	}
+
+	return c.JSON(200, helper.ResponseWithData(true, "user donations retrieved successfully", userDonations))
+
+}
+
+func (h *AdminHandler) DeleteUser(c echo.Context) error {
+	userID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid user id", err.Error()))
+	}
+
+	err = h.adminService.DeleteUserWithDonations(uint(userID))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to delete user", err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "user deleted successfully"))
+}
