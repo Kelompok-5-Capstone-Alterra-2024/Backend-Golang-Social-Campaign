@@ -24,7 +24,12 @@ func (r *VolunteerRequest) ToEntity() (entities.Volunteer, error) {
 		return entities.Volunteer{}, fmt.Errorf("failed to load location: %v", err)
 	}
 
-	date, err := time.ParseInLocation("02/01/2006", r.Date, loc)
+	startDate, err := time.ParseInLocation("02/01/2006", r.Date, loc)
+	if err != nil {
+		return entities.Volunteer{}, fmt.Errorf("invalid date format: %v", err)
+	}
+
+	endDate, err := time.ParseInLocation("02/01/2006", r.Date, loc)
 	if err != nil {
 		return entities.Volunteer{}, fmt.Errorf("invalid date format: %v", err)
 	}
@@ -39,7 +44,8 @@ func (r *VolunteerRequest) ToEntity() (entities.Volunteer, error) {
 		Title:                r.Title,
 		ContentActivity:      r.ContentActivity,
 		Location:             r.Location,
-		Date:                 date,
+		StartDate:            startDate,
+		EndDate:              endDate,
 		TargetVolunteer:      r.TargetVolunteer,
 		RegisteredVolunteer:  r.RegisteredVolunteer,
 		RegistrationDeadline: registrationDeadline,
@@ -48,29 +54,117 @@ func (r *VolunteerRequest) ToEntity() (entities.Volunteer, error) {
 }
 
 type VolunteerResponse struct {
-	ID                   uint   `json:"id"`
-	OrganizationID       uint   `json:"organization_id"`
-	Title                string `json:"title"`
-	ContentActivity      string `json:"content_activity"`
-	Location             string `json:"location"`
-	Date                 string `json:"date"`
-	TargetVolunteer      int    `json:"target_volunteer"`
-	RegisteredVolunteer  int    `json:"registered_volunteer"`
-	RegistrationDeadline string `json:"registration_deadline"`
-	ImageURL             string `json:"image_url"`
+	ID                   uint                   `json:"id"`
+	OrganizationName     string                 `json:"organization_name"`
+	OrgIsVerified        bool                   `json:"org_is_verified"`
+	Title                string                 `json:"title"`
+	ContentActivity      string                 `json:"content_activity"`
+	Location             string                 `json:"location"`
+	StartDate            string                 `json:"start_date"`
+	EndDate              string                 `json:"end_date"`
+	TargetVolunteer      int                    `json:"target_volunteer"`
+	RegisteredVolunteer  int                    `json:"registered_volunteer"`
+	RegistrationDeadline string                 `json:"registration_deadline"`
+	ImageURL             string                 `json:"image_url"`
+	UserRegistered       UserRegisteredResponse `json:"user_registered"`
 }
 
-func ToVolunteerResponse(volunteer entities.Volunteer) VolunteerResponse {
+type UserRegisteredResponse struct {
+	UserAvatarRegisteredResponse `json:"user_avatar_registered"`
+	TotalRegisteredVolunteer     int `json:"total_registered_volunteer"`
+}
+
+type UserAvatarRegisteredResponse struct {
+	UserID uint   `json:"user_id"`
+	Avatar string `json:"avatar"`
+}
+
+func ToVolunteerResponse(volunteer entities.Volunteer, application []entities.Application) VolunteerResponse {
+
+	uniqueUserAvatars := map[uint]string{}
+	for _, app := range application {
+		uniqueUserAvatars[app.UserID] = app.User.Avatar
+	}
+
+	// Get the avatar of the first unique user who registered
+	var userAvatarRegisteredResponse UserAvatarRegisteredResponse
+	for userID, avatar := range uniqueUserAvatars {
+		userAvatarRegisteredResponse = UserAvatarRegisteredResponse{
+			UserID: userID,
+			Avatar: avatar,
+		}
+		break
+	}
+
+	userRegisteredResponse := UserRegisteredResponse{
+		UserAvatarRegisteredResponse: userAvatarRegisteredResponse,
+		TotalRegisteredVolunteer:     len(uniqueUserAvatars),
+	}
+
 	return VolunteerResponse{
 		ID:                   volunteer.ID,
-		OrganizationID:       volunteer.OrganizationID,
+		OrganizationName:     volunteer.Organization.Name,
+		OrgIsVerified:        volunteer.Organization.IsVerified,
 		Title:                volunteer.Title,
 		ContentActivity:      volunteer.ContentActivity,
 		Location:             volunteer.Location,
-		Date:                 volunteer.Date.Format("2006-01-02"),
+		StartDate:            volunteer.StartDate.Format("2006-01-02"),
+		EndDate:              volunteer.EndDate.Format("2006-01-02"),
 		TargetVolunteer:      volunteer.TargetVolunteer,
 		RegisteredVolunteer:  volunteer.RegisteredVolunteer,
 		RegistrationDeadline: volunteer.RegistrationDeadline.Format("2006-01-02"),
 		ImageURL:             volunteer.ImageURL,
+		UserRegistered:       userRegisteredResponse,
+	}
+}
+
+type VolunteersResponses struct {
+	ID                   uint   `json:"id"`
+	Title                string `json:"title"`
+	OrganizationName     string `json:"organization_name"`
+	RegisteredVolunteer  int    `json:"registered_volunteer"`
+	RegistrationDeadline string `json:"registration_deadline"`
+	ImageUrl             string `json:"image_url"`
+}
+
+func ToVolunteersResponses(volunteer entities.Volunteer) VolunteersResponses {
+
+	return VolunteersResponses{
+		ID:                   volunteer.ID,
+		Title:                volunteer.Title,
+		OrganizationName:     volunteer.Organization.Name,
+		RegisteredVolunteer:  volunteer.RegisteredVolunteer,
+		RegistrationDeadline: volunteer.RegistrationDeadline.Format("2006-01-02"),
+		ImageUrl:             volunteer.ImageURL,
+	}
+}
+
+func ToVolunteersResponsesList(volunteers []entities.Volunteer) []VolunteersResponses {
+	var res []VolunteersResponses
+	for _, volunteer := range volunteers {
+		res = append(res, ToVolunteersResponses(volunteer))
+	}
+	return res
+}
+
+type ConfirmVolunteerResponse struct {
+	VolunteerID uint   `json:"volunteer_id"`
+	UserID      uint   `json:"user_id"`
+	ImageURL    string `json:"image_url"`
+	Title       string `json:"title"`
+	Location    string `json:"location"`
+	StartDate   string `json:"start_date"`
+	EndDate     string `json:"end_date"`
+}
+
+func ToConfirmVolunteerResponse(volunteer entities.Volunteer, userID uint) ConfirmVolunteerResponse {
+	return ConfirmVolunteerResponse{
+		VolunteerID: volunteer.ID,
+		UserID:      userID,
+		ImageURL:    volunteer.ImageURL,
+		Title:       volunteer.Title,
+		Location:    volunteer.Location,
+		StartDate:   volunteer.StartDate.Format("2006-01-02"),
+		EndDate:     volunteer.EndDate.Format("2006-01-02"),
 	}
 }

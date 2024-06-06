@@ -11,6 +11,7 @@ type ApplicationService interface {
 	GetAllApplications(page, limit int) ([]entities.Application, int64, error)
 	GetApplicationByID(id uint) (entities.Application, error)
 	DeleteApplicationByID(id uint) error
+	GetApplicationByVacancyID(vacancyID uint) ([]entities.Application, error)
 }
 
 type applicationService struct {
@@ -23,7 +24,7 @@ func NewApplicationService(applicationRepository repositories.ApplicationReposit
 
 func (s *applicationService) RegisterApplication(application entities.Application) (entities.Application, error) {
 	// Check if application already exists for the given customer and vacancy
-	existingApplication, err := s.applicationRepository.FindByCustomerIDAndVacancyID(application.CustomerID, application.VacancyID)
+	existingApplication, err := s.applicationRepository.FindByCustomerIDAndVacancyID(application.UserID, application.VolunteerVacancyID)
 	if err == nil && existingApplication.ID != 0 {
 		return entities.Application{}, errors.New("customer has already applied for this vacancy")
 	}
@@ -42,4 +43,8 @@ func (s *applicationService) GetApplicationByID(id uint) (entities.Application, 
 
 func (s *applicationService) DeleteApplicationByID(id uint) error {
 	return s.applicationRepository.DeleteByID(id)
+}
+
+func (s *applicationService) GetApplicationByVacancyID(vacancyID uint) ([]entities.Application, error) {
+	return s.applicationRepository.FindByVacancyID(vacancyID)
 }

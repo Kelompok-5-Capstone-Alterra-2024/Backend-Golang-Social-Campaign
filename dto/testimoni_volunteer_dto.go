@@ -3,16 +3,14 @@ package dto
 import "capstone/entities"
 
 type TestimoniVolunteerRequest struct {
-	CustomerID  uint   `json:"customer_id"`
-	VolunteerID uint   `json:"volunteer_id"`
-	Testimoni   string `json:"testimoni"`
-	Rating      string `json:"rating"`
+	Testimoni string `json:"testimoni"`
+	Rating    string `json:"rating"`
 }
 
-func (r *TestimoniVolunteerRequest) ToEntity() entities.TestimoniVolunteer {
+func (r *TestimoniVolunteerRequest) ToEntity(volunteer_id uint, user_id uint) entities.TestimoniVolunteer {
 	return entities.TestimoniVolunteer{
-		CustomerID:  r.CustomerID,
-		VolunteerID: r.VolunteerID,
+		UserID:      user_id,
+		VolunteerID: volunteer_id,
 		Testimoni:   r.Testimoni,
 		Rating:      r.Rating,
 	}
@@ -29,7 +27,7 @@ type TestimoniVolunteerResponse struct {
 func ToTestimoniVolunteerResponse(tv entities.TestimoniVolunteer) TestimoniVolunteerResponse {
 	return TestimoniVolunteerResponse{
 		ID:          tv.ID,
-		CustomerID:  tv.CustomerID,
+		CustomerID:  tv.UserID,
 		VolunteerID: tv.VolunteerID,
 		Testimoni:   tv.Testimoni,
 		Rating:      tv.Rating,

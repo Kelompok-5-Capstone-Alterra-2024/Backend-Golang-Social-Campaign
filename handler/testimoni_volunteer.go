@@ -23,22 +23,32 @@ func NewTestimoniVolunteerHandler(testimoniVolunteerService service.TestimoniVol
 
 func (h *TestimoniVolunteerHandler) CreateTestimoniVolunteer(c echo.Context) error {
 	var request dto.TestimoniVolunteerRequest
+	volunteer_id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid volunteer ID ", err.Error()))
+	}
+
+	userId, err := helper.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse(false, "unauthorized", err.Error()))
+	}
+
 	if err := c.Bind(&request); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
 	// Add validation here
-	customerJoined := h.testimoniVolunteerService.CustomerJoinedVolunteer(request.CustomerID, request.VolunteerID)
+	customerJoined := h.testimoniVolunteerService.CustomerJoinedVolunteer(uint(userId), uint(volunteer_id))
 	if !customerJoined {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "customer has not joined the volunteer", ""))
 	}
 
-	alreadyTestified := h.testimoniVolunteerService.HasCustomerGivenTestimony(request.CustomerID, request.VolunteerID)
+	alreadyTestified := h.testimoniVolunteerService.HasCustomerGivenTestimony(uint(userId), uint(volunteer_id))
 	if alreadyTestified {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "customer has already given a testimony", ""))
 	}
 
-	testimoniVolunteer := request.ToEntity()
+	testimoniVolunteer := request.ToEntity(uint(volunteer_id), uint(userId))
 
 	createdTestimoniVolunteer, err := h.testimoniVolunteerService.CreateTestimoniVolunteer(testimoniVolunteer)
 	if err != nil {
@@ -50,7 +60,7 @@ func (h *TestimoniVolunteerHandler) CreateTestimoniVolunteer(c echo.Context) err
 	createdAt := createdTestimoniVolunteer.CreatedAt.In(loc).Format("02/01/2006 15:04:05 MST")
 
 	response := map[string]interface{}{
-		"customer_id":  createdTestimoniVolunteer.CustomerID,
+		"user_id":      createdTestimoniVolunteer.UserID,
 		"volunteer_id": createdTestimoniVolunteer.VolunteerID,
 		"testimoni":    createdTestimoniVolunteer.Testimoni,
 		"rating":       createdTestimoniVolunteer.Rating,

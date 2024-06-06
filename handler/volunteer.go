@@ -11,11 +11,12 @@ import (
 )
 
 type VolunteerHandler struct {
-	volunteerService service.VolunteerService
+	volunteerService   service.VolunteerService
+	applicationService service.ApplicationService
 }
 
-func NewVolunteerHandler(volunteerService service.VolunteerService) *VolunteerHandler {
-	return &VolunteerHandler{volunteerService: volunteerService}
+func NewVolunteerHandler(volunteerService service.VolunteerService, applicationService service.ApplicationService) *VolunteerHandler {
+	return &VolunteerHandler{volunteerService: volunteerService, applicationService: applicationService}
 }
 
 func (h *VolunteerHandler) CreateVolunteer(c echo.Context) error {
@@ -29,13 +30,12 @@ func (h *VolunteerHandler) CreateVolunteer(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid date format", err.Error()))
 	}
 
-	createdVolunteer, err := h.volunteerService.CreateVolunteer(volunteer)
+	_, err = h.volunteerService.CreateVolunteer(volunteer)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to create volunteer", err.Error()))
 	}
 
-	response := dto.ToVolunteerResponse(createdVolunteer)
-	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "volunteer created successfully", response))
+	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "volunteer created successfully"))
 }
 
 func (h *VolunteerHandler) GetVolunteerByID(c echo.Context) error {
@@ -49,7 +49,9 @@ func (h *VolunteerHandler) GetVolunteerByID(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, helper.ErrorResponse(false, "volunteer not found", err.Error()))
 	}
 
-	response := dto.ToVolunteerResponse(volunteer)
+	applications, err := h.applicationService.GetApplicationByVacancyID(uint(id))
+
+	response := dto.ToVolunteerResponse(volunteer, applications)
 	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "volunteer retrieved successfully", response))
 }
 
@@ -69,32 +71,29 @@ func (h *VolunteerHandler) GetAllVolunteers(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to retrieve volunteers", err.Error()))
 	}
 
-	var response []dto.VolunteerResponse
-	for _, volunteer := range volunteers {
-		response = append(response, dto.ToVolunteerResponse(volunteer))
-	}
+	response := dto.ToVolunteersResponsesList(volunteers)
 
 	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "volunteers retrieved successfully", response, page, limit, int64(total)))
 }
 
 func (h *VolunteerHandler) ApplyForVolunteer(c echo.Context) error {
-	volunteerID, err := strconv.ParseUint(c.Param("volunteer_id"), 10, 64)
+	volunteerID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid volunteer ID format", err.Error()))
 	}
 
-	customerID, err := strconv.ParseUint(c.Param("customer_id"), 10, 64)
+	userId, err := helper.GetUserIDFromJWT(c)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid customer ID format", err.Error()))
+		return c.JSON(401, helper.ErrorResponse(false, "unauthorized", err.Error()))
 	}
 
-	updatedVolunteer, err := h.volunteerService.ApplyForVolunteer(uint(volunteerID), uint(customerID))
+	_, err = h.volunteerService.ApplyForVolunteer(uint(volunteerID), uint(userId))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to apply for volunteer", err.Error()))
 	}
 
-	response := dto.ToVolunteerResponse(updatedVolunteer)
-	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "volunteer application successful", response))
+	// response := dto.ToVolunteerResponse(updatedVolunteer)
+	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "volunteer application successful"))
 }
 
 func (h *VolunteerHandler) UpdateVolunteer(c echo.Context) error {
@@ -119,8 +118,8 @@ func (h *VolunteerHandler) UpdateVolunteer(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to update volunteer", err.Error()))
 	}
 
-	response := dto.ToVolunteerResponse(updatedVolunteer)
-	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "volunteer updated successfully", response))
+	// response := dto.ToVolunteerResponse(updatedVolunteer)
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "volunteer updated successfully", updatedVolunteer))
 }
 
 func (h *VolunteerHandler) DeleteVolunteer(c echo.Context) error {
@@ -135,4 +134,21 @@ func (h *VolunteerHandler) DeleteVolunteer(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "volunteer deleted successfully"))
+}
+
+func (h *VolunteerHandler) ConfirmVolunteer(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(400, helper.ErrorResponse(false, "invalid id", err.Error()))
+	}
+
+	confirmVolunteer, err := h.volunteerService.FindByID(uint(id))
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(false, "volunteer not found", err.Error()))
+	}
+
+	userId, err := helper.GetUserIDFromJWT(c)
+
+	response := dto.ToConfirmVolunteerResponse(confirmVolunteer, uint(userId))
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "volunteer confirmed successfully", response))
 }

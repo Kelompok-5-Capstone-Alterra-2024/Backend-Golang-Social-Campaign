@@ -19,12 +19,42 @@ func NewApplicationHandler(applicationService service.ApplicationService) *Appli
 }
 
 func (h *ApplicationHandler) RegisterApplication(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(400, helper.ErrorResponse(false, "invalid id", err.Error()))
+	}
+
 	var request dto.ApplicationRequest
 	if err := c.Bind(&request); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
-	application := request.ToEntity()
+	igFile, err := c.FormFile("ig_image_url")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "Invalid IG proof file", err.Error()))
+	}
+
+	ytFile, err := c.FormFile("yt_image_url")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "Invalid YT proof file", err.Error()))
+	}
+
+	igURL, err := helper.UploadToCloudinary(igFile)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "Failed to upload IG proof", err.Error()))
+	}
+
+	ytURL, err := helper.UploadToCloudinary(ytFile)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "Failed to upload YT proof", err.Error()))
+	}
+
+	userID, err := helper.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.JSON(401, helper.ErrorResponse(false, "unauthorized", err.Error()))
+	}
+
+	application := request.ToEntity(igURL, ytURL, uint(userID), uint(id))
 
 	createdApplication, err := h.applicationService.RegisterApplication(application)
 	if err != nil {

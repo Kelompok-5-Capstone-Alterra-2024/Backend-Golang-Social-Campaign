@@ -55,7 +55,7 @@ func NewRouter(router *echo.Echo) {
 
 	userHandler := handler.NewUserHandler(userService)
 	adminHandler := handler.NewAdminHandler(adminService)
-	volunteerHandler := handler.NewVolunteerHandler(volunteerService)
+	volunteerHandler := handler.NewVolunteerHandler(volunteerService, applicationService)
 	applicationHandler := handler.NewApplicationHandler(applicationService)
 	articleHandler := handler.NewArticleHandler(articleService)
 	commentHandler := handler.NewCommentHandler(commentService)
@@ -93,16 +93,15 @@ func NewRouter(router *echo.Echo) {
 	api.POST("/comments/:comment_id/like", donationHandler.LikeComment)
 	api.DELETE("/comments/:comment_id/unlike", donationHandler.UnLikeComment)
 
-	api.POST("/volunteer/register", volunteerHandler.CreateVolunteer)
+	// Volunteer
 	api.GET("/volunteer/:id", volunteerHandler.GetVolunteerByID)
 	api.GET("/volunteers", volunteerHandler.GetAllVolunteers)
-	api.POST("/volunteer/:volunteer_id/apply/:customer_id", volunteerHandler.ApplyForVolunteer)
-	api.PUT("/volunteer/:id", volunteerHandler.UpdateVolunteer)
-	api.DELETE("/volunteer/:id", volunteerHandler.DeleteVolunteer)
+	api.GET("/volunteer/:id/confirm", volunteerHandler.ConfirmVolunteer)
+	api.POST("/volunteer/:id/apply", volunteerHandler.ApplyForVolunteer)
 
 	// Application routes
 	api.POST("/volunteer/:id/register", applicationHandler.RegisterApplication)
-	api.GET("/volunteer/applications", applicationHandler.GetAllApplications)
+	api.GET("/volunteer/:id/applications", applicationHandler.GetAllApplications)
 	api.GET("/volunteer/applications/:id", applicationHandler.GetApplicationByID)
 	api.DELETE("/volunteer/applications/:id", applicationHandler.DeleteApplicationByID)
 
@@ -127,7 +126,7 @@ func NewRouter(router *echo.Echo) {
 	api.GET("/likes-comments", likesCommentHandler.GetAllLikesComments)
 
 	// TestimoniVolunteer routes
-	api.POST("/testimoni-volunteers", testimoniVolunteerHandler.CreateTestimoniVolunteer)
+	api.POST("/volunteer/:id/testimoni-volunteers", testimoniVolunteerHandler.CreateTestimoniVolunteer)
 	api.GET("/testimoni-volunteers/:id", testimoniVolunteerHandler.GetTestimoniVolunteerByID)
 	api.GET("/testimoni-volunteers", testimoniVolunteerHandler.GetAllTestimoniVolunteers)
 	api.DELETE("/testimoni-volunteers/:id", testimoniVolunteerHandler.DeleteTestimoniVolunteer)
@@ -154,4 +153,7 @@ func NewRouter(router *echo.Echo) {
 	admin.PUT("/organizations/:id", adminHandler.EditOrganization)
 	admin.DELETE("/organizations/:id", adminHandler.DeleteOrganization)
 
+	admin.POST("/volunteers", volunteerHandler.CreateVolunteer)
+	admin.DELETE("/volunteer/:id", volunteerHandler.DeleteVolunteer)
+	admin.PUT("/volunteer/:id", volunteerHandler.UpdateVolunteer)
 }

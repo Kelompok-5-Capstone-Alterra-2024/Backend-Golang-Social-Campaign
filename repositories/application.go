@@ -11,6 +11,7 @@ type ApplicationRepository interface {
 	FindByCustomerIDAndVacancyID(customerID, vacancyID uint) (entities.Application, error)
 	FindAll(offset, limit int) ([]entities.Application, int64, error)
 	FindByID(id uint) (entities.Application, error)
+	FindByVacancyID(vacancyID uint) ([]entities.Application, error)
 	DeleteByID(id uint) error
 }
 
@@ -31,7 +32,7 @@ func (r *applicationRepository) Save(application entities.Application) (entities
 
 func (r *applicationRepository) FindByCustomerIDAndVacancyID(customerID, vacancyID uint) (entities.Application, error) {
 	var application entities.Application
-	err := r.db.Where("customer_id = ? AND vacancy_id = ?", customerID, vacancyID).First(&application).Error
+	err := r.db.Where("user_id = ? AND vacancy_id = ?", customerID, vacancyID).First(&application).Error
 	return application, err
 }
 
@@ -51,4 +52,10 @@ func (r *applicationRepository) FindByID(id uint) (entities.Application, error) 
 
 func (r *applicationRepository) DeleteByID(id uint) error {
 	return r.db.Delete(&entities.Application{}, id).Error
+}
+
+func (r *applicationRepository) FindByVacancyID(vacancyID uint) ([]entities.Application, error) {
+	var applications []entities.Application
+	err := r.db.Where("vacancy_id = ?", vacancyID).Find(&applications).Error
+	return applications, err
 }

@@ -7,10 +7,13 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"mime/multipart"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/cloudinary/cloudinary-go/v2"
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/labstack/echo/v4"
 	"github.com/veritrans/go-midtrans"
 	"gopkg.in/gomail.v2"
@@ -229,4 +232,24 @@ func GetPaymentUrl(donation entities.PaymentTransaction, user entities.User) (st
 	}
 	return snapTokenResp.RedirectURL, nil
 
+}
+
+func UploadToCloudinary(file *multipart.FileHeader) (string, error) {
+	cld, err := cloudinary.NewFromURL("cloudinary://633714464826515:u1W6hqq-Gb8y-SMpXe7tzs4mH44@dvrhf8d9t")
+	if err != nil {
+		return "", err
+	}
+
+	f, err := file.Open()
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	uploadResult, err := cld.Upload.Upload(nil, f, uploader.UploadParams{})
+	if err != nil {
+		return "", err
+	}
+
+	return uploadResult.SecureURL, nil
 }
