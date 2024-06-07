@@ -8,9 +8,9 @@ import (
 
 type Volunteer struct {
 	gorm.Model
+	Title                string       `json:"title" gorm:"type:varchar(255)"`
 	OrganizationID       uint         `json:"-"`
 	Organization         Organization `json:"organization" gorm:"foreignKey:OrganizationID"`
-	Title                string       `json:"title" gorm:"type:varchar(255)"`
 	ContentActivity      string       `json:"content_activity" gorm:"type:text"`
 	Location             string       `json:"location" gorm:"type:varchar(255)"`
 	StartDate            time.Time    `json:"start_date" gorm:"datetime"`
