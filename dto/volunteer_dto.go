@@ -124,6 +124,7 @@ type VolunteersResponses struct {
 	Title                string `json:"title"`
 	OrganizationName     string `json:"organization_name"`
 	RegisteredVolunteer  int    `json:"registered_volunteer"`
+	TargetVolunteer      int    `json:"target_volunteer"`
 	RegistrationDeadline string `json:"registration_deadline"`
 	ImageUrl             string `json:"image_url"`
 }
@@ -135,6 +136,7 @@ func ToVolunteersResponses(volunteer entities.Volunteer) VolunteersResponses {
 		Title:                volunteer.Title,
 		OrganizationName:     volunteer.Organization.Name,
 		RegisteredVolunteer:  volunteer.RegisteredVolunteer,
+		TargetVolunteer:      volunteer.TargetVolunteer,
 		RegistrationDeadline: volunteer.RegistrationDeadline.Format("2006-01-02"),
 		ImageUrl:             volunteer.ImageURL,
 	}
