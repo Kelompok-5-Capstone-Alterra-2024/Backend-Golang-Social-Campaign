@@ -15,6 +15,7 @@ type UserRepository interface {
 	FindByNoTelp(notel string) (entities.User, error)
 	FindByResetToken(token string) (entities.User, error)
 	Update(user entities.User) error
+	UpdateProfile(userid uint, user entities.User) error
 }
 
 type userRepository struct {
@@ -82,4 +83,12 @@ func (r *userRepository) FindByResetToken(token string) (entities.User, error) {
 
 func (r *userRepository) Update(user entities.User) error {
 	return r.db.Save(&user).Error
+}
+
+func (r *userRepository) UpdateProfile(userid uint, user entities.User) error {
+	return r.db.Model(&entities.User{}).Where("id = ?", userid).Updates(user).Error
+}
+
+func (r *userRepository) UpdatePassword(id uint, password string) error {
+	return r.db.Model(&entities.User{}).Where("id = ?", id).Update("password", password).Error
 }

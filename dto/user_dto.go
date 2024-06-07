@@ -26,3 +26,23 @@ type ResetPasswordRequest struct {
 	Password    string `json:"new_password"`
 	ConfirmPass string `json:"confirm_password"`
 }
+
+type UserProfileResponse struct {
+	ID       uint   `json:"user_id"`
+	Avatar   string `json:"avatar_url"`
+	Username string `json:"username"`
+}
+
+type EditProfileRequest struct {
+	// ID       uint   `json:"user_id"`
+	Fullname string `json:"full_name"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Avatar   string `json:"avatar_url"`
+}
+
+type ChangePasswordRequest struct {
+	CurrentPassword string `json:"current_password"`
+	NewPassword     string `json:"new_password"`
+	ConfirmPassword string `json:"confirm_new_password"`
+}

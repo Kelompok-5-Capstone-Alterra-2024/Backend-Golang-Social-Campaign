@@ -16,6 +16,9 @@ type UserService interface {
 	GetUserByID(id uint) (entities.User, error)
 	GenerateResetToken(email string) error
 	ResetPassword(resetToken, newPassword string) error
+	GetUserProfile(id int) (entities.User, error)
+	EditProfile(userid int, request dto.EditProfileRequest) (entities.User, error)
+	ChangePassword(userid int, request dto.ChangePasswordRequest) error
 }
 
 type userService struct {
@@ -115,4 +118,50 @@ func (s *userService) ResetPassword(resetToken, newPassword string) error {
 
 func (s *userService) GetUserByID(id uint) (entities.User, error) {
 	return s.userRepository.FindByID(id)
+}
+
+func (s *userService) GetUserProfile(id int) (entities.User, error) {
+	return s.userRepository.FindByID(uint(id))
+}
+
+func (s *userService) EditProfile(userid int, request dto.EditProfileRequest) (entities.User, error) {
+
+	var existingUser entities.User
+	existingUser, err := s.userRepository.FindByID(uint(userid))
+	if err != nil {
+		return entities.User{}, err
+	}
+
+	if request.Fullname != "" {
+		existingUser.Fullname = request.Fullname
+	}
+	if request.Username != "" {
+		existingUser.Username = request.Username
+	}
+	if request.Avatar != "" {
+		existingUser.Avatar = request.Avatar
+	}
+	if request.Email != "" {
+		existingUser.Email = request.Email
+	}
+
+	return existingUser, s.userRepository.UpdateProfile(uint(userid), existingUser)
+}
+
+func (s *userService) ChangePassword(userid int, request dto.ChangePasswordRequest) error {
+	user, err := s.userRepository.FindByID(uint(userid))
+	if err != nil {
+		return err
+	}
+
+	if user.Password != request.CurrentPassword {
+		return errors.New("wrong current password")
+	}
+
+	if request.NewPassword != request.ConfirmPassword {
+		return errors.New("password doesn't match")
+	}
+
+	user.Password = request.NewPassword
+	return s.userRepository.Update(user)
 }
