@@ -132,8 +132,7 @@ func (h *VolunteerHandler) UpdateVolunteer(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid date format", err.Error()))
 	}
 
-	volunteer.ID = uint(id)
-	_, err = h.volunteerService.UpdateVolunteer(volunteer)
+	_, err = h.volunteerService.UpdateVolunteerByID(uint(id), volunteer)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to update volunteer", err.Error()))
 	}

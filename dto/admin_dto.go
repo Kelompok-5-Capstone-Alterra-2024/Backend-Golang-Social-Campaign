@@ -163,6 +163,7 @@ type AdminVolunteersResponse struct {
 	EndDate             string `json:"end_date"`
 	TargetVolunteer     int    `json:"target_volunteer"`
 	RegisteredVolunteer int    `json:"registered_volunteer"`
+	Status              string `json:"status"`
 }
 
 func ToAdminVolunteersResponse(volunteer entities.Volunteer) AdminVolunteersResponse {
@@ -174,6 +175,7 @@ func ToAdminVolunteersResponse(volunteer entities.Volunteer) AdminVolunteersResp
 		EndDate:             volunteer.EndDate.Format("2006-01-02"),
 		TargetVolunteer:     volunteer.TargetVolunteer,
 		RegisteredVolunteer: volunteer.RegisteredVolunteer,
+		Status:              volunteer.Status,
 	}
 }
 

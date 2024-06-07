@@ -13,6 +13,7 @@ type VolunteerService interface {
 	FindAll(page int, limit int) ([]entities.Volunteer, int, error)
 	ApplyForVolunteer(volunteerID uint, customerID uint) (entities.Volunteer, error)
 	UpdateVolunteer(volunteer entities.Volunteer) (entities.Volunteer, error)
+	UpdateVolunteerByID(id uint, volunteer entities.Volunteer) (entities.Volunteer, error)
 	DeleteVolunteer(id uint) error
 }
 
@@ -68,6 +69,10 @@ func (s *volunteerService) ApplyForVolunteer(volunteerID uint, customerID uint) 
 
 func (s *volunteerService) UpdateVolunteer(volunteer entities.Volunteer) (entities.Volunteer, error) {
 	return s.volunteerRepository.Update(volunteer)
+}
+
+func (s *volunteerService) UpdateVolunteerByID(id uint, volunteer entities.Volunteer) (entities.Volunteer, error) {
+	return s.volunteerRepository.UpdateByID(id, volunteer)
 }
 
 func (s *volunteerService) DeleteVolunteer(id uint) error {

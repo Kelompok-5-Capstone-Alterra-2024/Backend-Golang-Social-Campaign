@@ -13,6 +13,7 @@ type VolunteerRepository interface {
 	Update(volunteer entities.Volunteer) (entities.Volunteer, error)
 	Delete(id uint) error
 	FindApplicationByVolunteerAndCustomer(volunteerID, customerID uint) (entities.Application, error)
+	UpdateByID(id uint, volunteer entities.Volunteer) (entities.Volunteer, error)
 }
 
 type volunteerRepository struct {
@@ -60,4 +61,11 @@ func (r *volunteerRepository) FindApplicationByVolunteerAndCustomer(volunteerID,
 	var application entities.Application
 	err := r.db.Where("volunteer_id = ? AND customer_id = ?", volunteerID, customerID).First(&application).Error
 	return application, err
+}
+
+func (r *volunteerRepository) UpdateByID(id uint, volunteer entities.Volunteer) (entities.Volunteer, error) {
+	if err := r.db.Model(&volunteer).Where("id = ?", id).Updates(&volunteer).Error; err != nil {
+		return entities.Volunteer{}, err
+	}
+	return volunteer, nil
 }
