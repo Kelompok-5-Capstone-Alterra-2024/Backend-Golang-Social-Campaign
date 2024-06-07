@@ -9,10 +9,10 @@ type TestimoniVolunteerRequest struct {
 
 func (r *TestimoniVolunteerRequest) ToEntity(volunteer_id uint, user_id uint) entities.TestimoniVolunteer {
 	return entities.TestimoniVolunteer{
-		UserID:      user_id,
-		VolunteerID: volunteer_id,
-		Testimoni:   r.Testimoni,
-		Rating:      r.Rating,
+		UserID:    user_id,
+		VacancyID: volunteer_id,
+		Testimoni: r.Testimoni,
+		Rating:    r.Rating,
 	}
 }
 
@@ -28,7 +28,7 @@ func ToTestimoniVolunteerResponse(tv entities.TestimoniVolunteer) TestimoniVolun
 	return TestimoniVolunteerResponse{
 		ID:          tv.ID,
 		CustomerID:  tv.UserID,
-		VolunteerID: tv.VolunteerID,
+		VolunteerID: tv.VacancyID,
 		Testimoni:   tv.Testimoni,
 		Rating:      tv.Rating,
 	}

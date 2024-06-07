@@ -61,7 +61,7 @@ func (h *TestimoniVolunteerHandler) CreateTestimoniVolunteer(c echo.Context) err
 
 	response := map[string]interface{}{
 		"user_id":      createdTestimoniVolunteer.UserID,
-		"volunteer_id": createdTestimoniVolunteer.VolunteerID,
+		"volunteer_id": createdTestimoniVolunteer.VacancyID,
 		"testimoni":    createdTestimoniVolunteer.Testimoni,
 		"rating":       createdTestimoniVolunteer.Rating,
 		"date":         createdAt,
