@@ -81,7 +81,7 @@ func (h *VolunteerHandler) GetAllVolunteers(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to retrieve volunteers", err.Error()))
 	}
 
-	response := dto.ToVolunteersResponsesList(volunteers)
+	response := dto.ToAdminAllVolunteersResponse(volunteers)
 
 	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "volunteers retrieved successfully", response, page, limit, int64(total)))
 }

@@ -20,24 +20,39 @@ type VolunteerRequest struct {
 }
 
 func (r *VolunteerRequest) ToEntity(imgUrl string) (entities.Volunteer, error) {
-	loc, err := time.LoadLocation("Asia/Jakarta") // GMT+7 timezone
+	// loc, err := time.LoadLocation("Asia/Jakarta") // GMT+7 timezone
+	// if err != nil {
+	// 	return entities.Volunteer{}, fmt.Errorf("failed to load location: %v", err)
+	// }
+
+	// startDate, err := time.ParseInLocation("02/01/2006", r.StarDate, loc)
+	// if err != nil {
+	// 	return entities.Volunteer{}, fmt.Errorf("invalid date format: %v", err)
+	// }
+
+	// endDate, err := time.ParseInLocation("02/01/2006", r.EndDate, loc)
+	// if err != nil {
+	// 	return entities.Volunteer{}, fmt.Errorf("invalid date format: %v", err)
+	// }
+
+	// registrationDeadline, err := time.ParseInLocation("02/01/2006", r.RegistrationDeadline, loc)
+	// if err != nil {
+	// 	return entities.Volunteer{}, fmt.Errorf("invalid registration deadline format: %v", err)
+	// }
+
+	startDate, err := time.Parse("2006-01-02", r.StarDate)
 	if err != nil {
-		return entities.Volunteer{}, fmt.Errorf("failed to load location: %v", err)
+		return entities.Volunteer{}, fmt.Errorf("Invalid start date format")
 	}
 
-	startDate, err := time.ParseInLocation("02/01/2006", r.StarDate, loc)
+	endDate, err := time.Parse("2006-01-02", r.EndDate)
 	if err != nil {
-		return entities.Volunteer{}, fmt.Errorf("invalid date format: %v", err)
+		return entities.Volunteer{}, fmt.Errorf("Invalid end date format")
 	}
 
-	endDate, err := time.ParseInLocation("02/01/2006", r.EndDate, loc)
+	registrationDeadline, err := time.Parse("2006-01-02", r.RegistrationDeadline)
 	if err != nil {
-		return entities.Volunteer{}, fmt.Errorf("invalid date format: %v", err)
-	}
-
-	registrationDeadline, err := time.ParseInLocation("02/01/2006", r.RegistrationDeadline, loc)
-	if err != nil {
-		return entities.Volunteer{}, fmt.Errorf("invalid registration deadline format: %v", err)
+		return entities.Volunteer{}, fmt.Errorf("Invalid registration deadline format")
 	}
 
 	return entities.Volunteer{
