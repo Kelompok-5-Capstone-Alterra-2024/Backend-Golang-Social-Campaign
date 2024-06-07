@@ -81,9 +81,20 @@ func (h *VolunteerHandler) GetAllVolunteers(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to retrieve volunteers", err.Error()))
 	}
 
-	response := dto.ToAdminAllVolunteersResponse(volunteers)
+	response := dto.ToVolunteersResponsesList(volunteers)
 
 	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "volunteers retrieved successfully", response, page, limit, int64(total)))
+}
+
+func (h *VolunteerHandler) GetTopVolunteer(c echo.Context) error {
+	volunteers, err := h.volunteerService.FindTopVolunteers()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to retrieve top volunteers", err.Error()))
+	}
+
+	response := dto.ToVolunteersResponsesList(volunteers)
+
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "top volunteers retrieved successfully", response))
 }
 
 func (h *VolunteerHandler) ApplyForVolunteer(c echo.Context) error {

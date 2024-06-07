@@ -10,6 +10,7 @@ type VolunteerRepository interface {
 	Create(volunteer entities.Volunteer) (entities.Volunteer, error)
 	FindByID(id uint) (entities.Volunteer, error)
 	FindAll(page int, limit int) ([]entities.Volunteer, int, error)
+	FindTop() ([]entities.Volunteer, error)
 	Update(volunteer entities.Volunteer) (entities.Volunteer, error)
 	Delete(id uint) error
 	FindApplicationByVolunteerAndCustomer(volunteerID, customerID uint) (entities.Application, error)
@@ -44,6 +45,12 @@ func (r *volunteerRepository) FindAll(page int, limit int) ([]entities.Volunteer
 
 	err := r.db.Preload("Organization").Offset(offset).Limit(limit).Find(&volunteers).Count(&total).Error
 	return volunteers, int(total), err
+}
+
+func (r *volunteerRepository) FindTop() ([]entities.Volunteer, error) {
+	var volunteers []entities.Volunteer
+	err := r.db.Preload("Organization").Order("registered_volunteer desc").Limit(3).Find(&volunteers).Error
+	return volunteers, err
 }
 
 func (r *volunteerRepository) Update(volunteer entities.Volunteer) (entities.Volunteer, error) {

@@ -11,6 +11,7 @@ type VolunteerService interface {
 	CreateVolunteer(volunteer entities.Volunteer) (entities.Volunteer, error)
 	FindByID(id uint) (entities.Volunteer, error)
 	FindAll(page int, limit int) ([]entities.Volunteer, int, error)
+	FindTopVolunteers() ([]entities.Volunteer, error)
 	ApplyForVolunteer(volunteerID uint, customerID uint) (entities.Volunteer, error)
 	UpdateVolunteer(volunteer entities.Volunteer) (entities.Volunteer, error)
 	UpdateVolunteerByID(id uint, volunteer entities.Volunteer) (entities.Volunteer, error)
@@ -35,6 +36,10 @@ func (s *volunteerService) FindByID(id uint) (entities.Volunteer, error) {
 
 func (s *volunteerService) FindAll(page int, limit int) ([]entities.Volunteer, int, error) {
 	return s.volunteerRepository.FindAll(page, limit)
+}
+
+func (s *volunteerService) FindTopVolunteers() ([]entities.Volunteer, error) {
+	return s.volunteerRepository.FindTop()
 }
 
 func (s *volunteerService) ApplyForVolunteer(volunteerID uint, customerID uint) (entities.Volunteer, error) {

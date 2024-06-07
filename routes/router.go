@@ -96,6 +96,7 @@ func NewRouter(router *echo.Echo) {
 	// Volunteer
 	api.GET("/volunteer/:id", volunteerHandler.GetVolunteerByID)
 	api.GET("/volunteers", volunteerHandler.GetAllVolunteers)
+	api.GET("/volunteers/top", volunteerHandler.GetTopVolunteer)
 	api.GET("/volunteer/:id/confirm", volunteerHandler.ConfirmVolunteer)
 	api.POST("/volunteer/:id/apply", volunteerHandler.ApplyForVolunteer)
 
@@ -153,7 +154,8 @@ func NewRouter(router *echo.Echo) {
 	admin.PUT("/organizations/:id", adminHandler.EditOrganization)
 	admin.DELETE("/organizations/:id", adminHandler.DeleteOrganization)
 
-	admin.GET("/volunteers", volunteerHandler.GetAllVolunteers)
+	admin.GET("/volunteers", adminHandler.GetAllVolunteers)
+
 	admin.POST("/volunteers", volunteerHandler.CreateVolunteer)
 	admin.PUT("/volunteers/:id", volunteerHandler.UpdateVolunteer)
 	admin.DELETE("/volunteers/:id", volunteerHandler.DeleteVolunteer)
