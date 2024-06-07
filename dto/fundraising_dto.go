@@ -22,6 +22,7 @@ type FundraisingsResponse struct {
 	Title           string `json:"title"`
 	CategoryName    string `json:"category_name"`
 	CurrentProgress int    `json:"current_progress"`
+	TargetAmount    int    `json:"target_amount"`
 	EndDate         string `json:"end_date"`
 }
 
@@ -32,6 +33,7 @@ func ToFundraisingsResponse(fundraising entities.Fundraising) FundraisingsRespon
 		Title:           fundraising.Title,
 		CategoryName:    fundraising.FundraisingCategory.Name,
 		CurrentProgress: fundraising.CurrentProgress,
+		TargetAmount:    fundraising.GoalAmount,
 		EndDate:         fundraising.EndDate.Format("2006-01-02"),
 	}
 }

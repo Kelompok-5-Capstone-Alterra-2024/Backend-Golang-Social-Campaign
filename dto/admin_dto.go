@@ -154,3 +154,33 @@ type AdminUserDonationResponse struct {
 	Amount           int    `json:"amount"`
 	TransactionDate  string `json:"transaction_date"`
 }
+
+type AdminVolunteersResponse struct {
+	ID                  uint   `json:"id"`
+	OrganizationName    string `json:"organization_name"`
+	Title               string `json:"title"`
+	StartDate           string `json:"start_date"`
+	EndDate             string `json:"end_date"`
+	TargetVolunteer     int    `json:"target_volunteer"`
+	RegisteredVolunteer int    `json:"registered_volunteer"`
+}
+
+func ToAdminVolunteersResponse(volunteer entities.Volunteer) AdminVolunteersResponse {
+	return AdminVolunteersResponse{
+		ID:                  volunteer.ID,
+		OrganizationName:    volunteer.Organization.Name,
+		Title:               volunteer.Title,
+		StartDate:           volunteer.StartDate.Format("2006-01-02"),
+		EndDate:             volunteer.EndDate.Format("2006-01-02"),
+		TargetVolunteer:     volunteer.TargetVolunteer,
+		RegisteredVolunteer: volunteer.RegisteredVolunteer,
+	}
+}
+
+func ToAdminAllVolunteersResponse(volunteers []entities.Volunteer) []AdminVolunteersResponse {
+	var result []AdminVolunteersResponse
+	for _, volunteer := range volunteers {
+		result = append(result, ToAdminVolunteersResponse(volunteer))
+	}
+	return result
+}

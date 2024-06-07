@@ -25,7 +25,17 @@ func (h *VolunteerHandler) CreateVolunteer(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
-	volunteer, err := request.ToEntity()
+	imgFile, err := c.FormFile("image_url")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid image url", err.Error()))
+	}
+
+	imageUrl, err := helper.UploadToCloudinary(imgFile)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to upload image", err.Error()))
+	}
+
+	volunteer, err := request.ToEntity(imageUrl)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid date format", err.Error()))
 	}
@@ -107,19 +117,29 @@ func (h *VolunteerHandler) UpdateVolunteer(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid ID format", err.Error()))
 	}
 
-	volunteer, err := request.ToEntity()
+	imgFile, err := c.FormFile("image_url")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid image url", err.Error()))
+	}
+
+	imageUrl, err := helper.UploadToCloudinary(imgFile)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to upload image", err.Error()))
+	}
+
+	volunteer, err := request.ToEntity(imageUrl)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid date format", err.Error()))
 	}
 
 	volunteer.ID = uint(id)
-	updatedVolunteer, err := h.volunteerService.UpdateVolunteer(volunteer)
+	_, err = h.volunteerService.UpdateVolunteer(volunteer)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to update volunteer", err.Error()))
 	}
 
 	// response := dto.ToVolunteerResponse(updatedVolunteer)
-	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "volunteer updated successfully", updatedVolunteer))
+	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "volunteer updated successfully"))
 }
 
 func (h *VolunteerHandler) DeleteVolunteer(c echo.Context) error {

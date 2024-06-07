@@ -16,11 +16,12 @@ import (
 )
 
 type AdminHandler struct {
-	adminService service.AdminService
+	adminService     service.AdminService
+	volunteerService service.VolunteerService
 }
 
-func NewAdminHandler(adminService service.AdminService) *AdminHandler {
-	return &AdminHandler{adminService}
+func NewAdminHandler(adminService service.AdminService, volunteerService service.VolunteerService) *AdminHandler {
+	return &AdminHandler{adminService, volunteerService}
 }
 
 func (h *AdminHandler) Login(c echo.Context) error {
@@ -342,4 +343,28 @@ func (h *AdminHandler) DeleteUser(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "user deleted successfully"))
+}
+
+func (h *AdminHandler) GetAllVolunteers(c echo.Context) error {
+	limitStr := c.QueryParam("limit")
+	pageStr := c.QueryParam("page")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		limit = 10
+	}
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	offset := (page - 1) * limit
+	volunteers, total, err := h.volunteerService.FindAll(limit, offset)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get volunteers", err.Error()))
+	}
+
+	response := dto.ToAdminAllVolunteersResponse(volunteers)
+	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "volunteers retrieved successfully", response, page, limit, int64(total)))
 }

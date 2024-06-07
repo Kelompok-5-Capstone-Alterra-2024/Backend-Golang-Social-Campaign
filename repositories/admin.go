@@ -21,6 +21,7 @@ type AdminRepository interface {
 	DeleteOrganizationByID(id uint) error
 
 	FindUsers(limit int, offset int) ([]entities.User, error)
+	FindUserByID(id int) (entities.User, error)
 	FindDonationsByUserID(id int, limit int, offset int) ([]entities.Donation, error)
 	DeleteUserWithDonations(id uint) error
 }
@@ -122,6 +123,14 @@ func (r *adminRepository) FindUsers(limit int, offset int) ([]entities.User, err
 		return []entities.User{}, err
 	}
 	return users, nil
+}
+
+func (r *adminRepository) FindUserByID(id int) (entities.User, error) {
+	var user entities.User
+	if err := r.db.Where("id = ?", id).First(&user).Error; err != nil {
+		return entities.User{}, err
+	}
+	return user, nil
 }
 
 func (r *adminRepository) FindDonationsByUserID(id int, limit int, offset int) ([]entities.Donation, error) {

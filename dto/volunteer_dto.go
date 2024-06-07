@@ -7,29 +7,30 @@ import (
 )
 
 type VolunteerRequest struct {
-	OrganizationID       uint   `json:"organization_id"`
-	Title                string `json:"title"`
-	ContentActivity      string `json:"content_activity"`
-	Location             string `json:"location"`
-	Date                 string `json:"date"`
-	TargetVolunteer      int    `json:"target_volunteer"`
+	OrganizationID       uint   `json:"organization_id" form:"organization_id"`
+	Title                string `json:"title" form:"title"`
+	ContentActivity      string `json:"content_activity" form:"content_activity"`
+	Location             string `json:"location" form:"location"`
+	StarDate             string `json:"start_date" form:"start_date"`
+	EndDate              string `json:"end_date" form:"end_date"`
+	TargetVolunteer      int    `json:"target_volunteer" form:"target_volunteer"`
 	RegisteredVolunteer  int    `json:"registered_volunteer"`
-	RegistrationDeadline string `json:"registration_deadline"`
-	ImageURL             string `json:"image_url"`
+	RegistrationDeadline string `json:"registration_deadline" form:"registration_deadline"`
+	ImageURL             string `json:"image_url" form:"image_url"`
 }
 
-func (r *VolunteerRequest) ToEntity() (entities.Volunteer, error) {
+func (r *VolunteerRequest) ToEntity(imgUrl string) (entities.Volunteer, error) {
 	loc, err := time.LoadLocation("Asia/Jakarta") // GMT+7 timezone
 	if err != nil {
 		return entities.Volunteer{}, fmt.Errorf("failed to load location: %v", err)
 	}
 
-	startDate, err := time.ParseInLocation("02/01/2006", r.Date, loc)
+	startDate, err := time.ParseInLocation("02/01/2006", r.StarDate, loc)
 	if err != nil {
 		return entities.Volunteer{}, fmt.Errorf("invalid date format: %v", err)
 	}
 
-	endDate, err := time.ParseInLocation("02/01/2006", r.Date, loc)
+	endDate, err := time.ParseInLocation("02/01/2006", r.EndDate, loc)
 	if err != nil {
 		return entities.Volunteer{}, fmt.Errorf("invalid date format: %v", err)
 	}
@@ -47,9 +48,9 @@ func (r *VolunteerRequest) ToEntity() (entities.Volunteer, error) {
 		StartDate:            startDate,
 		EndDate:              endDate,
 		TargetVolunteer:      r.TargetVolunteer,
-		RegisteredVolunteer:  r.RegisteredVolunteer,
 		RegistrationDeadline: registrationDeadline,
-		ImageURL:             r.ImageURL,
+		ImageURL:             imgUrl,
+		Status:               "active",
 	}, nil
 }
 

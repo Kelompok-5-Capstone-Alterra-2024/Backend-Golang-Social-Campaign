@@ -26,6 +26,7 @@ type AdminService interface {
 	SaveImageOraganization(id uint, image string) (entities.Organization, error)
 
 	GetUsers(limit int, offset int) ([]entities.User, error)
+	GetUserByID(id int) (entities.User, error)
 	GetDonationsByUserID(id int, limit int, offset int) (dto.AdminUserDetailResponse, error)
 	DeleteUserWithDonations(id uint) error
 }
@@ -128,6 +129,10 @@ func (s *adminService) SaveImageOraganization(id uint, image string) (entities.O
 
 func (s *adminService) GetUsers(limit int, offset int) ([]entities.User, error) {
 	return s.adminRepository.FindUsers(limit, offset)
+}
+
+func (s *adminService) GetUserByID(id int) (entities.User, error) {
+	return s.userRepository.FindByID(uint(id))
 }
 
 func (s *adminService) GetDonationsByUserID(id int, limit int, offset int) (dto.AdminUserDetailResponse, error) {
