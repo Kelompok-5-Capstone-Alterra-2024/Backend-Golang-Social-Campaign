@@ -186,3 +186,29 @@ func ToAdminAllVolunteersResponse(volunteers []entities.Volunteer) []AdminVolunt
 	}
 	return result
 }
+
+type AdminArticleResponses struct {
+	ID        uint   `json:"id"`
+	CreatedAt string `json:"created_at"`
+	Title     string `json:"title"`
+	Content   string `json:"content"`
+	ImageURL  string `json:"image_url"`
+}
+
+func ToAdminArticleResponses(article entities.Article) AdminArticleResponses {
+	return AdminArticleResponses{
+		ID:        article.ID,
+		CreatedAt: article.CreatedAt.Format("2006-01-02"),
+		Title:     article.Title,
+		Content:   article.Content,
+		ImageURL:  article.ImageURL,
+	}
+}
+
+func ToAdminAllArticleResponses(articles []entities.Article) []AdminArticleResponses {
+	var result []AdminArticleResponses
+	for _, article := range articles {
+		result = append(result, ToAdminArticleResponses(article))
+	}
+	return result
+}

@@ -21,7 +21,6 @@ func ToArticleResponse(article entities.Article) ArticleResponse {
 	return ArticleResponse{
 		ID:        article.ID,
 		CreatedAt: createdAt,
-		AdminID:   article.AdminID,
 		Title:     article.Title,
 		Content:   article.Content,
 		ImageURL:  article.ImageURL,
@@ -45,7 +44,6 @@ func ToArticleResponseList(articles []entities.Article) []ArticleResponse {
 
 func (req *ArticleRequest) ToEntity() entities.Article {
 	return entities.Article{
-		AdminID:  req.AdminID,
 		Title:    req.Title,
 		Content:  req.Content,
 		ImageURL: req.ImageURL,

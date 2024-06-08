@@ -19,10 +19,11 @@ import (
 type AdminHandler struct {
 	adminService     service.AdminService
 	volunteerService service.VolunteerService
+	articleService   service.ArticleService
 }
 
-func NewAdminHandler(adminService service.AdminService, volunteerService service.VolunteerService) *AdminHandler {
-	return &AdminHandler{adminService, volunteerService}
+func NewAdminHandler(adminService service.AdminService, volunteerService service.VolunteerService, articleService service.ArticleService) *AdminHandler {
+	return &AdminHandler{adminService, volunteerService, articleService}
 }
 
 // func (h *AdminHandler) Login(c echo.Context) error {
@@ -399,4 +400,24 @@ func (h *AdminHandler) GetAdminAllVolunteers(c echo.Context) error {
 
 	response := dto.ToAdminAllVolunteersResponse(volunteers)
 	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "volunteers retrieved successfully", response, page, limit, int64(total)))
+}
+
+func (h *AdminHandler) GetAdminAllArticle(c echo.Context) error {
+	page, _ := strconv.Atoi(c.QueryParam("page"))
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+
+	if page <= 0 {
+		page = 1
+	}
+	if limit <= 0 || limit > 6 {
+		limit = 10
+	}
+
+	articles, total, err := h.articleService.FindAll(page, limit)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get articles", err.Error()))
+	}
+
+	response := dto.ToAdminAllArticleResponses(articles)
+	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "articles retrieved successfully", response, page, limit, int64(total)))
 }

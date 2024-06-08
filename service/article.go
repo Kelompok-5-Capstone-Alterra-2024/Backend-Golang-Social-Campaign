@@ -34,7 +34,6 @@ func (s *articleService) UpdateArticle(article entities.Article) (entities.Artic
 	existingArticle.Title = article.Title
 	existingArticle.Content = article.Content
 	existingArticle.ImageURL = article.ImageURL
-	existingArticle.AdminID = article.AdminID
 
 	if err := s.repo.Save(&existingArticle).Error; err != nil {
 		return entities.Article{}, err
