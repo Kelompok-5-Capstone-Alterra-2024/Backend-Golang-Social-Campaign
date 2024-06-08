@@ -27,15 +27,30 @@ func (h *UserHandler) Register(c echo.Context) error {
 	return c.JSON(200, helper.GeneralResponse(true, "User registered successfully"))
 }
 
+// func (h *UserHandler) Login(c echo.Context) error {
+// 	var request dto.LoginRequest
+// 	c.Bind(&request)
+// 	loggedUser, err := h.userService.Login(request)
+// 	if err != nil {
+// 		return c.JSON(500, helper.ErrorResponse(false, "validation failed", "invalid credentials"))
+// 	}
+
+// 	return c.JSON(200, helper.ResponseWithData(true, "User logged in successfully", loggedUser.Token))
+// }
+
 func (h *UserHandler) Login(c echo.Context) error {
 	var request dto.LoginRequest
 	c.Bind(&request)
-	loggedUser, err := h.userService.Login(request)
+	_, accessToken, refreshToken, err := h.userService.Login(request)
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "validation failed", "invalid credentials"))
 	}
 
-	return c.JSON(200, helper.ResponseWithData(true, "User logged in successfully", loggedUser.Token))
+	response := map[string]string{
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
+	}
+	return c.JSON(200, helper.ResponseWithData(true, "User logged in successfully", response))
 }
 
 func (h *UserHandler) ForgetPassword(c echo.Context) error {

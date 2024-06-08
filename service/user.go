@@ -12,7 +12,8 @@ import (
 
 type UserService interface {
 	Register(request dto.RegisterRequest) (entities.User, error)
-	Login(request dto.LoginRequest) (entities.User, error)
+	// Login(request dto.LoginRequest) (entities.User, error)
+	Login(request dto.LoginRequest) (entities.User, string, string, error)
 	GetUserByID(id uint) (entities.User, error)
 	GenerateResetToken(email string) error
 	ResetPassword(resetToken, newPassword string) error
@@ -64,22 +65,43 @@ func (s *userService) Register(request dto.RegisterRequest) (entities.User, erro
 	return s.userRepository.Save(user)
 }
 
-func (s *userService) Login(request dto.LoginRequest) (entities.User, error) {
+// func (s *userService) Login(request dto.LoginRequest) (entities.User, error) {
+// 	username := request.Username
+// 	password := request.Password
+
+// 	user, err := s.userRepository.FindByUsername(username)
+// 	if err != nil {
+// 		return user, err
+// 	}
+
+// 	if user.Password != password {
+// 		return user, fmt.Errorf("wrong password")
+// 	}
+
+// 	user.Token = middleware.GenerateToken(user.ID, user.Username, "user")
+
+// 	return user, nil
+// }
+
+func (s *userService) Login(request dto.LoginRequest) (entities.User, string, string, error) {
 	username := request.Username
 	password := request.Password
 
 	user, err := s.userRepository.FindByUsername(username)
 	if err != nil {
-		return user, err
+		return user, "", "", err
 	}
 
 	if user.Password != password {
-		return user, fmt.Errorf("wrong password")
+		return user, "", "", fmt.Errorf("wrong password")
 	}
 
-	user.Token = middleware.GenerateToken(user.ID, user.Username, "user")
+	accessToken, refreshToken, err := middleware.GenerateToken(user.ID, user.Username, "user")
+	if err != nil {
+		return user, "", "", err
+	}
 
-	return user, nil
+	return user, accessToken, refreshToken, nil
 }
 
 func (s *userService) GenerateResetToken(email string) error {

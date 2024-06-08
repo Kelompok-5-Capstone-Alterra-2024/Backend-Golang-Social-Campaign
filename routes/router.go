@@ -154,8 +154,7 @@ func NewRouter(router *echo.Echo) {
 	admin.PUT("/organizations/:id", adminHandler.EditOrganization)
 	admin.DELETE("/organizations/:id", adminHandler.DeleteOrganization)
 
-	admin.GET("/volunteers", adminHandler.GetAllVolunteers)
-
+	admin.GET("/volunteers", adminHandler.GetAdminAllVolunteers)
 	admin.POST("/volunteers", volunteerHandler.CreateVolunteer)
 	admin.PUT("/volunteers/:id", volunteerHandler.UpdateVolunteer)
 	admin.DELETE("/volunteers/:id", volunteerHandler.DeleteVolunteer)

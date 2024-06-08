@@ -24,14 +24,29 @@ func NewAdminHandler(adminService service.AdminService, volunteerService service
 	return &AdminHandler{adminService, volunteerService}
 }
 
+// func (h *AdminHandler) Login(c echo.Context) error {
+// 	var request dto.LoginRequest
+// 	c.Bind(&request)
+// 	admin, err := h.adminService.Login(request)
+// 	if err != nil {
+// 		return c.JSON(500, helper.ErrorResponse(false, "validation failed", "invalid username or password"))
+// 	}
+// 	return c.JSON(200, helper.ResponseWithData(true, "Admin logged in successfully", admin.Token))
+// }
+
 func (h *AdminHandler) Login(c echo.Context) error {
 	var request dto.LoginRequest
 	c.Bind(&request)
-	admin, err := h.adminService.Login(request)
+	_, accessToken, refreshToken, err := h.adminService.Login(request)
 	if err != nil {
-		return c.JSON(500, helper.ErrorResponse(false, "validation failed", "invalid username or password"))
+		return c.JSON(500, helper.ErrorResponse(false, "validation failed", "invalid credentials"))
 	}
-	return c.JSON(200, helper.ResponseWithData(true, "Admin logged in successfully", admin.Token))
+
+	response := map[string]string{
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
+	}
+	return c.JSON(200, helper.ResponseWithData(true, "Admin logged in successfully", response))
 }
 
 func (h *AdminHandler) GetFundraisings(c echo.Context) error {
@@ -345,22 +360,17 @@ func (h *AdminHandler) DeleteUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "user deleted successfully"))
 }
 
-func (h *AdminHandler) GetAllVolunteers(c echo.Context) error {
-	limitStr := c.QueryParam("limit")
-	pageStr := c.QueryParam("page")
+func (h *AdminHandler) GetAdminAllVolunteers(c echo.Context) error {
+	page, _ := strconv.Atoi(c.QueryParam("page"))
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
 
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil {
-		limit = 10
-	}
-
-	page, err := strconv.Atoi(pageStr)
-	if err != nil || page < 1 {
+	if page <= 0 {
 		page = 1
 	}
-
-	offset := (page - 1) * limit
-	volunteers, total, err := h.volunteerService.FindAll(limit, offset)
+	if limit <= 0 || limit > 6 {
+		limit = 10
+	}
+	volunteers, total, err := h.volunteerService.FindAll(page, limit)
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to get volunteers", err.Error()))
 	}

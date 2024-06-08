@@ -6,12 +6,12 @@ import (
 	middleware "capstone/middlewares"
 	"capstone/repositories"
 	"context"
-
-	"errors"
+	"fmt"
 )
 
 type AdminService interface {
-	Login(request dto.LoginRequest) (entities.Admin, error)
+	// Login(request dto.LoginRequest) (entities.Admin, error)
+	Login(request dto.LoginRequest) (entities.Admin, string, string, error)
 	GetFundraisings(limit int, offset int) ([]entities.Fundraising, error)
 	CreateFudraising(ctx context.Context, fundraising entities.Fundraising) (entities.Fundraising, error)
 	SaveImageFundraising(id uint, image string) (entities.Fundraising, error)
@@ -40,22 +40,43 @@ func NewAdminService(adminRepository repositories.AdminRepository, userRepositor
 	return &adminService{adminRepository, userRepository}
 }
 
-func (s *adminService) Login(request dto.LoginRequest) (entities.Admin, error) {
+// func (s *adminService) Login(request dto.LoginRequest) (entities.Admin, error) {
+// 	username := request.Username
+// 	password := request.Password
+
+// 	admin, err := s.adminRepository.FindByUsername(username)
+// 	if err != nil {
+// 		return admin, err
+// 	}
+
+// 	if admin.Password != password {
+// 		return admin, errors.New("wrong password")
+// 	}
+
+// 	admin.Token = middleware.GenerateToken(admin.ID, admin.Username, "admin")
+
+// 	return admin, nil
+// }
+
+func (s *adminService) Login(request dto.LoginRequest) (entities.Admin, string, string, error) {
 	username := request.Username
 	password := request.Password
 
 	admin, err := s.adminRepository.FindByUsername(username)
 	if err != nil {
-		return admin, err
+		return admin, "", "", err
 	}
 
 	if admin.Password != password {
-		return admin, errors.New("wrong password")
+		return admin, "", "", fmt.Errorf("wrong password")
 	}
 
-	admin.Token = middleware.GenerateToken(admin.ID, admin.Username, "admin")
+	accessToken, refreshToken, err := middleware.GenerateToken(admin.ID, admin.Username, "admin")
+	if err != nil {
+		return admin, "", "", err
+	}
 
-	return admin, nil
+	return admin, accessToken, refreshToken, nil
 }
 
 func (s *adminService) GetFundraisings(limit int, offset int) ([]entities.Fundraising, error) {
