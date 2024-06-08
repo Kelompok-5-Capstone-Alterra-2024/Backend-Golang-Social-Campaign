@@ -65,10 +65,10 @@ func (h *UserHandler) Login(c echo.Context) error {
 	}
 
 	return c.JSON(200, map[string]interface{}{
-		"success":      true,
-		"message":      "User logged in successfully",
-		"accessToken":  accessToken,
-		"refreshToken": refreshToken,
+		"success":       true,
+		"message":       "User logged in successfully",
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
 	})
 }
 
