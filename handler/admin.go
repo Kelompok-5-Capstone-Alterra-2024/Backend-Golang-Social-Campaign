@@ -4,6 +4,7 @@ import (
 	"capstone/dto"
 	"capstone/entities"
 	"capstone/helper"
+	middleware "capstone/middlewares"
 	"capstone/service"
 	"context"
 	"net/http"
@@ -47,6 +48,27 @@ func (h *AdminHandler) Login(c echo.Context) error {
 		"refresh_token": refreshToken,
 	}
 	return c.JSON(200, helper.ResponseWithData(true, "Admin logged in successfully", response))
+}
+
+func (h *AdminHandler) RefreshTokenAdmin(c echo.Context) error {
+	var request struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+	c.Bind(&request)
+
+	claims, err := middleware.VerifyRefreshToken(request.RefreshToken)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
+			"message": "Invalid refresh token",
+		})
+	}
+
+	accessToken, refreshToken := middleware.GenerateToken(claims.ID, claims.Username, claims.Role)
+
+	return c.JSON(200, map[string]interface{}{
+		"accessToken":  accessToken,
+		"refreshToken": refreshToken,
+	})
 }
 
 func (h *AdminHandler) GetFundraisings(c echo.Context) error {

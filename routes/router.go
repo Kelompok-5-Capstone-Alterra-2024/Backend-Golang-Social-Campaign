@@ -74,6 +74,8 @@ func NewRouter(router *echo.Echo) {
 
 	api.POST("/transactions/notification", donationHandler.GetPaymentCallback)
 
+	api.POST("/refresh-token", userHandler.RefreshToken)
+
 	api.Use(jwt, routeMiddleware.UserMiddleware)
 
 	api.GET("/organizations", organizatonHandler.GetOrganizations)
@@ -134,6 +136,7 @@ func NewRouter(router *echo.Echo) {
 
 	// Admin
 	admin := router.Group("api/v1/admin")
+	admin.POST("/refresh-token", adminHandler.RefreshTokenAdmin)
 
 	admin.POST("/login", adminHandler.Login)
 	admin.Use(jwt, routeMiddleware.AdminMiddleware)

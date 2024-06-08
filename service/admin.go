@@ -71,10 +71,8 @@ func (s *adminService) Login(request dto.LoginRequest) (entities.Admin, string, 
 		return admin, "", "", fmt.Errorf("wrong password")
 	}
 
-	accessToken, refreshToken, err := middleware.GenerateToken(admin.ID, admin.Username, "admin")
-	if err != nil {
-		return admin, "", "", err
-	}
+	accessToken, refreshToken := middleware.GenerateToken(admin.ID, admin.Username, "admin")
+	admin.Token = accessToken
 
 	return admin, accessToken, refreshToken, nil
 }

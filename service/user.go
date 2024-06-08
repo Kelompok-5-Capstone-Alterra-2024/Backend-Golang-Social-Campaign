@@ -96,10 +96,8 @@ func (s *userService) Login(request dto.LoginRequest) (entities.User, string, st
 		return user, "", "", fmt.Errorf("wrong password")
 	}
 
-	accessToken, refreshToken, err := middleware.GenerateToken(user.ID, user.Username, "user")
-	if err != nil {
-		return user, "", "", err
-	}
+	accessToken, refreshToken := middleware.GenerateToken(user.ID, user.Username, "user")
+	user.Token = accessToken
 
 	return user, accessToken, refreshToken, nil
 }
