@@ -64,12 +64,12 @@ func (h *UserHandler) Login(c echo.Context) error {
 		return c.JSON(500, helper.ErrorResponse(false, "validation failed", "invalid credentials"))
 	}
 
-	return c.JSON(200, map[string]interface{}{
-		"success":       true,
-		"message":       "User logged in successfully",
+	response := map[string]string{
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,
-	})
+	}
+
+	return c.JSON(200, helper.ResponseWithData(true, "User logged in successfully", response))
 }
 
 func (h *UserHandler) RefreshToken(c echo.Context) error {
