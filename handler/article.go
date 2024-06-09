@@ -24,15 +24,25 @@ func (h *ArticleHandler) CreateArticle(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
-	article := request.ToEntity()
+	imgFile, err := c.FormFile("image_url")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid image url", err.Error()))
+	}
 
-	createdArticle, err := h.articleService.CreateArticle(article)
+	imageUrl, err := helper.UploadToCloudinary(imgFile)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to upload image", err.Error()))
+	}
+
+	article := request.ToEntity(imageUrl)
+
+	_, err = h.articleService.CreateArticle(article)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
-	response := dto.ToArticleResponse(createdArticle)
-	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "article created successfully", response))
+	// response := dto.ToArticleResponse(createdArticle)
+	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "article created successfully"))
 }
 
 func (h *ArticleHandler) UpdateArticle(c echo.Context) error {
@@ -46,16 +56,26 @@ func (h *ArticleHandler) UpdateArticle(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
-	article := request.ToEntity()
+	imgFile, err := c.FormFile("image_url")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid image url", err.Error()))
+	}
+
+	imageUrl, err := helper.UploadToCloudinary(imgFile)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to upload image", err.Error()))
+	}
+
+	article := request.ToEntity(imageUrl)
 	article.ID = uint(id)
 
-	updatedArticle, err := h.articleService.UpdateArticle(article)
+	_, err = h.articleService.UpdateArticle(article)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
-	response := dto.ToArticleResponse(updatedArticle)
-	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "article updated successfully", response))
+	// response := dto.ToArticleResponse(updatedArticle)
+	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "article updated successfully"))
 }
 
 func (h *ArticleHandler) GetArticleByID(c echo.Context) error {
