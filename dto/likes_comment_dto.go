@@ -11,8 +11,8 @@ type LikesCommentRequest struct {
 
 func (r *LikesCommentRequest) ToEntity() entities.LikesComment {
 	return entities.LikesComment{
-		CustomerID: r.CustomerID,
-		CommentID:  r.CommentID,
+		UserID:    r.CustomerID,
+		CommentID: r.CommentID,
 	}
 }
 

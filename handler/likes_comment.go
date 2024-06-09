@@ -33,7 +33,7 @@ func (h *LikesCommentHandler) CreateLikesComment(c echo.Context) error {
 
 	response := dto.LikesCommentResponse{
 		ID:         createdLikesComment.ID,
-		CustomerID: createdLikesComment.CustomerID,
+		CustomerID: createdLikesComment.UserID,
 		CommentID:  createdLikesComment.CommentID,
 	}
 
@@ -75,7 +75,7 @@ func (h *LikesCommentHandler) GetLikesCommentByID(c echo.Context) error {
 		Data: []dto.LikesCommentResponse{
 			{
 				ID:         like.ID,
-				CustomerID: like.CustomerID,
+				CustomerID: like.UserID,
 				CommentID:  like.CommentID,
 			},
 		},
@@ -103,7 +103,7 @@ func (h *LikesCommentHandler) GetAllLikesComments(c echo.Context) error {
 	for i, like := range likes {
 		response.Data[i] = dto.LikesCommentResponse{
 			ID:         like.ID,
-			CustomerID: like.CustomerID,
+			CustomerID: like.UserID,
 			CommentID:  like.CommentID,
 		}
 	}

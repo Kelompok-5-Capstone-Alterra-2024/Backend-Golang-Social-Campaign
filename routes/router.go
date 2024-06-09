@@ -109,16 +109,16 @@ func NewRouter(router *echo.Echo) {
 	api.DELETE("/volunteer/applications/:id", applicationHandler.DeleteApplicationByID)
 
 	// Article routes
-
 	api.GET("/articles/:id", articleHandler.GetArticleByID)
 	api.GET("/articles", articleHandler.GetAllArticles)
 
 	// Comment routes
-	api.POST("/comments", commentHandler.CreateComment)
-	api.PUT("/comments/:id", commentHandler.UpdateComment)
-	api.GET("/comments/:id", commentHandler.GetCommentByID)
-	api.GET("/comments", commentHandler.GetAllComments)
-	api.DELETE("/comments/:id", commentHandler.DeleteComment)
+	api.POST("/articles/:id/comments", commentHandler.CreateComment)
+	api.GET("/articles/:id/comments", commentHandler.GetCommentsByArticleID)
+	// api.PUT("/comments/:id", commentHandler.UpdateComment)
+	// api.GET("/comments/:id", commentHandler.GetCommentByID)
+	// api.GET("/comments", commentHandler.GetAllComments)
+	// api.DELETE("/comments/:id", commentHandler.DeleteComment)
 
 	// LikesComment routes
 	api.POST("/likes-comments", likesCommentHandler.CreateLikesComment)

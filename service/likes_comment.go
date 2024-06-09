@@ -25,7 +25,7 @@ func NewLikesCommentService(repo repositories.LikesCommentRepository) LikesComme
 
 func (s *likesCommentService) CreateLikesComment(likesComment entities.LikesComment) (entities.LikesComment, error) {
 	// Check if the customer already liked the comment
-	existingLike, err := s.repo.FindByCustomerAndComment(likesComment.CustomerID, likesComment.CommentID)
+	existingLike, err := s.repo.FindByCustomerAndComment(likesComment.UserID, likesComment.CommentID)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return entities.LikesComment{}, err
 	}
