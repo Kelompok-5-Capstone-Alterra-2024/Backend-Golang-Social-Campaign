@@ -42,10 +42,10 @@ func ToArticleResponseList(articles []entities.Article) []ArticleResponse {
 	return response
 }
 
-func (req *ArticleRequest) ToEntity() entities.Article {
+func (req *ArticleRequest) ToEntity(imageUrl string) entities.Article {
 	return entities.Article{
 		Title:    req.Title,
 		Content:  req.Content,
-		ImageURL: req.ImageURL,
+		ImageURL: imageUrl,
 	}
 }
