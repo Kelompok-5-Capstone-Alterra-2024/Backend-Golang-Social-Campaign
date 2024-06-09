@@ -86,8 +86,8 @@ type VolunteerResponse struct {
 }
 
 type UserRegisteredResponse struct {
-	UserAvatarRegisteredResponse `json:"user_avatar_registered"`
-	TotalRegisteredVolunteer     int `json:"total_registered_volunteer"`
+	UserAvatarRegistered     []UserAvatarRegisteredResponse `json:"user_avatar_registered"`
+	TotalRegisteredVolunteer int                            `json:"total_registered_volunteer"`
 }
 
 type UserAvatarRegisteredResponse struct {
@@ -102,19 +102,21 @@ func ToVolunteerResponse(volunteer entities.Volunteer, application []entities.Ap
 		uniqueUserAvatars[app.UserID] = app.User.Avatar
 	}
 
-	// Get the avatar of the first unique user who registered
-	var userAvatarRegisteredResponse UserAvatarRegisteredResponse
+	// Get the avatar of the first four unique user who registered
+	userAvatarRegisteredResponse := []UserAvatarRegisteredResponse{}
 	for userID, avatar := range uniqueUserAvatars {
-		userAvatarRegisteredResponse = UserAvatarRegisteredResponse{
+		if len(userAvatarRegisteredResponse) == 4 {
+			break
+		}
+		userAvatarRegisteredResponse = append(userAvatarRegisteredResponse, UserAvatarRegisteredResponse{
 			UserID: userID,
 			Avatar: avatar,
-		}
-		break
+		})
 	}
 
 	userRegisteredResponse := UserRegisteredResponse{
-		UserAvatarRegisteredResponse: userAvatarRegisteredResponse,
-		TotalRegisteredVolunteer:     len(uniqueUserAvatars),
+		UserAvatarRegistered:     userAvatarRegisteredResponse,
+		TotalRegisteredVolunteer: len(application),
 	}
 
 	return VolunteerResponse{
