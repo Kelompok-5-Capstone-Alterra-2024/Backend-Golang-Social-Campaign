@@ -117,6 +117,7 @@ func NewRouter(router *echo.Echo) {
 	// Article routes
 	api.GET("/articles/:id", articleHandler.GetArticleByID)
 	api.GET("/articles", articleHandler.GetAllArticles)
+	api.GET("/articles/top", articleHandler.GetTopArticles)
 
 	// Comment routes
 	api.POST("/articles/:id/comments", commentHandler.CreateComment)

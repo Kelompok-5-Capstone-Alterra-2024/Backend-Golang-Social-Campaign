@@ -11,6 +11,7 @@ type ArticleService interface {
 	FindByID(id uint) (entities.Article, error)
 	FindAll(page, limit int) ([]entities.Article, int, error)
 	DeleteArticle(id uint) error
+	GetTopArticles() ([]entities.Article, error)
 }
 
 type articleService struct {
@@ -52,4 +53,8 @@ func (s *articleService) FindAll(page, limit int) ([]entities.Article, int, erro
 
 func (s *articleService) DeleteArticle(id uint) error {
 	return s.repo.Delete(id)
+}
+
+func (s *articleService) GetTopArticles() ([]entities.Article, error) {
+	return s.repo.FindTop()
 }
