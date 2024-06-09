@@ -28,10 +28,9 @@ func ToArticleResponse(article entities.Article) ArticleResponse {
 }
 
 type ArticleRequest struct {
-	AdminID  uint   `json:"admin_id"`
-	Title    string `json:"title"`
-	Content  string `json:"content"`
-	ImageURL string `json:"image_url"`
+	Title    string `json:"title" form:"title"`
+	Content  string `json:"content" form:"content"`
+	ImageURL string `json:"image_url" form:"image_url"`
 }
 
 func ToArticleResponseList(articles []entities.Article) []ArticleResponse {
