@@ -2,19 +2,20 @@ package repositories
 
 import (
 	"capstone/entities"
+	"context"
 
 	"gorm.io/gorm"
 )
 
 type LikesCommentRepository interface {
-	Create(likesComment entities.LikesComment) (entities.LikesComment, error)
-	Delete(id uint) error
+	Create(ctx context.Context, likesComment entities.LikesComment) (entities.LikesComment, error)
+	Delete(ctx context.Context, id uint) error
 	FindByCustomerAndComment(customerID, commentID uint) (entities.LikesComment, error)
 	FindByID(id uint) (entities.LikesComment, error)
 	FindAll() ([]entities.LikesComment, error)
 	IsLiked(commentID uint, userID uint) (bool, error)
-	IncrementLike(commentID uint) error
-	DecrementLike(commentID uint) error
+	IncrementLike(ctx context.Context, commentID uint) error
+	DecrementLike(ctx context.Context, commentID uint) error
 }
 
 type likesCommentRepository struct {
@@ -33,12 +34,12 @@ func (r *likesCommentRepository) FindByCustomerAndComment(customerID, commentID 
 	return like, nil
 }
 
-func (r *likesCommentRepository) Create(likesComment entities.LikesComment) (entities.LikesComment, error) {
+func (r *likesCommentRepository) Create(ctx context.Context, likesComment entities.LikesComment) (entities.LikesComment, error) {
 	err := r.db.Create(&likesComment).Error
 	return likesComment, err
 }
 
-func (r *likesCommentRepository) Delete(id uint) error {
+func (r *likesCommentRepository) Delete(ctx context.Context, id uint) error {
 	err := r.db.Delete(&entities.LikesComment{}, id).Error
 	return err
 }
@@ -65,10 +66,10 @@ func (r *likesCommentRepository) IsLiked(commentID uint, userID uint) (bool, err
 	return count > 0, err
 }
 
-func (r *likesCommentRepository) IncrementLike(commentID uint) error {
-	return r.db.Model(&entities.Comment{}).Where("id = ?", commentID).UpdateColumn("total_likes", gorm.Expr("total_likes + ?", 1)).Error
+func (r *likesCommentRepository) IncrementLike(ctx context.Context, commentID uint) error {
+	return r.db.WithContext(ctx).Model(&entities.Comment{}).Where("id = ?", commentID).UpdateColumn("total_likes", gorm.Expr("total_likes + ?", 1)).Error
 }
 
-func (r *likesCommentRepository) DecrementLike(commentID uint) error {
-	return r.db.Model(&entities.Comment{}).Where("id = ?", commentID).UpdateColumn("total_likes", gorm.Expr("total_likes - ?", 1)).Error
+func (r *likesCommentRepository) DecrementLike(ctx context.Context, commentID uint) error {
+	return r.db.WithContext(ctx).Model(&entities.Comment{}).Where("id = ?", commentID).UpdateColumn("total_likes", gorm.Expr("total_likes - ?", 1)).Error
 }

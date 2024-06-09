@@ -8,10 +8,9 @@ import (
 )
 
 type jwtCustomClaims struct {
-	ID          uint   `json:"id"`
-	Username    string `json:"username"`
-	Role        string `json:"role"`
-	RefreshUUID string `json:"refresh_uuid"`
+	ID       uint   `json:"id"`
+	Username string `json:"username"`
+	Role     string `json:"role"`
 	jwt.RegisteredClaims
 }
 
