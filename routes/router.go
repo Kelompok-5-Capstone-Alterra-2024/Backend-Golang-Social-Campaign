@@ -98,8 +98,8 @@ func NewRouter(router *echo.Echo) {
 	api.GET("/history/donations", donationHandler.GetUserDonation)
 	api.GET("/history/donations/:id", donationHandler.GetDonationByID)
 
-	api.POST("/comments/:comment_id/like", donationHandler.LikeComment)
-	api.DELETE("/comments/:comment_id/unlike", donationHandler.UnLikeComment)
+	// api.POST("/comments/:comment_id/like", donationHandler.LikeComment)
+	// api.DELETE("/comments/:comment_id/unlike", donationHandler.UnLikeComment)
 
 	// Volunteer
 	api.GET("/volunteer/:id", volunteerHandler.GetVolunteerByID)
@@ -127,10 +127,10 @@ func NewRouter(router *echo.Echo) {
 	// api.DELETE("/comments/:id", commentHandler.DeleteComment)
 
 	// LikesComment routes
-	api.POST("/likes-comments", likesCommentHandler.CreateLikesComment)
-	api.DELETE("/likes-comments/:id", likesCommentHandler.DeleteLikesComment)
-	api.GET("/likes-comments/:id", likesCommentHandler.GetLikesCommentByID)
-	api.GET("/likes-comments", likesCommentHandler.GetAllLikesComments)
+	api.POST("/article/comments/:id/like", likesCommentHandler.CreateLikesComment)
+	api.DELETE("/article/comments/:id/unlike", likesCommentHandler.DeleteLikesComment)
+	// api.GET("/likes-comments/:id", likesCommentHandler.GetLikesCommentByID)
+	// api.GET("/likes-comments", likesCommentHandler.GetAllLikesComments)
 
 	// TestimoniVolunteer routes
 	api.POST("/volunteer/:id/testimoni-volunteers", testimoniVolunteerHandler.CreateTestimoniVolunteer)

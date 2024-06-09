@@ -5,19 +5,19 @@ import (
 )
 
 type LikesCommentRequest struct {
-	CustomerID uint `json:"customer_id"`
-	CommentID  uint `json:"comment_id"`
+	UserID    uint `json:"user_id"`
+	CommentID uint `json:"comment_id"`
 }
 
-func (r *LikesCommentRequest) ToEntity() entities.LikesComment {
+func (r *LikesCommentRequest) ToEntity(commentId, userId uint) entities.LikesComment {
 	return entities.LikesComment{
-		UserID:    r.CustomerID,
-		CommentID: r.CommentID,
+		UserID:    commentId,
+		CommentID: userId,
 	}
 }
 
 type LikesCommentResponse struct {
-	ID         uint `json:"id"`
-	CustomerID uint `json:"customer_id"`
-	CommentID  uint `json:"comment_id"`
+	ID        uint `json:"id"`
+	UserID    uint `json:"user_id"`
+	CommentID uint `json:"comment_id"`
 }

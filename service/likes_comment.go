@@ -33,11 +33,34 @@ func (s *likesCommentService) CreateLikesComment(likesComment entities.LikesComm
 		return entities.LikesComment{}, errors.New("customer already liked this comment")
 	}
 
-	return s.repo.Create(likesComment)
+	// Create the new like
+	_, err = s.repo.Create(likesComment)
+	if err != nil {
+		return entities.LikesComment{}, err
+	}
+
+	// Increment the like count for the comment
+	err = s.repo.IncrementLike(likesComment.CommentID)
+	if err != nil {
+		return entities.LikesComment{}, err
+	}
+
+	return likesComment, nil
+
 }
 
 func (s *likesCommentService) DeleteLikesComment(id uint) error {
-	return s.repo.Delete(id)
+	err := s.repo.Delete(id)
+	if err != nil {
+		return err
+	}
+
+	// Decrement the like count for the comment
+	err = s.repo.DecrementLike(id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *likesCommentService) GetLikesCommentByID(id uint) (entities.LikesComment, error) {

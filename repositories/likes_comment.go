@@ -12,6 +12,9 @@ type LikesCommentRepository interface {
 	FindByCustomerAndComment(customerID, commentID uint) (entities.LikesComment, error)
 	FindByID(id uint) (entities.LikesComment, error)
 	FindAll() ([]entities.LikesComment, error)
+	IsLiked(commentID uint, userID uint) (bool, error)
+	IncrementLike(commentID uint) error
+	DecrementLike(commentID uint) error
 }
 
 type likesCommentRepository struct {
@@ -24,7 +27,7 @@ func NewLikesCommentRepository(db *gorm.DB) LikesCommentRepository {
 
 func (r *likesCommentRepository) FindByCustomerAndComment(customerID, commentID uint) (entities.LikesComment, error) {
 	var like entities.LikesComment
-	if err := r.db.Where("customer_id = ? AND comment_id = ?", customerID, commentID).First(&like).Error; err != nil {
+	if err := r.db.Where("user_id = ? AND comment_id = ?", customerID, commentID).First(&like).Error; err != nil {
 		return entities.LikesComment{}, err
 	}
 	return like, nil
@@ -54,4 +57,18 @@ func (r *likesCommentRepository) FindAll() ([]entities.LikesComment, error) {
 		return nil, err
 	}
 	return likes, nil
+}
+
+func (r *likesCommentRepository) IsLiked(commentID uint, userID uint) (bool, error) {
+	var count int64
+	err := r.db.Model(&entities.LikesComment{}).Where("comment_id = ? AND user_id = ?", commentID, userID).Count(&count).Error
+	return count > 0, err
+}
+
+func (r *likesCommentRepository) IncrementLike(commentID uint) error {
+	return r.db.Model(&entities.Comment{}).Where("id = ?", commentID).UpdateColumn("total_likes", gorm.Expr("total_likes + ?", 1)).Error
+}
+
+func (r *likesCommentRepository) DecrementLike(commentID uint) error {
+	return r.db.Model(&entities.Comment{}).Where("id = ?", commentID).UpdateColumn("total_likes", gorm.Expr("total_likes - ?", 1)).Error
 }
