@@ -55,7 +55,7 @@ func (h *LikesCommentHandler) CreateLikesComment(c echo.Context) error {
 }
 
 func (h *LikesCommentHandler) DeleteLikesComment(c echo.Context) error {
-	commentID, err := strconv.Atoi(c.Param("comment_id"))
+	commentID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
