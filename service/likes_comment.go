@@ -4,14 +4,11 @@ import (
 	"capstone/entities"
 	"capstone/repositories"
 	"context"
-	"errors"
-
-	"gorm.io/gorm"
 )
 
 type LikesCommentService interface {
-	CreateLikesComment(ctx context.Context, commentID uint, userID uint) (entities.LikesComment, error)
-	DeleteLikesComment(ctx context.Context, id uint) error
+	LikesComment(ctx context.Context, commentID uint, userID uint) error
+	DeleteLikesComment(ctx context.Context, commentID uint, userID uint) error
 	GetLikesCommentByID(id uint) (entities.LikesComment, error)
 	GetAllLikesComments() ([]entities.LikesComment, error)
 }
@@ -24,49 +21,38 @@ func NewLikesCommentService(repo repositories.LikesCommentRepository) LikesComme
 	return &likesCommentService{repo: repo}
 }
 
-func (s *likesCommentService) CreateLikesComment(ctx context.Context, commentId, userId uint) (entities.LikesComment, error) {
+func (s *likesCommentService) LikesComment(ctx context.Context, commentId, userId uint) error {
 	// Check if the customer already liked the comment
-	existingLike, err := s.repo.FindByCustomerAndComment(userId, commentId)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return entities.LikesComment{}, err
+	liked, err := s.repo.IsLiked(commentId, userId)
+	if err != nil {
+		return err
 	}
-	if existingLike.ID != 0 {
-		return entities.LikesComment{}, errors.New("customer already liked this comment")
+	if liked {
+		return nil
 	}
 
 	like := entities.LikesComment{
-		UserID:    userId,
 		CommentID: commentId,
+		UserID:    userId,
 	}
 
-	// Create the new like
-	_, err = s.repo.Create(ctx, like)
+	err = s.repo.Create(ctx, like)
 	if err != nil {
-		return entities.LikesComment{}, err
+		return err
 	}
 
-	// Increment the like count for the comment
-	err = s.repo.IncrementLike(ctx, commentId)
-	if err != nil {
-		return entities.LikesComment{}, err
-	}
-
-	return like, nil
+	return s.repo.IncrementLike(ctx, commentId)
 
 }
 
-func (s *likesCommentService) DeleteLikesComment(ctx context.Context, id uint) error {
-	err := s.repo.Delete(ctx, id)
+func (s *likesCommentService) DeleteLikesComment(ctx context.Context, commentID uint, userID uint) error {
+	err := s.repo.Delete(ctx, commentID, userID)
 	if err != nil {
 		return err
 	}
 
-	// Decrement the like count for the comment
-	err = s.repo.DecrementLike(ctx, id)
-	if err != nil {
-		return err
-	}
-	return nil
+	return s.repo.DecrementLike(ctx, commentID)
+
 }
 
 func (s *likesCommentService) GetLikesCommentByID(id uint) (entities.LikesComment, error) {

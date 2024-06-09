@@ -8,8 +8,8 @@ import (
 )
 
 type LikesCommentRepository interface {
-	Create(ctx context.Context, likesComment entities.LikesComment) (entities.LikesComment, error)
-	Delete(ctx context.Context, id uint) error
+	Create(ctx context.Context, likesComment entities.LikesComment) error
+	Delete(ctx context.Context, commentID uint, userID uint) error
 	FindByCustomerAndComment(customerID, commentID uint) (entities.LikesComment, error)
 	FindByID(id uint) (entities.LikesComment, error)
 	FindAll() ([]entities.LikesComment, error)
@@ -34,14 +34,15 @@ func (r *likesCommentRepository) FindByCustomerAndComment(customerID, commentID 
 	return like, nil
 }
 
-func (r *likesCommentRepository) Create(ctx context.Context, likesComment entities.LikesComment) (entities.LikesComment, error) {
-	err := r.db.Create(&likesComment).Error
-	return likesComment, err
+func (r *likesCommentRepository) Create(ctx context.Context, likesComment entities.LikesComment) error {
+	if err := r.db.Create(&likesComment).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
-func (r *likesCommentRepository) Delete(ctx context.Context, id uint) error {
-	err := r.db.Delete(&entities.LikesComment{}, id).Error
-	return err
+func (r *likesCommentRepository) Delete(ctx context.Context, commentID uint, userID uint) error {
+	return r.db.WithContext(ctx).Where("comment_id = ? AND user_id = ?", commentID, userID).Delete(&entities.LikesComment{}).Error
 }
 
 func (r *likesCommentRepository) FindByID(id uint) (entities.LikesComment, error) {
