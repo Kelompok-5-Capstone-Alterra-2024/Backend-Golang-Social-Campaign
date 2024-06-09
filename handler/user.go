@@ -87,10 +87,12 @@ func (h *UserHandler) RefreshToken(c echo.Context) error {
 
 	accessToken, refreshToken := middleware.GenerateToken(claims.ID, claims.Username, claims.Role)
 
-	return c.JSON(200, map[string]interface{}{
-		"accessToken":  accessToken,
-		"refreshToken": refreshToken,
-	})
+	response := map[string]string{
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
+	}
+
+	return c.JSON(200, helper.ResponseWithData(true, "Token refreshed successfully", response))
 }
 
 func (h *UserHandler) ForgetPassword(c echo.Context) error {
