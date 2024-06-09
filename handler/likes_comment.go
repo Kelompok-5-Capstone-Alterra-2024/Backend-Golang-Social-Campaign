@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"capstone/dto"
 	"capstone/helper"
 	"capstone/service"
 	"net/http"
@@ -37,28 +36,36 @@ func (h *LikesCommentHandler) CreateLikesComment(c echo.Context) error {
 
 	// likesComment := request.ToEntity(uint(commentID), uint(userID))
 
-	createdLikesComment, err := h.likesCommentService.CreateLikesComment(c.Request().Context(), uint(commentID), uint(userID))
-	if err != nil {
+	// createdLikesComment, err := h.likesCommentService.CreateLikesComment(c.Request().Context(), uint(commentID), uint(userID))
+	// if err != nil {
+	// 	return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to create like on comment", err.Error()))
+	// }
+
+	// response := dto.LikesCommentResponse{
+	// 	ID:        createdLikesComment.ID,
+	// 	UserID:    createdLikesComment.UserID,
+	// 	CommentID: createdLikesComment.CommentID,
+	// }
+
+	if err := h.likesCommentService.LikesComment(c.Request().Context(), uint(commentID), uint(userID)); err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to create like on comment", err.Error()))
 	}
 
-	response := dto.LikesCommentResponse{
-		ID:        createdLikesComment.ID,
-		UserID:    createdLikesComment.UserID,
-		CommentID: createdLikesComment.CommentID,
-	}
-
-	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "like on comment created successfully", response))
+	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "like on comment created successfully"))
 }
 
 func (h *LikesCommentHandler) DeleteLikesComment(c echo.Context) error {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	commentID, err := strconv.Atoi(c.Param("comment_id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid ID format", err.Error()))
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
-	err = h.likesCommentService.DeleteLikesComment(c.Request().Context(), uint(id))
+	userID, err := helper.GetUserIDFromJWT(c)
 	if err != nil {
+		return c.JSON(401, helper.ErrorResponse(false, "unauthorized", err.Error()))
+	}
+
+	if err := h.likesCommentService.DeleteLikesComment(c.Request().Context(), uint(commentID), uint(userID)); err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to delete like on comment", err.Error()))
 	}
 
