@@ -41,10 +41,10 @@ func (h *CommentHandler) CreateComment(c echo.Context) error {
 
 	// Remove CreatedAt, UpdatedAt, DeletedAt from the response
 	response := map[string]interface{}{
-		"id":          createdComment.ID,
-		"customer_id": createdComment.UserID,
-		"article_id":  createdComment.ArticleID,
-		"comment":     createdComment.Comment,
+		"id":         createdComment.ID,
+		"user_id":    createdComment.UserID,
+		"article_id": createdComment.ArticleID,
+		"comment":    createdComment.Comment,
 	}
 
 	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "comment created successfully", response))
