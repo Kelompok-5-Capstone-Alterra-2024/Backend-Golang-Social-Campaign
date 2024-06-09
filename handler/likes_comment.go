@@ -37,7 +37,7 @@ func (h *LikesCommentHandler) CreateLikesComment(c echo.Context) error {
 
 	// likesComment := request.ToEntity(uint(commentID), uint(userID))
 
-	createdLikesComment, err := h.likesCommentService.CreateLikesComment(uint(commentID), uint(userID))
+	createdLikesComment, err := h.likesCommentService.CreateLikesComment(c.Request().Context(), uint(commentID), uint(userID))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to create like on comment", err.Error()))
 	}
@@ -57,7 +57,7 @@ func (h *LikesCommentHandler) DeleteLikesComment(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid ID format", err.Error()))
 	}
 
-	err = h.likesCommentService.DeleteLikesComment(uint(id))
+	err = h.likesCommentService.DeleteLikesComment(c.Request().Context(), uint(id))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to delete like on comment", err.Error()))
 	}
