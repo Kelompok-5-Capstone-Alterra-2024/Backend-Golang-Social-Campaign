@@ -6,7 +6,9 @@ import (
 
 type Comment struct {
 	gorm.Model
-	CustomerID uint   `json:"customer_id" gorm:"type:bigint"`
-	ArticleID  uint   `json:"article_id" gorm:"type:bigint"`
-	Comment    string `json:"comment" gorm:"type:varchar(255)"`
+	UserID    uint    `json:"-"`
+	User      User    `json:"user" gorm:"foreignKey:UserID"`
+	ArticleID uint    `json:"-"`
+	Article   Article `json:"article" gorm:"foreignKey:ArticleID"`
+	Comment   string  `json:"comment" gorm:"type:varchar(255)"`
 }

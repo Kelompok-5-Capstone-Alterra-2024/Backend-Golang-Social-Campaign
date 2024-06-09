@@ -89,7 +89,7 @@ func (h *ArticleHandler) GetArticleByID(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
-	response := dto.ToArticleResponse(article)
+	response := dto.ToArticleResponses(article)
 	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "article retrieved successfully", response))
 }
 
@@ -109,7 +109,7 @@ func (h *ArticleHandler) GetAllArticles(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
-	response := dto.ToArticleResponseList(articles)
+	response := dto.ToArticleResponsesList(articles)
 	totalInt64 := int64(total)
 	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "articles retrieved successfully", response, page, limit, totalInt64))
 }

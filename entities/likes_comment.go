@@ -6,6 +6,8 @@ import (
 
 type LikesComment struct {
 	gorm.Model
-	CustomerID uint `json:"customer_id" gorm:"type:bigint"`
-	CommentID  uint `json:"comment_id" gorm:"type:bigint"`
+	UserID    uint    `json:"-"`
+	User      User    `json:"user" gorm:"foreignKey:UserID"`
+	CommentID uint    `json:"-"`
+	Comment   Comment `json:"comment" gorm:"foreignKey:CommentID"`
 }

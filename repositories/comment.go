@@ -10,7 +10,7 @@ type CommentRepository interface {
 	Create(comment entities.Comment) (entities.Comment, error)
 	Update(comment entities.Comment) (entities.Comment, error)
 	FindByID(id uint) (entities.Comment, error)
-	FindAll(page, limit int) ([]entities.Comment, int, error)
+	FindAllByArticleID(id uint, page, limit int) ([]entities.Comment, int, error)
 	Delete(id uint) error
 }
 
@@ -38,10 +38,14 @@ func (r *commentRepository) FindByID(id uint) (entities.Comment, error) {
 	return comment, err
 }
 
-func (r *commentRepository) FindAll(page, limit int) ([]entities.Comment, int, error) {
+func (r *commentRepository) FindAllByArticleID(id uint, page, limit int) ([]entities.Comment, int, error) {
 	var comments []entities.Comment
 	var total int64
-	err := r.db.Offset((page - 1) * limit).Limit(limit).Find(&comments).Count(&total).Error
+	err := r.db.Model(&comments).Where("article_id = ?", id).Count(&total).Error
+	if err != nil {
+		return comments, 0, err
+	}
+	err = r.db.Limit(limit).Offset((page-1)*limit).Preload("User").Where("article_id = ?", id).Find(&comments).Error
 	return comments, int(total), err
 }
 

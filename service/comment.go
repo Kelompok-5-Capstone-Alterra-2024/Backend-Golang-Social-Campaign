@@ -9,7 +9,7 @@ type CommentService interface {
 	CreateComment(comment entities.Comment) (entities.Comment, error)
 	UpdateComment(comment entities.Comment) (entities.Comment, error)
 	FindByID(id uint) (entities.Comment, error)
-	FindAll(page, limit int) ([]entities.Comment, int, error)
+	GetAllByArticleID(id uint, page, limit int) ([]entities.Comment, int, error)
 	DeleteComment(id uint) error
 }
 
@@ -33,8 +33,8 @@ func (s *commentService) FindByID(id uint) (entities.Comment, error) {
 	return s.repo.FindByID(id)
 }
 
-func (s *commentService) FindAll(page, limit int) ([]entities.Comment, int, error) {
-	return s.repo.FindAll(page, limit)
+func (s *commentService) GetAllByArticleID(id uint, page, limit int) ([]entities.Comment, int, error) {
+	return s.repo.FindAllByArticleID(id, page, limit)
 }
 
 func (s *commentService) DeleteComment(id uint) error {
