@@ -127,3 +127,13 @@ func (h *ArticleHandler) DeleteArticle(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "article deleted successfully"))
 }
+
+func (h *ArticleHandler) GetTopArticles(c echo.Context) error {
+	articles, err := h.articleService.GetTopArticles()
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
+	}
+
+	response := dto.ToArticleResponsesList(articles)
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "top articles retrieved successfully", response))
+}
