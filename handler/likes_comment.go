@@ -19,10 +19,10 @@ func NewLikesCommentHandler(likesCommentService service.LikesCommentService) *Li
 }
 
 func (h *LikesCommentHandler) CreateLikesComment(c echo.Context) error {
-	var request dto.LikesCommentRequest
-	if err := c.Bind(&request); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
-	}
+	// var request dto.LikesCommentRequest
+	// if err := c.Bind(&request); err != nil {
+	// 	return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
+	// }
 
 	commentID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -33,11 +33,11 @@ func (h *LikesCommentHandler) CreateLikesComment(c echo.Context) error {
 	if err != nil {
 		return c.JSON(401, helper.ErrorResponse(false, "unauthorized", err.Error()))
 	}
-	request.CommentID = uint(commentID)
+	// request.CommentID = uint(commentID)
 
-	likesComment := request.ToEntity(uint(commentID), uint(userID))
+	// likesComment := request.ToEntity(uint(commentID), uint(userID))
 
-	createdLikesComment, err := h.likesCommentService.CreateLikesComment(likesComment)
+	createdLikesComment, err := h.likesCommentService.CreateLikesComment(uint(commentID), uint(userID))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to create like on comment", err.Error()))
 	}

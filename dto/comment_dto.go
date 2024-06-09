@@ -17,10 +17,11 @@ func (r *CommentRequest) ToEntity(articleId, userId uint) entities.Comment {
 }
 
 type CommentResponses struct {
-	ID        uint                       `json:"id"`
-	User      UserCommentArticleResponse `json:"user"`
-	CreatedAt string                     `json:"created_at"`
-	Body      string                     `json:"body"`
+	ID         uint                       `json:"id"`
+	User       UserCommentArticleResponse `json:"user"`
+	CreatedAt  string                     `json:"created_at"`
+	Body       string                     `json:"body"`
+	TotalLikes int                        `json:"total_likes"`
 }
 
 type UserCommentArticleResponse struct {
@@ -39,10 +40,11 @@ func ToUserCommentArticleResponse(user entities.User) UserCommentArticleResponse
 
 func ToCommentResponses(comment entities.Comment) CommentResponses {
 	return CommentResponses{
-		ID:        comment.ID,
-		User:      ToUserCommentArticleResponse(comment.User),
-		CreatedAt: comment.CreatedAt.Format("2006-01-02"),
-		Body:      comment.Comment,
+		ID:         comment.ID,
+		User:       ToUserCommentArticleResponse(comment.User),
+		CreatedAt:  comment.CreatedAt.Format("2006-01-02"),
+		Body:       comment.Comment,
+		TotalLikes: comment.TotalLikes,
 	}
 }
 
