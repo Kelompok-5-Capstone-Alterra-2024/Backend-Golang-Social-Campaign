@@ -77,7 +77,7 @@ func (r *adminRepository) DeleteFundraising(id uint) error {
 
 func (r *adminRepository) FindFundraisingByID(id int) (entities.Fundraising, error) {
 	var fundraising entities.Fundraising
-	if err := r.db.Where("id = ?", id).First(&fundraising).Error; err != nil {
+	if err := r.db.Preload("Organization").Preload("FundraisingCategory").Where("id = ?", id).First(&fundraising).Error; err != nil {
 		return entities.Fundraising{}, err
 	}
 	return fundraising, nil
@@ -173,23 +173,17 @@ func (r *adminRepository) FindAllDonations(page int, limit int) ([]entities.Dona
 
 func (r *adminRepository) AddAmountToUserDonation(id uint, amount int) (entities.DonationManual, error) {
 	var donation entities.DonationManual
-	if err := r.db.Model(&donation).Where("id = ?", id).Update("amount", amount).Update("amount", amount).Updates(map[string]interface{}{"status": "success"}).Error; err != nil {
+	if err := r.db.Model(&donation).Where("id = ?", id).Update("amount", amount).Updates(map[string]interface{}{"status": "success"}).Error; err != nil {
 		return entities.DonationManual{}, err
 	}
 	return donation, nil
 }
 
 func (r *adminRepository) FindFundraisingByDonationID(id int) (entities.Fundraising, error) {
-	var fundraising entities.Fundraising
-	var donation entities.Donation
-
+	// Get Fundraising By Donation ID
+	var donation entities.DonationManual
 	if err := r.db.Preload("Fundraising").Where("id = ?", id).First(&donation).Error; err != nil {
 		return entities.Fundraising{}, err
 	}
-
-	if err := r.db.Where("id = ?", donation.FundraisingID).First(&fundraising).Error; err != nil {
-		return entities.Fundraising{}, err
-	}
-
-	return fundraising, nil
+	return donation.Fundraising, nil
 }
