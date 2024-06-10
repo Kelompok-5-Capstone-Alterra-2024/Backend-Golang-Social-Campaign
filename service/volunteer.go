@@ -54,6 +54,10 @@ func (s *volunteerService) ApplyForVolunteer(volunteerID uint, customerID uint) 
 		return volunteer, errors.New("customer has already applied for this volunteer opportunity")
 	}
 
+	if application.VacancyID != volunteer.ID {
+		return volunteer, errors.New("volunteer opportunity doesn't match with the application")
+	}
+
 	// Check if the volunteer opportunity has reached its target
 	if volunteer.RegisteredVolunteer >= volunteer.TargetVolunteer {
 		return volunteer, errors.New("volunteer opportunity has reached its target")

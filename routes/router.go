@@ -106,7 +106,7 @@ func NewRouter(router *echo.Echo) {
 	api.GET("/volunteers", volunteerHandler.GetAllVolunteers)
 	api.GET("/volunteers/top", volunteerHandler.GetTopVolunteer)
 	api.GET("/volunteer/:id/confirm", volunteerHandler.ConfirmVolunteer)
-	api.POST("/volunteer/:id/apply", volunteerHandler.ApplyForVolunteer)
+	api.GET("/volunteer/:id/apply", volunteerHandler.ApplyForVolunteer)
 
 	// Application routes
 	api.POST("/volunteer/:id/register", applicationHandler.RegisterApplication)
