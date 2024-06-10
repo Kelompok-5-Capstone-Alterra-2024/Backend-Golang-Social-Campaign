@@ -440,8 +440,8 @@ func (h *AdminHandler) GetAllDonationManual(c echo.Context) error {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to get donations", err.Error()))
 	}
 
-	response := dto.ToAdminAllDonationResponses(donations)
-	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "donations retrieved successfully", response))
+	// response := dto.ToAdminAllDonationResponses(donations)
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "donations retrieved successfully", donations))
 }
 
 func (h *AdminHandler) InputAmountDonationManual(c echo.Context) error {
