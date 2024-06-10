@@ -40,9 +40,9 @@ func NewRouter(router *echo.Echo) {
 	likesCommentRepo := repositories.NewLikesCommentRepository(database.DB)
 	testimoniVolunteerRepo := repositories.NewTestimoniVolunteerRepository(database.DB)
 
-	// Services
 	fundraisingRepo := repositories.NewFundraisingRepository(database.DB)
 	donationRepo := repositories.NewDonationRepository(database.DB)
+	donationManualRepo := repositories.NewDonationManualRepository(database.DB)
 	organizationRepo := repositories.NewOrganizationRepository(database.DB)
 
 	userService := service.NewUserService(userRepo)
@@ -54,9 +54,9 @@ func NewRouter(router *echo.Echo) {
 	likesCommentService := service.NewLikesCommentService(likesCommentRepo)
 	testimoniVolunteerService := service.NewTestimoniVolunteerService(testimoniVolunteerRepo)
 
-	// Handlers
 	fundraisingService := service.NewFundraisingService(fundraisingRepo)
 	donationService := service.NewDonationService(donationRepo, fundraisingRepo)
+	donationManualService := service.NewDonationManualService(donationManualRepo, fundraisingRepo)
 	organizationService := service.NewOrganizationService(organizationRepo)
 
 	userHandler := handler.NewUserHandler(userService)
@@ -69,6 +69,7 @@ func NewRouter(router *echo.Echo) {
 	testimoniVolunteerHandler := handler.NewTestimoniVolunteerHandler(testimoniVolunteerService)
 	fundraisingHandler := handler.NewFundraisingHandler(fundraisingService, donationService)
 	donationHandler := handler.NewDonationHandler(donationService, userService)
+	donationManualHandler := handler.NewDonationManualHandler(donationManualService, userService)
 	organizatonHandler := handler.NewOrganizationHandler(organizationService)
 
 	api := router.Group("api/v1")
@@ -95,11 +96,19 @@ func NewRouter(router *echo.Echo) {
 
 	api.POST("/fundraising/:id/donations", donationHandler.CreateDonation)
 
+	api.POST("/fundraising/:id/donations-manual", donationManualHandler.CreateManualDonation)
+
+	api.GET("/history/donations-manual", donationManualHandler.GetDonationManualByUserID)
+	api.GET("/history/donations-manual/:id", donationManualHandler.GetDonationManualByID)
+
+	api.POST("/donations-manual/comments/:comment_id/like", donationManualHandler.LikeComment)
+	api.DELETE("/donations-manual/comments/:comment_id/unlike", donationManualHandler.UnlikeComment)
+
 	api.GET("/history/donations", donationHandler.GetUserDonation)
 	api.GET("/history/donations/:id", donationHandler.GetDonationByID)
 
-	// api.POST("/comments/:comment_id/like", donationHandler.LikeComment)
-	// api.DELETE("/comments/:comment_id/unlike", donationHandler.UnLikeComment)
+	api.POST("/comments/:comment_id/like", donationHandler.LikeComment)
+	api.DELETE("/comments/:comment_id/unlike", donationHandler.UnLikeComment)
 
 	// Volunteer
 	api.GET("/volunteer/:id", volunteerHandler.GetVolunteerByID)

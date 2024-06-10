@@ -103,3 +103,7 @@ func (r *donationManualRepository) IsLiked(ctx context.Context, commentID uint, 
 func (r *donationManualRepository) IncrementLike(ctx context.Context, commentID uint) error {
 	return r.db.WithContext(ctx).Model(&entities.DonationManualComment{}).Where("id = ?", commentID).UpdateColumn("total_likes", gorm.Expr("total_likes + ?", 1)).Error
 }
+
+func (r *donationManualRepository) DecrementLike(ctx context.Context, commentID uint) error {
+	return r.db.WithContext(ctx).Model(&entities.DonationManualComment{}).Where("id = ?", commentID).UpdateColumn("total_likes", gorm.Expr("total_likes - ?", 1)).Error
+}
