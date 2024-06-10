@@ -66,7 +66,7 @@ func (r *volunteerRepository) Delete(id uint) error {
 
 func (r *volunteerRepository) FindApplicationByVolunteerAndCustomer(volunteerID, customerID uint) (entities.Application, error) {
 	var application entities.Application
-	err := r.db.Where("volunteer_id = ? AND customer_id = ?", volunteerID, customerID).First(&application).Error
+	err := r.db.Where("vacancy_id = ? AND user_id = ?", volunteerID, customerID).First(&application).Error
 	return application, err
 }
 
