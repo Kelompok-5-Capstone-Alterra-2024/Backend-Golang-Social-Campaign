@@ -217,7 +217,7 @@ func (s *adminService) AddAmountToUserDonation(id uint, amount int) (entities.Do
 	if fundraising.CurrentProgress == fundraising.GoalAmount {
 		fundraising.Status = "Achived"
 	}
-	_, err = s.adminRepository.UpdateFundraisingByID(id, fundraising)
+	_, err = s.adminRepository.UpdateFundraisingByID(fundraising.ID, fundraising)
 	if err != nil {
 		return entities.DonationManual{}, err
 	}
