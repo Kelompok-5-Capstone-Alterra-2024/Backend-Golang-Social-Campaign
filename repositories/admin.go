@@ -25,7 +25,7 @@ type AdminRepository interface {
 	FindDonationsByUserID(id int, limit int, offset int) ([]entities.Donation, error)
 	DeleteUserWithDonations(id uint) error
 
-	FindAllDonations(limit int, offset int) ([]entities.DonationManual, error)
+	FindAllDonations(page, limit int) ([]entities.DonationManual, int, error)
 	AddAmountToUserDonation(id uint, amount int) (entities.DonationManual, error)
 }
 
@@ -156,12 +156,18 @@ func (r *adminRepository) DeleteUserWithDonations(id uint) error {
 	return nil
 }
 
-func (r *adminRepository) FindAllDonations(limit int, offset int) ([]entities.DonationManual, error) {
+func (r *adminRepository) FindAllDonations(page int, limit int) ([]entities.DonationManual, int, error) {
 	var donations []entities.DonationManual
-	if err := r.db.Preload("Fundraising.Organization").Preload("User").Limit(limit).Offset(offset).Find(&donations).Error; err != nil {
-		return []entities.DonationManual{}, err
+	var total int64
+
+	offset := (page - 1) * limit
+
+	if err := r.db.Preload("User").Preload("Fundraising.Organization").Offset(offset).Limit(limit).Find(&donations).Error; err != nil {
+		return []entities.DonationManual{}, 0, err
 	}
-	return donations, nil
+
+	r.db.Model(&entities.DonationManual{}).Count(&total)
+	return donations, int(total), nil
 }
 
 func (r *adminRepository) AddAmountToUserDonation(id uint, amount int) (entities.DonationManual, error) {

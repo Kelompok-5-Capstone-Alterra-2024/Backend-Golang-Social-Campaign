@@ -30,7 +30,7 @@ type AdminService interface {
 	GetDonationsByUserID(id int, limit int, offset int) (dto.AdminUserDetailResponse, error)
 	DeleteUserWithDonations(id uint) error
 
-	GetAllDonations(limit int, offset int) ([]entities.DonationManual, error)
+	GetAllDonations(page, limit int) ([]entities.DonationManual, int, error)
 	AddAmountToUserDonation(id uint, amount int) (entities.DonationManual, error)
 }
 
@@ -198,10 +198,30 @@ func (s *adminService) DeleteUserWithDonations(id uint) error {
 	return s.adminRepository.DeleteUserWithDonations(id)
 }
 
-func (s *adminService) GetAllDonations(limit int, offset int) ([]entities.DonationManual, error) {
-	return s.adminRepository.FindAllDonations(limit, offset)
+func (s *adminService) GetAllDonations(page, limt int) ([]entities.DonationManual, int, error) {
+	return s.adminRepository.FindAllDonations(page, limt)
 }
 
 func (s *adminService) AddAmountToUserDonation(id uint, amount int) (entities.DonationManual, error) {
-	return s.adminRepository.AddAmountToUserDonation(id, amount)
+	fundraising, err := s.adminRepository.FindFundraisingByID(int(id))
+	if err != nil {
+		return entities.DonationManual{}, err
+	}
+	_, err = s.adminRepository.AddAmountToUserDonation(id, amount)
+
+	if err != nil {
+		return entities.DonationManual{}, err
+	}
+
+	fundraising.CurrentProgress += amount
+	if fundraising.CurrentProgress == fundraising.GoalAmount {
+		fundraising.Status = "Achived"
+	}
+	_, err = s.adminRepository.UpdateFundraisingByID(id, fundraising)
+	if err != nil {
+		return entities.DonationManual{}, err
+	}
+
+	return entities.DonationManual{}, nil
+
 }
