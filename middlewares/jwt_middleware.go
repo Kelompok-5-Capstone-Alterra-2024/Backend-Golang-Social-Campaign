@@ -20,7 +20,7 @@ func GenerateToken(userId uint, userName, userRole string) (string, string) {
 		Username: userName,
 		Role:     userRole,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 2)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 30)),
 		},
 	}
 
