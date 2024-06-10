@@ -32,22 +32,28 @@ func ToAdminAllFundraisingsResponse(fundraisings []entities.Fundraising) []Admin
 
 type AdminFundraisingResponse struct {
 	ID              uint   `json:"id"`
+	OrganizationID  uint   `json:"organization_id"`
+	CategoryID      uint   `json:"category_id"`
 	Title           string `json:"title"`
 	CurrentProgress int    `json:"current_progress"`
 	TargetAmount    int    `json:"target_amount"`
 	ImageUrl        string `json:"image_url"`
 	Description     string `json:"description"`
+	StartDate       string `json:"start_date"`
 	EndDate         string `json:"end_date"`
 }
 
 func ToAdminFundraisingResponse(fundraising entities.Fundraising) AdminFundraisingResponse {
 	return AdminFundraisingResponse{
 		ID:              fundraising.ID,
+		OrganizationID:  fundraising.OrganizationID,
+		CategoryID:      fundraising.FundraisingCategoryID,
 		Title:           fundraising.Title,
 		CurrentProgress: fundraising.CurrentProgress,
 		TargetAmount:    fundraising.GoalAmount,
 		ImageUrl:        fundraising.ImageUrl,
 		Description:     fundraising.Description,
+		StartDate:       fundraising.StartDate.Format("2006-01-02"),
 		EndDate:         fundraising.EndDate.Format("2006-01-02"),
 	}
 }
