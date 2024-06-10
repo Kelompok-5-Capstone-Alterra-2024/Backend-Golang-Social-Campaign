@@ -12,10 +12,11 @@ import (
 type DonationManualHandler struct {
 	donationManualService service.DonationManualService
 	service.UserService
+	fundraisingService service.FundraisingService
 }
 
-func NewDonationManualHandler(donationManualService service.DonationManualService, userService service.UserService) *DonationManualHandler {
-	return &DonationManualHandler{donationManualService, userService}
+func NewDonationManualHandler(donationManualService service.DonationManualService, userService service.UserService, fundraisingService service.FundraisingService) *DonationManualHandler {
+	return &DonationManualHandler{donationManualService, userService, fundraisingService}
 }
 
 func (h *DonationManualHandler) CreateManualDonation(c echo.Context) error {
@@ -37,6 +38,11 @@ func (h *DonationManualHandler) CreateManualDonation(c echo.Context) error {
 		return c.JSON(400, helper.ErrorResponse(false, "invalid fundraising id", err.Error()))
 	}
 
+	fundraising, err := h.fundraisingService.FindFundraisingByID(id)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get fundraising", err.Error()))
+	}
+
 	donationManual.ID = uint(id)
 	donationManual.User = user
 
@@ -44,6 +50,9 @@ func (h *DonationManualHandler) CreateManualDonation(c echo.Context) error {
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to create donation", err.Error()))
 	}
+
+	donation.Fundraising.Title = fundraising.Title
+	donation.Fundraising.Organization.Name = fundraising.Organization.Name
 
 	response := dto.ToManualDonationResponse(donation)
 
