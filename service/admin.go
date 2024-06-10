@@ -203,7 +203,7 @@ func (s *adminService) GetAllDonations(page, limt int) ([]entities.DonationManua
 }
 
 func (s *adminService) AddAmountToUserDonation(id uint, amount int) (entities.DonationManual, error) {
-	fundraising, err := s.adminRepository.FindFundraisingByID(int(id))
+	fundraising, err := s.adminRepository.FindFundraisingByDonationID(int(id))
 	if err != nil {
 		return entities.DonationManual{}, err
 	}
