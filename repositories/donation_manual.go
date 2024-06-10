@@ -63,7 +63,7 @@ func (r *donationManualRepository) GetByUserID(limit int, offset int, userID uin
 
 func (r *donationManualRepository) GetByID(id int) (entities.DonationManual, error) {
 	var donation entities.DonationManual
-	if err := r.db.Where("id = ?", id).Find(&donation).Error; err != nil {
+	if err := r.db.Preload("Fundraising.Organization").Where("id = ?", id).Find(&donation).Error; err != nil {
 		return donation, err
 	}
 	return donation, nil

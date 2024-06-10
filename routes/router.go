@@ -69,7 +69,7 @@ func NewRouter(router *echo.Echo) {
 	testimoniVolunteerHandler := handler.NewTestimoniVolunteerHandler(testimoniVolunteerService)
 	fundraisingHandler := handler.NewFundraisingHandler(fundraisingService, donationService)
 	donationHandler := handler.NewDonationHandler(donationService, userService)
-	donationManualHandler := handler.NewDonationManualHandler(donationManualService, userService)
+	donationManualHandler := handler.NewDonationManualHandler(donationManualService, userService, fundraisingService)
 	organizatonHandler := handler.NewOrganizationHandler(organizationService)
 
 	api := router.Group("api/v1")
