@@ -158,19 +158,25 @@ func (h *AdminHandler) DeleteFundraising(c echo.Context) error {
 
 func (h *AdminHandler) EditFundraising(c echo.Context) error {
 
-	id, _ := strconv.Atoi(c.Param("id"))
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid ID format", err.Error()))
+	}
 
 	var req dto.CreateFundraisingRequest
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(400, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
-	fileHeader, _ := c.FormFile("image_url")
-	file, _ := fileHeader.Open()
-	ctx := context.Background()
-	urlCloudinary := "cloudinary://633714464826515:u1W6hqq-Gb8y-SMpXe7tzs4mH44@dvrhf8d9t"
-	cloudinaryUsecase, _ := cloudinary.NewFromURL(urlCloudinary)
-	response, _ := cloudinaryUsecase.Upload.Upload(ctx, file, uploader.UploadParams{})
+	imgFile, err := c.FormFile("image_url")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid image url", err.Error()))
+	}
+
+	imageUrl, err := helper.UploadToCloudinary(imgFile)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to upload image", err.Error()))
+	}
 
 	startDate, err := time.Parse("2006-01-02", req.StartDate)
 	if err != nil {
@@ -183,7 +189,7 @@ func (h *AdminHandler) EditFundraising(c echo.Context) error {
 	}
 
 	fundraising := entities.Fundraising{
-		ImageUrl:              response.SecureURL,
+		ImageUrl:              imageUrl,
 		Title:                 req.Title,
 		GoalAmount:            req.TargetAmount,
 		Description:           req.Description,
@@ -191,11 +197,6 @@ func (h *AdminHandler) EditFundraising(c echo.Context) error {
 		EndDate:               endDate,
 		FundraisingCategoryID: req.CategoryID,
 		OrganizationID:        req.OrganizationID,
-	}
-
-	_, err = h.adminService.SaveImageFundraising(uint(id), response.SecureURL)
-	if err != nil {
-		return c.JSON(500, helper.ErrorResponse(false, "failed to edit fundraising", err.Error()))
 	}
 
 	_, err = h.adminService.UpdateFundraising(uint(id), fundraising)
