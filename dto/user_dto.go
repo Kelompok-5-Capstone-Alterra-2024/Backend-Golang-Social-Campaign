@@ -1,5 +1,9 @@
 package dto
 
+import (
+	"time"
+)
+
 type RegisterRequest struct {
 	Fullname    string `json:"fullname"`
 	Username    string `json:"username"`
@@ -45,4 +49,20 @@ type ChangePasswordRequest struct {
 	CurrentPassword string `json:"current_password"`
 	NewPassword     string `json:"new_password"`
 	ConfirmPassword string `json:"confirm_new_password"`
+}
+
+type UserVolunteerHistory struct {
+	ID       uint      `json:"id"`
+	Title    string    `json:"title"`
+	ImageURL string    `json:"image_url"`
+	Location string    `json:"location"`
+	Date     time.Time `json:"date"`
+}
+
+type UserVolunteerHistoryDetail struct {
+	ID              uint   `json:"id"`
+	Title           string `json:"title"`
+	ImageURL        string `json:"image_url"`
+	Location        string `json:"location"`
+	ContentActivity string `json:"content_activity"`
 }

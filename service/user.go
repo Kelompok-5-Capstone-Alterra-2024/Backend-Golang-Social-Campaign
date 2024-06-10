@@ -19,6 +19,8 @@ type UserService interface {
 	GetUserProfile(id int) (entities.User, error)
 	EditProfile(userid int, request dto.EditProfileRequest) (entities.User, error)
 	ChangePassword(userid int, request dto.ChangePasswordRequest) error
+	GetHistoryVolunteer(id uint) ([]dto.UserVolunteerHistory, error)
+	GetHistoryVolunteerDetail(id int) (dto.UserVolunteerHistoryDetail, error)
 }
 
 type userService struct {
@@ -164,4 +166,44 @@ func (s *userService) ChangePassword(userid int, request dto.ChangePasswordReque
 
 	user.Password = request.NewPassword
 	return s.userRepository.Update(user)
+}
+
+func (s *userService) GetHistoryVolunteer(id uint) ([]dto.UserVolunteerHistory, error) {
+	// return s.userRepository.GetHistoryVolunteer(id)
+	userHistory, err := s.userRepository.GetHistoryVolunteer(id)
+	if err != nil {
+		return nil, err
+	}
+
+	var userVolunteerHistory []dto.UserVolunteerHistory
+	for _, history := range userHistory {
+		Volunteers, err := s.userRepository.GetVolunteerById(history.VacancyID)
+		if err != nil {
+			return nil, err
+		}
+		userVolunteerHistory = append(userVolunteerHistory, dto.UserVolunteerHistory{
+			ID:       Volunteers.ID,
+			Title:    Volunteers.Title,
+			Location: Volunteers.Location,
+			ImageURL: Volunteers.ImageURL,
+			Date:     Volunteers.StartDate,
+		})
+	}
+
+	return userVolunteerHistory, nil
+}
+
+func (s *userService) GetHistoryVolunteerDetail(id int) (dto.UserVolunteerHistoryDetail, error) {
+	Volunteers, err := s.userRepository.GetVolunteerById(uint(id))
+	if err != nil {
+		return dto.UserVolunteerHistoryDetail{}, err
+	}
+
+	return dto.UserVolunteerHistoryDetail{
+		ID:              Volunteers.ID,
+		Title:           Volunteers.Title,
+		ImageURL:        Volunteers.ImageURL,
+		Location:        Volunteers.Location,
+		ContentActivity: Volunteers.ContentActivity,
+	}, nil
 }

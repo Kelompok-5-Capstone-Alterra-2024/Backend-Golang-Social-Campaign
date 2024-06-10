@@ -35,11 +35,15 @@ func NewRouter(router *echo.Echo) {
 	api.POST("/login", userHandler.Login)
 	api.POST("/forget-password", userHandler.ForgetPassword)
 	api.POST("/reset-password", userHandler.ResetPassword)
-	api.Use(jwt, routeMiddleware.UserMiddleware)
 
 	api.GET("/profile", userHandler.GetUserProfile)
 	api.PUT("/profile/edit", userHandler.EditProfile)
 	api.PUT("/profile/change-password", userHandler.ChangePassword)
+
+	api.GET("/profile/history/volunteers", userHandler.GetHistoryVolunteer)
+	api.GET("/profile/history/volunteers/:id", userHandler.GetHistoryVolunteerDetail)
+
+	api.Use(jwt, routeMiddleware.UserMiddleware)
 
 	api.GET("/home", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, "Hello, World!")
