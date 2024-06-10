@@ -27,6 +27,7 @@ type AdminRepository interface {
 
 	FindAllDonations(page, limit int) ([]entities.DonationManual, int, error)
 	AddAmountToUserDonation(id uint, amount int) (entities.DonationManual, error)
+	FindFundraisingByDonationID(id int) (entities.Fundraising, error)
 }
 
 type adminRepository struct {
@@ -176,4 +177,19 @@ func (r *adminRepository) AddAmountToUserDonation(id uint, amount int) (entities
 		return entities.DonationManual{}, err
 	}
 	return donation, nil
+}
+
+func (r *adminRepository) FindFundraisingByDonationID(id int) (entities.Fundraising, error) {
+	var fundraising entities.Fundraising
+	var donation entities.Donation
+
+	if err := r.db.Preload("Fundraising").Where("id = ?", id).First(&donation).Error; err != nil {
+		return entities.Fundraising{}, err
+	}
+
+	if err := r.db.Where("id = ?", donation.FundraisingID).First(&fundraising).Error; err != nil {
+		return entities.Fundraising{}, err
+	}
+
+	return fundraising, nil
 }
