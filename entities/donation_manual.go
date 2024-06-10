@@ -8,9 +8,9 @@ type DonationManual struct {
 	User          User        `json:"user" gorm:"foreignKey:UserID"`
 	Amount        int         `json:"amount" gorm:"type:int"`
 	Status        string      `json:"status" gorm:"type:varchar(255)"`
-	Code          string      `json:"code" gorm:"type:varchar(255)"`
 	FundraisingID uint        `json:"-"`
 	Fundraising   Fundraising `json:"fundraising" gorm:"foreignKey:FundraisingID"`
+	ImagePayment  string      `json:"image_payment" gorm:"type:varchar(255)"`
 }
 
 type DonationManualComment struct {
