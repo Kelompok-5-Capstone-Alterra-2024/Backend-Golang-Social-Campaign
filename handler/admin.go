@@ -435,13 +435,14 @@ func (h *AdminHandler) GetAllDonationManual(c echo.Context) error {
 		limit = 10
 	}
 
-	donations, err := h.adminService.GetAllDonations(page, limit)
+	donations, total, err := h.adminService.GetAllDonations(page, limit)
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to get donations", err.Error()))
 	}
 
-	// response := dto.ToAdminAllDonationResponses(donations)
-	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "donations retrieved successfully", donations))
+	response := dto.ToAdminAllDonationResponses(donations)
+	totalInt64 := int64(total)
+	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "donations retrieved successfully", response, page, limit, totalInt64))
 }
 
 func (h *AdminHandler) InputAmountDonationManual(c echo.Context) error {
