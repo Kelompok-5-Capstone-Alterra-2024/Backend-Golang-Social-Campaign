@@ -29,6 +29,9 @@ type AdminService interface {
 	GetUserByID(id int) (entities.User, error)
 	GetDonationsByUserID(id int, limit int, offset int) (dto.AdminUserDetailResponse, error)
 	DeleteUserWithDonations(id uint) error
+
+	GetAllDonations(limit int, offset int) ([]entities.DonationManual, error)
+	AddAmountToUserDonation(id uint, amount int) (entities.DonationManual, error)
 }
 
 type adminService struct {
@@ -193,4 +196,12 @@ func (s *adminService) GetDonationsByUserID(id int, limit int, offset int) (dto.
 
 func (s *adminService) DeleteUserWithDonations(id uint) error {
 	return s.adminRepository.DeleteUserWithDonations(id)
+}
+
+func (s *adminService) GetAllDonations(limit int, offset int) ([]entities.DonationManual, error) {
+	return s.adminRepository.FindAllDonations(limit, offset)
+}
+
+func (s *adminService) AddAmountToUserDonation(id uint, amount int) (entities.DonationManual, error) {
+	return s.adminRepository.AddAmountToUserDonation(id, amount)
 }

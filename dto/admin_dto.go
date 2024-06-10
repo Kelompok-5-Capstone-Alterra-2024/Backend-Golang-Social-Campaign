@@ -212,3 +212,33 @@ func ToAdminAllArticleResponses(articles []entities.Article) []AdminArticleRespo
 	}
 	return result
 }
+
+type AdminDonationResponses struct {
+	ID               uint   `json:"id"`
+	UserFullName     string `json:"user_fullname"`
+	FundraisingTitle string `json:"fundraising_title"`
+	OrganizationName string `json:"organization_name"`
+	Amount           int    `json:"amount"`
+	ImagePayment     string `json:"image_payment"`
+	CreatedAt        string `json:"created_at"`
+}
+
+func ToAdminDonationResponses(donation entities.DonationManual) AdminDonationResponses {
+	return AdminDonationResponses{
+		ID:               donation.ID,
+		UserFullName:     donation.User.Fullname,
+		FundraisingTitle: donation.Fundraising.Title,
+		OrganizationName: donation.Fundraising.Organization.Name,
+		Amount:           donation.Amount,
+		ImagePayment:     donation.ImagePayment,
+		CreatedAt:        donation.CreatedAt.Format("2006-01-02"),
+	}
+}
+
+func ToAdminAllDonationResponses(donations []entities.DonationManual) []AdminDonationResponses {
+	var result []AdminDonationResponses
+	for _, donation := range donations {
+		result = append(result, ToAdminDonationResponses(donation))
+	}
+	return result
+}
