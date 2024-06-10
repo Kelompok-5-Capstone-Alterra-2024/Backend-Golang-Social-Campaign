@@ -423,3 +423,46 @@ func (h *AdminHandler) GetAdminAllArticle(c echo.Context) error {
 	response := dto.ToAdminAllArticleResponses(articles)
 	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "articles retrieved successfully", response, page, limit, int64(total)))
 }
+
+func (h *AdminHandler) GetAllDonationManual(c echo.Context) error {
+	page, _ := strconv.Atoi(c.QueryParam("page"))
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+
+	if page <= 0 {
+		page = 1
+	}
+	if limit <= 0 || limit > 6 {
+		limit = 10
+	}
+
+	donations, err := h.adminService.GetAllDonations(page, limit)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get donations", err.Error()))
+	}
+
+	response := dto.ToAdminAllDonationResponses(donations)
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "donations retrieved successfully", response))
+}
+
+func (h *AdminHandler) InputAmountDonationManual(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
+	}
+
+	type InputAmount struct {
+		Amount int `json:"amount"`
+	}
+
+	var input InputAmount
+	if err := c.Bind(&input); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
+	}
+
+	_, err = h.adminService.AddAmountToUserDonation(uint(id), input.Amount)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "donation amount added successfully"))
+}

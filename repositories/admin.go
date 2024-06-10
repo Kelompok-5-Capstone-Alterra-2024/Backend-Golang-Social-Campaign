@@ -24,6 +24,9 @@ type AdminRepository interface {
 	FindUserByID(id int) (entities.User, error)
 	FindDonationsByUserID(id int, limit int, offset int) ([]entities.Donation, error)
 	DeleteUserWithDonations(id uint) error
+
+	FindAllDonations(limit int, offset int) ([]entities.DonationManual, error)
+	AddAmountToUserDonation(id uint, amount int) (entities.DonationManual, error)
 }
 
 type adminRepository struct {
@@ -151,4 +154,20 @@ func (r *adminRepository) DeleteUserWithDonations(id uint) error {
 		return err
 	}
 	return nil
+}
+
+func (r *adminRepository) FindAllDonations(limit int, offset int) ([]entities.DonationManual, error) {
+	var donations []entities.DonationManual
+	if err := r.db.Preload("Fundraising").Preload("Fundraising.Organization").Preload("User").Limit(limit).Offset(offset).Find(&donations).Error; err != nil {
+		return []entities.DonationManual{}, err
+	}
+	return donations, nil
+}
+
+func (r *adminRepository) AddAmountToUserDonation(id uint, amount int) (entities.DonationManual, error) {
+	var donation entities.DonationManual
+	if err := r.db.Model(&donation).Where("id = ?", id).Update("amount", amount).Update("amount", amount).Updates(map[string]interface{}{"status": "success"}).Error; err != nil {
+		return entities.DonationManual{}, err
+	}
+	return donation, nil
 }
