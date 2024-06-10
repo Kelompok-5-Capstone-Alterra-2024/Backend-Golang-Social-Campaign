@@ -60,7 +60,7 @@ func ToDonationManualsResponse(donation entities.DonationManual) DonationManuals
 	return DonationManualsResponse{
 		ID:               donation.ID,
 		Amount:           donation.Amount,
-		ImageUrl:         donation.ImagePayment,
+		ImageUrl:         donation.Fundraising.ImageUrl,
 		FundraisingTitle: donation.Fundraising.Title,
 		Status:           donation.Status,
 		CreatedAt:        donation.CreatedAt.Format("2006-01-02"),
