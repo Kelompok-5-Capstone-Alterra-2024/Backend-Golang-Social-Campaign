@@ -158,7 +158,7 @@ func (r *adminRepository) DeleteUserWithDonations(id uint) error {
 
 func (r *adminRepository) FindAllDonations(limit int, offset int) ([]entities.DonationManual, error) {
 	var donations []entities.DonationManual
-	if err := r.db.Preload("Fundraising").Preload("Fundraising.Organization").Preload("User").Limit(limit).Offset(offset).Find(&donations).Error; err != nil {
+	if err := r.db.Preload("Fundraising.Organization").Preload("User").Limit(limit).Offset(offset).Find(&donations).Error; err != nil {
 		return []entities.DonationManual{}, err
 	}
 	return donations, nil
