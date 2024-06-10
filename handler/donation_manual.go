@@ -4,6 +4,7 @@ import (
 	"capstone/dto"
 	"capstone/helper"
 	"capstone/service"
+	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
@@ -43,8 +44,19 @@ func (h *DonationManualHandler) CreateManualDonation(c echo.Context) error {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to get fundraising", err.Error()))
 	}
 
+	imgFile, err := c.FormFile("image_payment")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid image url", err.Error()))
+	}
+
+	imageUrl, err := helper.UploadToCloudinary(imgFile)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to upload image", err.Error()))
+	}
+
 	donationManual.ID = uint(id)
 	donationManual.User = user
+	donationManual.ImagePayment = imageUrl
 
 	donation, err := h.donationManualService.CreateManualDonation(donationManual)
 	if err != nil {
