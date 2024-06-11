@@ -11,7 +11,7 @@ type ApplicationRepository interface {
 	FindByCustomerIDAndVacancyID(customerID, vacancyID uint) (entities.Application, error)
 	FindAll(offset, limit int) ([]entities.Application, int64, error)
 	FindByID(id uint) (entities.Application, error)
-	FindByVacancyID(vacancyID uint) ([]entities.Application, error)
+	FindByVacancyID(vacancyID uint, page int, limit int) ([]entities.Application, int, error)
 	DeleteByID(id uint) error
 }
 
@@ -54,8 +54,11 @@ func (r *applicationRepository) DeleteByID(id uint) error {
 	return r.db.Delete(&entities.Application{}, id).Error
 }
 
-func (r *applicationRepository) FindByVacancyID(vacancyID uint) ([]entities.Application, error) {
+func (r *applicationRepository) FindByVacancyID(vacancyID uint, page int, limit int) ([]entities.Application, int, error) {
 	var applications []entities.Application
-	err := r.db.Preload("User").Where("vacancy_id = ?", vacancyID).Find(&applications).Error
-	return applications, err
+	var total int64
+	offest := (page - 1) * limit
+
+	err := r.db.Preload("User").Preload("Volunteer").Offset(offest).Limit(limit).Where("vacancy_id = ?", vacancyID).Find(&applications).Count(&total).Error
+	return applications, int(total), err
 }

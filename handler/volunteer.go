@@ -59,10 +59,34 @@ func (h *VolunteerHandler) GetVolunteerByID(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, helper.ErrorResponse(false, "volunteer not found", err.Error()))
 	}
 
-	applications, err := h.applicationService.GetApplicationByVacancyID(uint(id))
+	applications, _, err := h.applicationService.GetApplicationByVacancyID(uint(id), 1, 4)
 
 	response := dto.ToVolunteerResponse(volunteer, applications)
 	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "volunteer retrieved successfully", response))
+}
+
+func (h *VolunteerHandler) GetAllApplyVolunteers(c echo.Context) error {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid ID format", err.Error()))
+	}
+
+	page, _ := strconv.Atoi(c.QueryParam("page"))
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+
+	if page <= 0 {
+		page = 1
+	}
+	if limit <= 0 || limit > 3 {
+		limit = 3
+	}
+
+	applications, total, err := h.applicationService.GetApplicationByVacancyID(uint(id), page, limit)
+
+	response := dto.ToApplicationsResponse(applications)
+
+	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "applications retrieved successfully", response, page, limit, int64(total)))
+
 }
 
 func (h *VolunteerHandler) GetAllVolunteers(c echo.Context) error {

@@ -71,7 +71,7 @@ func (r *VolunteerRequest) ToEntity(imgUrl string) (entities.Volunteer, error) {
 
 type VolunteerResponse struct {
 	ID                   uint                   `json:"id"`
-	OrganizationName     string                 `json:"organization_name"`
+	OrganizationID       uint                   `json:"organization_id"`
 	OrgIsVerified        bool                   `json:"org_is_verified"`
 	Title                string                 `json:"title"`
 	ContentActivity      string                 `json:"content_activity"`
@@ -121,7 +121,7 @@ func ToVolunteerResponse(volunteer entities.Volunteer, application []entities.Ap
 
 	return VolunteerResponse{
 		ID:                   volunteer.ID,
-		OrganizationName:     volunteer.Organization.Name,
+		OrganizationID:       volunteer.Organization.ID,
 		OrgIsVerified:        volunteer.Organization.IsVerified,
 		Title:                volunteer.Title,
 		ContentActivity:      volunteer.ContentActivity,

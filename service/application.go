@@ -11,7 +11,7 @@ type ApplicationService interface {
 	GetAllApplications(page, limit int) ([]entities.Application, int64, error)
 	GetApplicationByID(id uint) (entities.Application, error)
 	DeleteApplicationByID(id uint) error
-	GetApplicationByVacancyID(vacancyID uint) ([]entities.Application, error)
+	GetApplicationByVacancyID(vacancyID uint, page, limit int) ([]entities.Application, int, error)
 }
 
 type applicationService struct {
@@ -45,6 +45,6 @@ func (s *applicationService) DeleteApplicationByID(id uint) error {
 	return s.applicationRepository.DeleteByID(id)
 }
 
-func (s *applicationService) GetApplicationByVacancyID(vacancyID uint) ([]entities.Application, error) {
-	return s.applicationRepository.FindByVacancyID(vacancyID)
+func (s *applicationService) GetApplicationByVacancyID(vacancyID uint, page, limit int) ([]entities.Application, int, error) {
+	return s.applicationRepository.FindByVacancyID(vacancyID, page, limit)
 }
