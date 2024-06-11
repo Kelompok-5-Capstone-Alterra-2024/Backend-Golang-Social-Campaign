@@ -66,3 +66,11 @@ type UserVolunteerHistoryDetail struct {
 	Location        string `json:"location"`
 	ContentActivity string `json:"content_activity"`
 }
+
+type UserDonationHistory struct {
+	ID       uint   `json:"id"`
+	Tittle   string `json:"tittle"`
+	ImageURL string `json:"image_url"`
+	Status   string `json:"status"`
+	Amount   int    `json:"amount"`
+}

@@ -159,3 +159,17 @@ func (h *UserHandler) GetHistoryVolunteerDetail(c echo.Context) error {
 
 	return c.JSON(200, helper.ResponseWithData(true, "", history))
 }
+
+func (h *UserHandler) GetHistoryDonation(c echo.Context) error {
+	userID, err := helper.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.JSON(401, helper.ErrorResponse(false, "Unauthorized.", err.Error()))
+	}
+
+	history, err := h.userService.GetHistoryDonation(uint(userID))
+	if err != nil {
+		return c.JSON(404, helper.ErrorResponse(false, "History not found.", err.Error()))
+	}
+
+	return c.JSON(200, helper.ResponseWithData(true, "", history))
+}

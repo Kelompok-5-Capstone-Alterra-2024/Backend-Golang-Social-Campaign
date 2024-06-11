@@ -18,6 +18,8 @@ type UserRepository interface {
 	UpdateProfile(userid uint, user entities.User) error
 	GetHistoryVolunteer(id uint) ([]entities.Application, error)
 	GetVolunteerById(id uint) (entities.Volunteer, error)
+	GetHistoryDonation(id uint) ([]entities.Donation, error)
+	GetFundraisingById(id uint) (entities.Fundraising, error)
 }
 
 type userRepository struct {
@@ -109,4 +111,20 @@ func (r *userRepository) GetVolunteerById(id uint) (entities.Volunteer, error) {
 		return volunteer, err
 	}
 	return volunteer, nil
+}
+
+func (r *userRepository) GetHistoryDonation(id uint) ([]entities.Donation, error) {
+	var donation []entities.Donation
+	if err := r.db.Where("user_id = ?", id).Preload("Fundraising").Find(&donation).Error; err != nil {
+		return donation, err
+	}
+	return donation, nil
+}
+
+func (r *userRepository) GetFundraisingById(id uint) (entities.Fundraising, error) {
+	var donation entities.Fundraising
+	if err := r.db.Where("id = ?", id).First(&donation).Error; err != nil {
+		return donation, err
+	}
+	return donation, nil
 }

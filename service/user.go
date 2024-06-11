@@ -21,6 +21,7 @@ type UserService interface {
 	ChangePassword(userid int, request dto.ChangePasswordRequest) error
 	GetHistoryVolunteer(id uint) ([]dto.UserVolunteerHistory, error)
 	GetHistoryVolunteerDetail(id int) (dto.UserVolunteerHistoryDetail, error)
+	GetHistoryDonation(id uint) ([]dto.UserDonationHistory, error)
 }
 
 type userService struct {
@@ -169,7 +170,6 @@ func (s *userService) ChangePassword(userid int, request dto.ChangePasswordReque
 }
 
 func (s *userService) GetHistoryVolunteer(id uint) ([]dto.UserVolunteerHistory, error) {
-	// return s.userRepository.GetHistoryVolunteer(id)
 	userHistory, err := s.userRepository.GetHistoryVolunteer(id)
 	if err != nil {
 		return nil, err
@@ -206,4 +206,28 @@ func (s *userService) GetHistoryVolunteerDetail(id int) (dto.UserVolunteerHistor
 		Location:        Volunteers.Location,
 		ContentActivity: Volunteers.ContentActivity,
 	}, nil
+}
+
+func (s *userService) GetHistoryDonation(id uint) ([]dto.UserDonationHistory, error) {
+	userHistory, err := s.userRepository.GetHistoryDonation(id)
+	if err != nil {
+		return nil, err
+	}
+
+	var userDonationHistory []dto.UserDonationHistory
+	for _, history := range userHistory {
+		Donations, err := s.userRepository.GetFundraisingById(history.FundraisingID)
+		if err != nil {
+			return nil, err
+		}
+		userDonationHistory = append(userDonationHistory, dto.UserDonationHistory{
+			ID:       Donations.ID,
+			Tittle:   Donations.Title,
+			ImageURL: Donations.ImageUrl,
+			Status:   Donations.Status,
+			Amount:   history.Amount,
+		})
+	}
+
+	return userDonationHistory, nil
 }

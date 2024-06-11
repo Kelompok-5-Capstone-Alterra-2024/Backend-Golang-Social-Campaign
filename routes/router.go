@@ -29,7 +29,7 @@ func NewRouter(router *echo.Echo) {
 
 	userHandler := handler.NewUserHandler(userService)
 
-	api := router.Group("api/v1")
+	api := router.Group("/api/v1")
 
 	api.POST("/register", userHandler.Register)
 	api.POST("/login", userHandler.Login)
@@ -40,6 +40,7 @@ func NewRouter(router *echo.Echo) {
 	api.PUT("/profile/edit", userHandler.EditProfile)
 	api.PUT("/profile/change-password", userHandler.ChangePassword)
 
+	api.GET("/profile/history/fundraisings", userHandler.GetHistoryDonation)
 	api.GET("/profile/history/volunteers", userHandler.GetHistoryVolunteer)
 	api.GET("/profile/history/volunteers/:id", userHandler.GetHistoryVolunteerDetail)
 
