@@ -261,6 +261,7 @@ type AdminDonationResponses struct {
 	Amount           int    `json:"amount"`
 	ImagePayment     string `json:"image_payment"`
 	CreatedAt        string `json:"created_at"`
+	Status           string `json:"status"`
 }
 
 func ToAdminDonationResponses(donation entities.DonationManual) AdminDonationResponses {
@@ -272,6 +273,7 @@ func ToAdminDonationResponses(donation entities.DonationManual) AdminDonationRes
 		Amount:           donation.Amount,
 		ImagePayment:     donation.ImagePayment,
 		CreatedAt:        donation.CreatedAt.Format("2006-01-02"),
+		Status:           donation.Status,
 	}
 }
 
