@@ -11,6 +11,7 @@ type CommentService interface {
 	FindByID(id uint) (entities.Comment, error)
 	GetAllByArticleID(id uint, page, limit int) ([]entities.Comment, int, error)
 	DeleteComment(id uint) error
+	GetAllComments() ([]entities.Comment, error)
 }
 
 type commentService struct {
@@ -39,4 +40,8 @@ func (s *commentService) GetAllByArticleID(id uint, page, limit int) ([]entities
 
 func (s *commentService) DeleteComment(id uint) error {
 	return s.repo.Delete(id)
+}
+
+func (s *commentService) GetAllComments() ([]entities.Comment, error) {
+	return s.repo.FindAll()
 }

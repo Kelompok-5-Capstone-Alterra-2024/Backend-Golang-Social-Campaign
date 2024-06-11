@@ -60,7 +60,7 @@ func NewRouter(router *echo.Echo) {
 	organizationService := service.NewOrganizationService(organizationRepo)
 
 	userHandler := handler.NewUserHandler(userService)
-	adminHandler := handler.NewAdminHandler(adminService, volunteerService, articleService)
+	adminHandler := handler.NewAdminHandler(adminService, volunteerService, articleService, commentService)
 	volunteerHandler := handler.NewVolunteerHandler(volunteerService, applicationService)
 	applicationHandler := handler.NewApplicationHandler(applicationService)
 	articleHandler := handler.NewArticleHandler(articleService)
@@ -184,8 +184,10 @@ func NewRouter(router *echo.Echo) {
 	admin.GET("/volunteers/:id/applications", volunteerHandler.GetAllApplyVolunteers)
 
 	admin.GET("/articles", adminHandler.GetAdminAllArticle)
-	admin.GET("/articles/:id", articleHandler.GetArticleByID)
+	admin.GET("/articles/:id", adminHandler.GetAdminArticleByID)
 	admin.POST("/articles", articleHandler.CreateArticle)
 	admin.PUT("/articles/:id", articleHandler.UpdateArticle)
 	admin.DELETE("/articles/:id", articleHandler.DeleteArticle)
+
+	admin.GET("/articles/:id/comments", commentHandler.GetCommentsByArticleID)
 }

@@ -194,29 +194,63 @@ func ToAdminAllVolunteersResponse(volunteers []entities.Volunteer) []AdminVolunt
 }
 
 type AdminArticleResponses struct {
-	ID        uint   `json:"id"`
-	CreatedAt string `json:"created_at"`
-	Title     string `json:"title"`
-	Content   string `json:"content"`
-	ImageURL  string `json:"image_url"`
+	ID                uint   `json:"id"`
+	Title             string `json:"title"`
+	Content           string `json:"content"`
+	TotalComment      int    `json:"total_comment"`
+	TotalUserBookmark int    `json:"total_user_bookmark"`
 }
 
-func ToAdminArticleResponses(article entities.Article) AdminArticleResponses {
+func ToAdminArticleResponses(article entities.Article, comment []entities.Comment) AdminArticleResponses {
+
+	totalComment := 0
+	for _, c := range comment {
+		if c.ArticleID == article.ID {
+			totalComment += 1
+		}
+	}
+
 	return AdminArticleResponses{
-		ID:        article.ID,
-		CreatedAt: article.CreatedAt.Format("2006-01-02"),
-		Title:     article.Title,
-		Content:   article.Content,
-		ImageURL:  article.ImageURL,
+		ID:                article.ID,
+		Title:             article.Title,
+		Content:           article.Content,
+		TotalComment:      totalComment,
+		TotalUserBookmark: 0,
 	}
 }
 
-func ToAdminAllArticleResponses(articles []entities.Article) []AdminArticleResponses {
+func ToAdminAllArticleResponses(articles []entities.Article, comments []entities.Comment) []AdminArticleResponses {
 	var result []AdminArticleResponses
 	for _, article := range articles {
-		result = append(result, ToAdminArticleResponses(article))
+		result = append(result, ToAdminArticleResponses(article, comments))
 	}
 	return result
+}
+
+type AdminArticleResponse struct {
+	ID                uint   `json:"id"`
+	Title             string `json:"title"`
+	Content           string `json:"content"`
+	TotalComment      int    `json:"total_comment"`
+	TotalUserBookmark int    `json:"total_user_bookmark"`
+}
+
+func ToAdminArticleResponse(article entities.Article, comment []entities.Comment) AdminArticleResponse {
+	totalComment := 0
+
+	for _, c := range comment {
+		if c.ArticleID == article.ID {
+			totalComment += 1
+		}
+	}
+
+	return AdminArticleResponse{
+		ID:                article.ID,
+		Title:             article.Title,
+		Content:           article.Content,
+		TotalComment:      totalComment,
+		TotalUserBookmark: 0,
+	}
 }
 
 type AdminDonationResponses struct {

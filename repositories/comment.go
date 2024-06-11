@@ -12,6 +12,7 @@ type CommentRepository interface {
 	FindByID(id uint) (entities.Comment, error)
 	FindAllByArticleID(id uint, page, limit int) ([]entities.Comment, int, error)
 	Delete(id uint) error
+	FindAll() ([]entities.Comment, error)
 }
 
 type commentRepository struct {
@@ -52,4 +53,10 @@ func (r *commentRepository) FindAllByArticleID(id uint, page, limit int) ([]enti
 func (r *commentRepository) Delete(id uint) error {
 	err := r.db.Delete(&entities.Comment{}, id).Error
 	return err
+}
+
+func (r *commentRepository) FindAll() ([]entities.Comment, error) {
+	var comments []entities.Comment
+	err := r.db.Preload("User").Find(&comments).Error
+	return comments, err
 }

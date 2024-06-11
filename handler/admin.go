@@ -20,10 +20,11 @@ type AdminHandler struct {
 	adminService     service.AdminService
 	volunteerService service.VolunteerService
 	articleService   service.ArticleService
+	commentService   service.CommentService
 }
 
-func NewAdminHandler(adminService service.AdminService, volunteerService service.VolunteerService, articleService service.ArticleService) *AdminHandler {
-	return &AdminHandler{adminService, volunteerService, articleService}
+func NewAdminHandler(adminService service.AdminService, volunteerService service.VolunteerService, articleService service.ArticleService, commentService service.CommentService) *AdminHandler {
+	return &AdminHandler{adminService, volunteerService, articleService, commentService}
 }
 
 // func (h *AdminHandler) Login(c echo.Context) error {
@@ -421,8 +422,33 @@ func (h *AdminHandler) GetAdminAllArticle(c echo.Context) error {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to get articles", err.Error()))
 	}
 
-	response := dto.ToAdminAllArticleResponses(articles)
+	comments, err := h.commentService.GetAllComments()
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get comments", err.Error()))
+	}
+
+	response := dto.ToAdminAllArticleResponses(articles, comments)
 	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "articles retrieved successfully", response, page, limit, int64(total)))
+}
+
+func (h *AdminHandler) GetAdminArticleByID(c echo.Context) error {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
+	}
+
+	article, err := h.articleService.FindByID(uint(id))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid request", err.Error()))
+	}
+
+	comments, err := h.commentService.GetAllComments()
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get comments", err.Error()))
+	}
+
+	response := dto.ToAdminArticleResponses(article, comments)
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "article retrieved successfully", response))
 }
 
 func (h *AdminHandler) GetAllDonationManual(c echo.Context) error {
