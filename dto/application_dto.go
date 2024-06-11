@@ -23,25 +23,37 @@ func (req *ApplicationRequest) ToEntity(igUrl, ytUrl string, userID uint, vacanc
 }
 
 type ApplicationResponse struct {
-	ID         uint   `json:"id"`
-	IgImageURL string `json:"ig_image_url"`
-	YtImageURL string `json:"yt_image_url"`
-	UserID     uint   `json:"user_id"`
-	VacancyID  uint   `json:"vacancy_id"`
-	Reason     string `json:"reason"`
-	Age        int    `json:"age"`
-	Job        string `json:"job"`
+	ID           uint   `json:"id"`
+	IgImageURL   string `json:"ig_image_url"`
+	YtImageURL   string `json:"yt_image_url"`
+	UserID       uint   `json:"user_id"`
+	UserFullname string `json:"user_fullname"`
+	VacancyID    uint   `json:"vacancy_id"`
+	Reason       string `json:"reason"`
+	Age          int    `json:"age"`
+	Job          string `json:"job"`
+	Status       string `json:"status"`
 }
 
 func ToApplicationResponse(application entities.Application) ApplicationResponse {
 	return ApplicationResponse{
-		ID:         application.ID,
-		IgImageURL: application.IgImageURL,
-		YtImageURL: application.YtImageURL,
-		UserID:     application.UserID,
-		VacancyID:  application.VacancyID,
-		Reason:     application.Reason,
-		Age:        application.Age,
-		Job:        application.Job,
+		ID:           application.ID,
+		IgImageURL:   application.IgImageURL,
+		YtImageURL:   application.YtImageURL,
+		UserID:       application.UserID,
+		UserFullname: application.User.Fullname,
+		VacancyID:    application.VacancyID,
+		Reason:       application.Reason,
+		Age:          application.Age,
+		Job:          application.Job,
+		Status:       application.Volunteer.Status,
 	}
+}
+
+func ToApplicationsResponse(applications []entities.Application) []ApplicationResponse {
+	var applicationsResponse []ApplicationResponse
+	for _, application := range applications {
+		applicationsResponse = append(applicationsResponse, ToApplicationResponse(application))
+	}
+	return applicationsResponse
 }
