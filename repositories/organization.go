@@ -11,6 +11,7 @@ type OrganizationRepository interface {
 	FindAll() ([]entities.Organization, error)
 	FindByID(id int) (entities.Organization, error)
 	FindFundraisingByOrganizationID(id int) ([]entities.Fundraising, error)
+	FindVolunteersByOrganizationID(id int) ([]entities.Volunteer, error)
 }
 
 type organizationRepository struct {
@@ -50,4 +51,12 @@ func (r *organizationRepository) FindFundraisingByOrganizationID(id int) ([]enti
 		return []entities.Fundraising{}, err
 	}
 	return fundraisings, nil
+}
+
+func (r *organizationRepository) FindVolunteersByOrganizationID(id int) ([]entities.Volunteer, error) {
+	var volunteers []entities.Volunteer
+	if err := r.db.Preload("Organization").Where("organization_id = ?", id).Find(&volunteers).Error; err != nil {
+		return []entities.Volunteer{}, err
+	}
+	return volunteers, nil
 }
