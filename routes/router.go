@@ -156,7 +156,10 @@ func NewRouter(router *echo.Echo) {
 	admin.Use(jwt, routeMiddleware.AdminMiddleware)
 
 	admin.GET("/users", adminHandler.GetAllUsers)
-	admin.GET("/users/:id/donations", adminHandler.GetDetailUserWithDonations)
+	admin.GET("/users/:id/donations", adminHandler.GetUserDonations)
+	admin.GET("/users/:id/volunteers", adminHandler.GetUserVolunteers)
+	admin.GET("/users/:id", adminHandler.GetUserDetail)
+	admin.PUT("/users/:id", adminHandler.EditUsers)
 	admin.DELETE("/users/:id", adminHandler.DeleteUser)
 
 	admin.GET("/fundraisings", adminHandler.GetFundraisings)

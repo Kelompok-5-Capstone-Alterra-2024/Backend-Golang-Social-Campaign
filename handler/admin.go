@@ -343,33 +343,90 @@ func (h *AdminHandler) GetAllUsers(c echo.Context) error {
 
 }
 
-func (h *AdminHandler) GetDetailUserWithDonations(c echo.Context) error {
+func (h *AdminHandler) GetUserDonations(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(400, helper.ErrorResponse(false, "invalid user id", err.Error()))
+	}
+	page, _ := strconv.Atoi(c.QueryParam("page"))
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+
+	if page <= 0 {
+		page = 1
+	}
+	if limit <= 0 || limit > 6 {
+		limit = 6
+	}
+
+	userDonations, total, err := h.adminService.GetDonationsByUserID(id, page, limit)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get user donations", err.Error()))
+	}
+
+	response := dto.ToAdminAllUserDonationResponse(userDonations)
+	return c.JSON(200, helper.ResponseWithPagination("success", "user donations retrieved successfully", response, page, limit, int64(total)))
+}
+
+func (h *AdminHandler) GetUserVolunteers(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return c.JSON(400, helper.ErrorResponse(false, "invalid user id", err.Error()))
 	}
 
-	limitStr := c.QueryParam("limit")
-	pageStr := c.QueryParam("page")
+	page, _ := strconv.Atoi(c.QueryParam("page"))
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
 
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil {
-		limit = 5
-	}
-
-	page, err := strconv.Atoi(pageStr)
-	if err != nil || page < 1 {
+	if page <= 0 {
 		page = 1
 	}
-
-	offset := (page - 1) * limit
-
-	userDonations, err := h.adminService.GetDonationsByUserID(id, limit, offset)
-	if err != nil {
-		return c.JSON(500, helper.ErrorResponse(false, "failed to get user donations", err.Error()))
+	if limit <= 0 || limit > 6 {
+		limit = 6
 	}
 
-	return c.JSON(200, helper.ResponseWithData(true, "user donations retrieved successfully", userDonations))
+	userVolunteers, total, err := h.adminService.GetVolunteersByUserID(id, page, limit)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get user volunteers", err.Error()))
+	}
+
+	response := dto.ToAdminAllUserVolunteers(userVolunteers)
+	return c.JSON(200, helper.ResponseWithPagination("success", "user volunteers retrieved successfully", response, page, limit, int64(total)))
+}
+
+func (h *AdminHandler) GetUserDetail(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(400, helper.ErrorResponse(false, "invalid user id", err.Error()))
+	}
+
+	user, err := h.adminService.GetUserByID(id)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get user", err.Error()))
+	}
+
+	response := dto.ToAdminUserDetailResponse(user)
+	return c.JSON(200, helper.ResponseWithData(true, "user retrieved successfully", response))
+}
+
+func (h *AdminHandler) EditUsers(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(400, helper.ErrorResponse(false, "invalid user id", err.Error()))
+	}
+
+	var req dto.EditUserRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(400, helper.ErrorResponse(false, "invalid request", err.Error()))
+	}
+
+	user := req.ToEntity()
+	user.ID = uint(id)
+
+	_, err = h.adminService.UpdateUserByID(uint(id), user)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to edit user", err.Error()))
+	}
+
+	return c.JSON(200, helper.GeneralResponse(true, "user edited successfully"))
 
 }
 

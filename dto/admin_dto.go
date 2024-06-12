@@ -143,22 +143,97 @@ func ToAdminAllUsersResponses(users []entities.User) []AdminAllUsersResponse {
 }
 
 type AdminUserDetailResponse struct {
-	ID           uint                        `json:"id"`
-	Username     string                      `json:"username"`
-	Email        string                      `json:"email"`
-	Phone        string                      `json:"phone"`
-	RegisterDate string                      `json:"register_date"`
-	Avatar       string                      `json:"avatar"`
-	Donations    []AdminUserDonationResponse `json:"donations"`
+	ID           uint   `json:"id"`
+	Username     string `json:"username"`
+	FullName     string `json:"full_name"`
+	Email        string `json:"email"`
+	Phone        string `json:"phone"`
+	RegisterDate string `json:"register_date"`
+	Avatar       string `json:"avatar"`
+}
+
+func ToAdminUserDetailResponse(user entities.User) AdminUserDetailResponse {
+	return AdminUserDetailResponse{
+		ID:           user.ID,
+		Username:     user.Username,
+		FullName:     user.Fullname,
+		Email:        user.Email,
+		Phone:        user.NoTelp,
+		RegisterDate: user.CreatedAt.Format("2006-01-02"),
+		Avatar:       user.Avatar,
+	}
 }
 
 type AdminUserDonationResponse struct {
-	DonationID       uint   `json:"donation_id"`
-	FundraisingID    uint   `json:"fundraising_id"`
-	Title            string `json:"title"`
+	ID               uint   `json:"id"`
+	FundraisingName  string `json:"fundraising_name"`
 	OrganizationName string `json:"organization_name"`
 	Amount           int    `json:"amount"`
 	TransactionDate  string `json:"transaction_date"`
+}
+
+func ToAdminUserDonationResponse(donation entities.DonationManual) AdminUserDonationResponse {
+	return AdminUserDonationResponse{
+		ID:               donation.ID,
+		FundraisingName:  donation.Fundraising.Title,
+		OrganizationName: donation.Fundraising.Organization.Name,
+		Amount:           donation.Amount,
+		TransactionDate:  donation.CreatedAt.Format("2006-01-02"),
+	}
+}
+
+func ToAdminAllUserDonationResponse(donations []entities.DonationManual) []AdminUserDonationResponse {
+	var result []AdminUserDonationResponse
+	for _, donation := range donations {
+		result = append(result, ToAdminUserDonationResponse(donation))
+	}
+	return result
+}
+
+type AdminUserVolunteers struct {
+	ID               uint   `json:"id"`
+	VolunteerName    string `json:"volunteer_name"`
+	OrganizationName string `json:"organization_name"`
+	RegistrationDate string `json:"registration_date"`
+	StartDate        string `json:"start_date"`
+	EndDate          string `json:"end_date"`
+}
+
+func ToAdminUserVolunteers(application entities.Application) AdminUserVolunteers {
+	return AdminUserVolunteers{
+		ID:               application.VacancyID,
+		VolunteerName:    application.Volunteer.Title,
+		OrganizationName: application.Volunteer.Organization.Name,
+		RegistrationDate: application.CreatedAt.Format("2006-01-02"),
+		StartDate:        application.Volunteer.StartDate.Format("2006-01-02"),
+		EndDate:          application.Volunteer.EndDate.Format("2006-01-02"),
+	}
+}
+
+func ToAdminAllUserVolunteers(applications []entities.Application) []AdminUserVolunteers {
+	var result []AdminUserVolunteers
+	for _, application := range applications {
+		result = append(result, ToAdminUserVolunteers(application))
+	}
+	return result
+}
+
+type EditUserRequest struct {
+	Fullname string `json:"fullname" form:"fullname"`
+	Email    string `json:"email" form:"email"`
+	NoTelp   string `json:"no_telp" form:"no_telp"`
+	Username string `json:"username" form:"username"`
+	Password string `json:"password" form:"password"`
+}
+
+func (req *EditUserRequest) ToEntity() entities.User {
+	return entities.User{
+		Fullname: req.Fullname,
+		Email:    req.Email,
+		NoTelp:   req.NoTelp,
+		Username: req.Username,
+		Password: req.Password,
+	}
 }
 
 type AdminVolunteersResponse struct {
