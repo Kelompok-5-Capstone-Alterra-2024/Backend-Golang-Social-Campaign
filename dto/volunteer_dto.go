@@ -7,16 +7,15 @@ import (
 )
 
 type VolunteerRequest struct {
-	OrganizationID       uint   `json:"organization_id" form:"organization_id"`
-	Title                string `json:"title" form:"title"`
-	ContentActivity      string `json:"content_activity" form:"content_activity"`
-	Location             string `json:"location" form:"location"`
-	StarDate             string `json:"start_date" form:"start_date"`
-	EndDate              string `json:"end_date" form:"end_date"`
-	TargetVolunteer      int    `json:"target_volunteer" form:"target_volunteer"`
-	RegisteredVolunteer  int    `json:"registered_volunteer"`
-	RegistrationDeadline string `json:"registration_deadline" form:"registration_deadline"`
-	ImageURL             string `json:"image_url" form:"image_url"`
+	OrganizationID      uint   `json:"organization_id" form:"organization_id"`
+	Title               string `json:"title" form:"title"`
+	ContentActivity     string `json:"content_activity" form:"content_activity"`
+	Location            string `json:"location" form:"location"`
+	StarDate            string `json:"start_date" form:"start_date"`
+	EndDate             string `json:"end_date" form:"end_date"`
+	TargetVolunteer     int    `json:"target_volunteer" form:"target_volunteer"`
+	RegisteredVolunteer int    `json:"registered_volunteer"`
+	ImageURL            string `json:"image_url" form:"image_url"`
 }
 
 func (r *VolunteerRequest) ToEntity(imgUrl string) (entities.Volunteer, error) {
@@ -50,22 +49,16 @@ func (r *VolunteerRequest) ToEntity(imgUrl string) (entities.Volunteer, error) {
 		return entities.Volunteer{}, fmt.Errorf("Invalid end date format")
 	}
 
-	registrationDeadline, err := time.Parse("2006-01-02", r.RegistrationDeadline)
-	if err != nil {
-		return entities.Volunteer{}, fmt.Errorf("Invalid registration deadline format")
-	}
-
 	return entities.Volunteer{
-		OrganizationID:       r.OrganizationID,
-		Title:                r.Title,
-		ContentActivity:      r.ContentActivity,
-		Location:             r.Location,
-		StartDate:            startDate,
-		EndDate:              endDate,
-		TargetVolunteer:      r.TargetVolunteer,
-		RegistrationDeadline: registrationDeadline,
-		ImageURL:             imgUrl,
-		Status:               "active",
+		OrganizationID:  r.OrganizationID,
+		Title:           r.Title,
+		ContentActivity: r.ContentActivity,
+		Location:        r.Location,
+		StartDate:       startDate,
+		EndDate:         endDate,
+		TargetVolunteer: r.TargetVolunteer,
+		ImageURL:        imgUrl,
+		Status:          "active",
 	}, nil
 }
 

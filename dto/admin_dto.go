@@ -272,6 +272,8 @@ type AdminArticleResponses struct {
 	ID                uint   `json:"id"`
 	Title             string `json:"title"`
 	Content           string `json:"content"`
+	ImageURL          string `json:"image_url"`
+	CreatedAt         string `json:"created_at"`
 	TotalComment      int    `json:"total_comment"`
 	TotalUserBookmark int    `json:"total_user_bookmark"`
 }
@@ -289,6 +291,8 @@ func ToAdminArticleResponses(article entities.Article, comment []entities.Commen
 		ID:                article.ID,
 		Title:             article.Title,
 		Content:           article.Content,
+		ImageURL:          article.ImageURL,
+		CreatedAt:         article.CreatedAt.Format("2006-01-02"),
 		TotalComment:      totalComment,
 		TotalUserBookmark: 0,
 	}
