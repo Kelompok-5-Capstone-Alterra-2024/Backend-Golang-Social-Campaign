@@ -193,4 +193,5 @@ func NewRouter(router *echo.Echo) {
 	admin.DELETE("/articles/:id", articleHandler.DeleteArticle)
 
 	admin.GET("/articles/:id/comments", commentHandler.GetCommentsByArticleID)
+	// test
 }
