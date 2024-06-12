@@ -22,7 +22,9 @@ type AdminRepository interface {
 
 	FindUsers(limit int, offset int) ([]entities.User, error)
 	FindUserByID(id int) (entities.User, error)
-	FindDonationsByUserID(id int, limit int, offset int) ([]entities.Donation, error)
+	UpdateUserByID(id uint, user entities.User) (entities.User, error)
+	FindDonationsByUserID(id int, page int, limit int) ([]entities.DonationManual, int, error)
+	FindVolunteersByUserID(id int, page int, limit int) ([]entities.Application, int, error)
 	DeleteUserWithDonations(id uint) error
 
 	FindAllDonations(page, limit int) ([]entities.DonationManual, int, error)
@@ -137,12 +139,37 @@ func (r *adminRepository) FindUserByID(id int) (entities.User, error) {
 	return user, nil
 }
 
-func (r *adminRepository) FindDonationsByUserID(id int, limit int, offset int) ([]entities.Donation, error) {
-	var donations []entities.Donation
-	if err := r.db.Preload("Fundraising.Organization").Where("user_id = ?", id).Limit(limit).Offset(offset).Find(&donations).Error; err != nil {
-		return []entities.Donation{}, err
+func (r *adminRepository) UpdateUserByID(id uint, user entities.User) (entities.User, error) {
+	if err := r.db.Model(&user).Where("id = ?", id).Updates(&user).Error; err != nil {
+		return entities.User{}, err
 	}
-	return donations, nil
+	return user, nil
+}
+
+func (r *adminRepository) FindDonationsByUserID(id int, page int, limit int) ([]entities.DonationManual, int, error) {
+	var donations []entities.DonationManual
+	var total int64
+	offset := (page - 1) * limit
+	if err := r.db.Preload("Fundraising.Organization").Where("user_id = ?", id).Limit(limit).Offset(offset).Find(&donations).Error; err != nil {
+		return []entities.DonationManual{}, 0, err
+	}
+
+	r.db.Model(&entities.DonationManual{}).Where("user_id = ?", id).Count(&total)
+	return donations, int(total), nil
+}
+
+func (r *adminRepository) FindVolunteersByUserID(id int, page int, limit int) ([]entities.Application, int, error) {
+
+	var applications []entities.Application
+	var total int64
+	offset := (page - 1) * limit
+	if err := r.db.Preload("Volunteer.Organization").Where("user_id = ?", id).Limit(limit).Offset(offset).Find(&applications).Error; err != nil {
+		return []entities.Application{}, 0, err
+	}
+
+	r.db.Model(&entities.Application{}).Where("user_id = ?", id).Count(&total)
+	return applications, int(total), nil
+
 }
 
 func (r *adminRepository) DeleteUserWithDonations(id uint) error {

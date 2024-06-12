@@ -27,7 +27,9 @@ type AdminService interface {
 
 	GetUsers(limit int, offset int) ([]entities.User, error)
 	GetUserByID(id int) (entities.User, error)
-	GetDonationsByUserID(id int, limit int, offset int) (dto.AdminUserDetailResponse, error)
+	UpdateUserByID(id uint, user entities.User) (entities.User, error)
+	GetDonationsByUserID(id int, page int, limit int) ([]entities.DonationManual, int, error)
+	GetVolunteersByUserID(id int, page int, limit int) ([]entities.Application, int, error)
 	DeleteUserWithDonations(id uint) error
 
 	GetAllDonations(page, limit int) ([]entities.DonationManual, int, error)
@@ -157,41 +159,19 @@ func (s *adminService) GetUserByID(id int) (entities.User, error) {
 	return s.userRepository.FindByID(uint(id))
 }
 
-func (s *adminService) GetDonationsByUserID(id int, limit int, offset int) (dto.AdminUserDetailResponse, error) {
-	user, err := s.userRepository.FindByID(uint(id))
-	if err != nil {
-		return dto.AdminUserDetailResponse{}, err
-	}
+func (s *adminService) UpdateUserByID(id uint, user entities.User) (entities.User, error) {
+	return s.adminRepository.UpdateUserByID(id, user)
+}
 
-	donations, err := s.adminRepository.FindDonationsByUserID(id, limit, offset)
-	if err != nil {
-		return dto.AdminUserDetailResponse{}, err
-	}
+func (s *adminService) GetDonationsByUserID(id int, page int, limit int) ([]entities.DonationManual, int, error) {
 
-	donationResponses := []dto.AdminUserDonationResponse{}
+	return s.adminRepository.FindDonationsByUserID(id, page, limit)
 
-	for _, donation := range donations {
-		donationResponses = append(donationResponses, dto.AdminUserDonationResponse{
-			DonationID:       donation.ID,
-			FundraisingID:    donation.Fundraising.ID,
-			Title:            donation.Fundraising.Title,
-			OrganizationName: donation.Fundraising.Organization.Name,
-			Amount:           donation.Amount,
-			TransactionDate:  donation.CreatedAt.Format("2006-01-02"),
-		})
-	}
+}
 
-	userDetailResponse := dto.AdminUserDetailResponse{
-		ID:           user.ID,
-		Username:     user.Username,
-		Email:        user.Email,
-		Phone:        user.NoTelp,
-		RegisterDate: user.CreatedAt.Format("2006-01-02"),
-		Avatar:       user.Avatar,
-		Donations:    donationResponses,
-	}
+func (s *adminService) GetVolunteersByUserID(id int, page int, limit int) ([]entities.Application, int, error) {
 
-	return userDetailResponse, nil
+	return s.adminRepository.FindVolunteersByUserID(id, page, limit)
 }
 
 func (s *adminService) DeleteUserWithDonations(id uint) error {
