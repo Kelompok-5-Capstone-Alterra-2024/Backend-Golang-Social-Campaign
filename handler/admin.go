@@ -289,25 +289,28 @@ func (h *AdminHandler) GetFundraisingByOrganization(c echo.Context) error {
 	if err != nil {
 		return c.JSON(400, helper.ErrorResponse(false, "invalid user id", err.Error()))
 	}
-	page, _ := strconv.Atoi(c.QueryParam("page"))
-	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+	limitStr := c.QueryParam("limit")
+	pageStr := c.QueryParam("page")
 
-	if page <= 0 {
-		page = 1
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		limit = 10
 	}
-	if limit <= 0 || limit > 6 {
-		limit = 6
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
 	}
 
 	offset := (page - 1) * limit
-	fundraisings, total, err := h.adminService.GetFundraisingByOrganizationID(id, limit, offset)
+	fundraisings, err := h.adminService.GetFundraisingByOrganizationID(id, limit, offset)
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to get fundraising", err.Error()))
 	}
 
 	response := dto.ToAdminAllOrgFundraisingResponse(fundraisings)
 
-	return c.JSON(200, helper.ResponseWithPagination("success", "fundraising retrieved successfully", response, page, limit, int64(total)))
+	return c.JSON(200, helper.ResponseWithPagination("success", "fundraising retrieved successfully", response, page, limit, int64(len(fundraisings))))
 }
 
 func (h *AdminHandler) GetVolunteerByOrganization(c echo.Context) error {
@@ -315,26 +318,29 @@ func (h *AdminHandler) GetVolunteerByOrganization(c echo.Context) error {
 	if err != nil {
 		return c.JSON(400, helper.ErrorResponse(false, "invalid user id", err.Error()))
 	}
-	page, _ := strconv.Atoi(c.QueryParam("page"))
-	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+	limitStr := c.QueryParam("limit")
+	pageStr := c.QueryParam("page")
 
-	if page <= 0 {
-		page = 1
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		limit = 10
 	}
-	if limit <= 0 || limit > 6 {
-		limit = 6
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
 	}
 
 	offset := (page - 1) * limit
 
-	volunteers, total, err := h.adminService.GetVolunteerByOrganizationID(id, limit, offset)
+	volunteers, err := h.adminService.GetVolunteerByOrganizationID(id, limit, offset)
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to get fundraising", err.Error()))
 	}
 
 	response := dto.ToAdminAllOrgVolunteersResponse(volunteers)
 
-	return c.JSON(200, helper.ResponseWithPagination("success", "volunteer retrieved successfully", response, page, limit, int64(total)))
+	return c.JSON(200, helper.ResponseWithPagination("success", "volunteer retrieved successfully", response, page, limit, int64(len(volunteers))))
 }
 
 func (h *AdminHandler) EditOrganization(c echo.Context) error {
