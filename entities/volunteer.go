@@ -18,6 +18,5 @@ type Volunteer struct {
 	TargetVolunteer      int          `json:"target_volunteer"`
 	Status               string       `json:"status" gorm:"type:enum('active','inactive')"`
 	RegisteredVolunteer  int          `json:"registered_volunteer"`
-	RegistrationDeadline time.Time    `json:"registration_deadline"`
 	ImageURL             string       `json:"image_url" gorm:"type:varchar(255)"`
 }

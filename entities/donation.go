@@ -14,3 +14,20 @@ type Donation struct {
 	PaymentUrl    string      `json:"payment_url" gorm:"type:varchar(255)"`
 	PaymentMethod string      `json:"payment_method" gorm:"type:varchar(255)"`
 }
+
+type DonationComment struct {
+	gorm.Model
+	DonationID uint     `json:"-"`
+	Donation   Donation `json:"donation" gorm:"foreignKey:DonationID"`
+	Comment    string   `json:"comment" gorm:"type:varchar(255)"`
+	TotalLikes int      `json:"total_likes" gorm:"type:int"`
+}
+
+type LikeDonationComment struct {
+	gorm.Model
+	DonationCommentID uint            `json:"-"`
+	DonationComment   DonationComment `json:"donation_comment" gorm:"foreignKey:DonationCommentID"`
+	UserID            uint            `json:"-"`
+	User              User            `json:"user" gorm:"foreignKey:UserID"`
+}
+
