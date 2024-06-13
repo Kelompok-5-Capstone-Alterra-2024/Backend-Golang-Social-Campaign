@@ -90,11 +90,85 @@ func ToAdminAllFundraisingDonationResponse(donations []entities.Donation) []Admi
 	return result
 }
 
+type AdminOrgResponse struct {
+	ID          uint   `json:"id"`
+	Name        string `json:"name"`
+	JoinDate    string `json:"join_date"`
+	Description string `json:"description"`
+	Avatar      string `json:"avatar"`
+}
+
+func ToAdminOrgResponse(organization entities.Organization) AdminOrgResponse {
+	return AdminOrgResponse{
+		ID:          organization.ID,
+		Name:        organization.Name,
+		JoinDate:    organization.CreatedAt.Format("2006-01-02"),
+		Description: organization.Description,
+		Avatar:      organization.Avatar,
+	}
+}
+
+type AdminOrgFundraisingResponse struct {
+	ID              uint   `json:"id"`
+	Title           string `json:"title"`
+	CurrentProgress int    `json:"current_progress"`
+	TargetAmount    int    `json:"target_amount"`
+	Status          string `json:"status"`
+}
+
+func ToAdminOrgFundraisingResponse(fundraising entities.Fundraising) AdminOrgFundraisingResponse {
+	return AdminOrgFundraisingResponse{
+		ID:              fundraising.ID,
+		Title:           fundraising.Title,
+		CurrentProgress: fundraising.CurrentProgress,
+		TargetAmount:    fundraising.GoalAmount,
+		Status:          fundraising.Status,
+	}
+}
+
+func ToAdminAllOrgFundraisingResponse(fundraisings []entities.Fundraising) []AdminOrgFundraisingResponse {
+	var result []AdminOrgFundraisingResponse
+	for _, fundraising := range fundraisings {
+		result = append(result, ToAdminOrgFundraisingResponse(fundraising))
+	}
+	return result
+}
+
+type AdminOrgVolunteersResponse struct {
+	ID                  uint   `json:"id"`
+	Name                string `json:"name"`
+	StartDate           string `json:"start_date"`
+	TargetVolunteer     int    `json:"target_volunteer"`
+	RegisteredVolunteer int    `json:"registered_volunteer"`
+	Status              string `json:"status"`
+}
+
+func ToAdminOrgVolunteersResponse(volunteer entities.Volunteer) AdminOrgVolunteersResponse {
+	return AdminOrgVolunteersResponse{
+		ID:                  volunteer.ID,
+		Name:                volunteer.Title,
+		StartDate:           volunteer.StartDate.Format("2006-01-02"),
+		TargetVolunteer:     volunteer.TargetVolunteer,
+		RegisteredVolunteer: volunteer.RegisteredVolunteer,
+		Status:              volunteer.Status,
+	}
+}
+
+func ToAdminAllOrgVolunteersResponse(volunteers []entities.Volunteer) []AdminOrgVolunteersResponse {
+	var result []AdminOrgVolunteersResponse
+	for _, volunteer := range volunteers {
+		result = append(result, ToAdminOrgVolunteersResponse(volunteer))
+	}
+	return result
+}
+
 type AdminOrganizationsResponse struct {
 	ID         uint   `json:"id"`
 	Name       string `json:"name"`
 	JoinDate   string `json:"join_date"`
-	Contact    string `json:"contact"`
+	Website    string `json:"website"`
+	Instagram  string `json:"instagram"`
+	NoRekening string `json:"no_rek"`
 	IsVerified bool   `json:"is_verified"`
 }
 
@@ -103,7 +177,9 @@ func ToAdminOrganizationsResponse(organization entities.Organization) AdminOrgan
 		ID:         organization.ID,
 		Name:       organization.Name,
 		JoinDate:   organization.CreatedAt.Format("2006-01-02"),
-		Contact:    organization.Contact,
+		Website:    organization.Website,
+		Instagram:  organization.Instagram,
+		NoRekening: organization.NoRekening,
 		IsVerified: organization.IsVerified,
 	}
 }

@@ -175,8 +175,11 @@ func NewRouter(router *echo.Echo) {
 
 	admin.POST("/organizations", organizatonHandler.CreateOrganization)
 	admin.GET("/organizations", adminHandler.GetAllOrganizations)
+	admin.GET("/organizations/:id", adminHandler.GetOrganizationByID)
 	admin.PUT("/organizations/:id", adminHandler.EditOrganization)
 	admin.DELETE("/organizations/:id", adminHandler.DeleteOrganization)
+	admin.GET("/organizations/:id/fundraising", adminHandler.GetFundraisingByOrganization)
+	admin.GET("/organizations/:id/volunteers", adminHandler.GetVolunteerByOrganization)
 
 	admin.GET("/volunteers", adminHandler.GetAdminAllVolunteers)
 	admin.GET("/volunteer/:id", volunteerHandler.GetVolunteerByID)
