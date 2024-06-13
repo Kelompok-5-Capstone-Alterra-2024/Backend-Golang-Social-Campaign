@@ -113,19 +113,18 @@ func ToVolunteerResponse(volunteer entities.Volunteer, application []entities.Ap
 	}
 
 	return VolunteerResponse{
-		ID:                   volunteer.ID,
-		OrganizationID:       volunteer.Organization.ID,
-		OrgIsVerified:        volunteer.Organization.IsVerified,
-		Title:                volunteer.Title,
-		ContentActivity:      volunteer.ContentActivity,
-		Location:             volunteer.Location,
-		StartDate:            volunteer.StartDate.Format("2006-01-02"),
-		EndDate:              volunteer.EndDate.Format("2006-01-02"),
-		TargetVolunteer:      volunteer.TargetVolunteer,
-		RegisteredVolunteer:  volunteer.RegisteredVolunteer,
-		RegistrationDeadline: volunteer.RegistrationDeadline.Format("2006-01-02"),
-		ImageURL:             volunteer.ImageURL,
-		UserRegistered:       userRegisteredResponse,
+		ID:                  volunteer.ID,
+		OrganizationID:      volunteer.Organization.ID,
+		OrgIsVerified:       volunteer.Organization.IsVerified,
+		Title:               volunteer.Title,
+		ContentActivity:     volunteer.ContentActivity,
+		Location:            volunteer.Location,
+		StartDate:           volunteer.StartDate.Format("2006-01-02"),
+		EndDate:             volunteer.EndDate.Format("2006-01-02"),
+		TargetVolunteer:     volunteer.TargetVolunteer,
+		RegisteredVolunteer: volunteer.RegisteredVolunteer,
+		ImageURL:            volunteer.ImageURL,
+		UserRegistered:      userRegisteredResponse,
 	}
 }
 
@@ -142,13 +141,12 @@ type VolunteersResponses struct {
 func ToVolunteersResponses(volunteer entities.Volunteer) VolunteersResponses {
 
 	return VolunteersResponses{
-		ID:                   volunteer.ID,
-		Title:                volunteer.Title,
-		OrganizationName:     volunteer.Organization.Name,
-		RegisteredVolunteer:  volunteer.RegisteredVolunteer,
-		TargetVolunteer:      volunteer.TargetVolunteer,
-		RegistrationDeadline: volunteer.RegistrationDeadline.Format("2006-01-02"),
-		ImageUrl:             volunteer.ImageURL,
+		ID:                  volunteer.ID,
+		Title:               volunteer.Title,
+		OrganizationName:    volunteer.Organization.Name,
+		RegisteredVolunteer: volunteer.RegisteredVolunteer,
+		TargetVolunteer:     volunteer.TargetVolunteer,
+		ImageUrl:            volunteer.ImageURL,
 	}
 }
 

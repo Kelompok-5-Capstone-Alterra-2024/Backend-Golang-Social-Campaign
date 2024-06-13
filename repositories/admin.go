@@ -133,7 +133,7 @@ func (r *adminRepository) GetFundraisingByOrganizationID(id int, page, limit int
 
 	offset := (page - 1) * limit
 
-	if err := r.db.Preload("Organization").Where("organization_id = ?", id).Limit(limit).Offset(offset).Find(&fundraisings).Error; err != nil {
+	if err := r.db.Preload("Organization").Where("organization_id = ?", id).Offset(offset).Limit(limit).Find(&fundraisings).Error; err != nil {
 		return []entities.Fundraising{}, 0, err
 	}
 
@@ -150,7 +150,7 @@ func (r *adminRepository) GetVolunteerByOrganizationID(id int, page, limit int) 
 
 	offset := (page - 1) * limit
 
-	if err := r.db.Where("organization_id = ?", id).Limit(limit).Offset(offset).Find(&volunteers).Error; err != nil {
+	if err := r.db.Where("organization_id = ?", id).Offset(offset).Limit(limit).Find(&volunteers).Error; err != nil {
 		return []entities.Volunteer{}, 0, err
 	}
 
