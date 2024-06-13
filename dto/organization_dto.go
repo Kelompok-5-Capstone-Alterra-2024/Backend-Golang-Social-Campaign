@@ -11,7 +11,9 @@ type OrganizationRequest struct {
 	Description string `json:"description" form:"description" validate:"required"`
 	IsVerified  bool   `json:"is_verified" form:"is_verified" validate:"required"`
 	StartDate   string `json:"start_date" form:"start_date" validate:"required"`
-	Contact     string `json:"contact" form:"contact" validate:"required"`
+	Website     string `json:"website" form:"website" validate:"required"`
+	Instagram   string `json:"instagram" form:"instagram" validate:"required"`
+	NoRekening  string `json:"no_rek" form:"no_rek" validate:"required"`
 }
 
 type OrganizationResponse struct {

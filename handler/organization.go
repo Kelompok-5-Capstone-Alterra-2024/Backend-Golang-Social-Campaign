@@ -48,7 +48,9 @@ func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
 		Description: req.Description,
 		IsVerified:  req.IsVerified,
 		StartDate:   startDate,
-		Contact:     req.Contact,
+		Website:     req.Website,
+		Instagram:   req.Instagram,
+		NoRekening:  req.NoRekening,
 	}
 
 	_, err = h.organizationService.CreateOrganization(organization)

@@ -270,6 +270,73 @@ func (h *AdminHandler) GetAllOrganizations(c echo.Context) error {
 	return c.JSON(200, helper.ResponseWithData(true, "organization retrieved successfully", response))
 }
 
+func (h *AdminHandler) GetOrganizationByID(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	organization, err := h.adminService.GetOrganizationByID(id)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get organization", err.Error()))
+	}
+
+	response := dto.ToAdminOrgResponse(organization)
+
+	return c.JSON(200, helper.ResponseWithData(true, "organization retrieved successfully", response))
+}
+
+func (h *AdminHandler) GetFundraisingByOrganization(c echo.Context) error {
+
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(400, helper.ErrorResponse(false, "invalid user id", err.Error()))
+	}
+	page, _ := strconv.Atoi(c.QueryParam("page"))
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+
+	if page <= 0 {
+		page = 1
+	}
+	if limit <= 0 || limit > 6 {
+		limit = 6
+	}
+
+	offset := (page - 1) * limit
+	fundraisings, total, err := h.adminService.GetFundraisingByOrganizationID(id, limit, offset)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get fundraising", err.Error()))
+	}
+
+	response := dto.ToAdminAllOrgFundraisingResponse(fundraisings)
+
+	return c.JSON(200, helper.ResponseWithPagination("success", "fundraising retrieved successfully", response, page, limit, int64(total)))
+}
+
+func (h *AdminHandler) GetVolunteerByOrganization(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(400, helper.ErrorResponse(false, "invalid user id", err.Error()))
+	}
+	page, _ := strconv.Atoi(c.QueryParam("page"))
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+
+	if page <= 0 {
+		page = 1
+	}
+	if limit <= 0 || limit > 6 {
+		limit = 6
+	}
+
+	offset := (page - 1) * limit
+
+	volunteers, total, err := h.adminService.GetVolunteerByOrganizationID(id, limit, offset)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get fundraising", err.Error()))
+	}
+
+	response := dto.ToAdminAllOrgVolunteersResponse(volunteers)
+
+	return c.JSON(200, helper.ResponseWithPagination("success", "volunteer retrieved successfully", response, page, limit, int64(total)))
+}
+
 func (h *AdminHandler) EditOrganization(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 
@@ -278,24 +345,30 @@ func (h *AdminHandler) EditOrganization(c echo.Context) error {
 		return c.JSON(400, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
-	fileHeader, _ := c.FormFile("avatar")
-	file, _ := fileHeader.Open()
-	ctx := context.Background()
-	urlCloudinary := "cloudinary://633714464826515:u1W6hqq-Gb8y-SMpXe7tzs4mH44@dvrhf8d9t"
-	cloudinaryUsecase, _ := cloudinary.NewFromURL(urlCloudinary)
-	response, _ := cloudinaryUsecase.Upload.Upload(ctx, file, uploader.UploadParams{})
+	imgFile, err := c.FormFile("avatar")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid image url", err.Error()))
+	}
+
+	imageUrl, err := helper.UploadToCloudinary(imgFile)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to upload image", err.Error()))
+	}
+
+	startDate, err := time.Parse("2006-01-02", req.StartDate)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, "Invalid start date format")
+	}
 
 	organization := entities.Organization{
 		Name:        req.Name,
 		Description: req.Description,
+		StartDate:   startDate,
 		IsVerified:  req.IsVerified,
-		Contact:     req.Contact,
-		Avatar:      response.SecureURL,
-	}
-
-	_, err := h.adminService.SaveImageOraganization(uint(id), response.SecureURL)
-	if err != nil {
-		return c.JSON(500, helper.ErrorResponse(false, "failed to edit organization", err.Error()))
+		Website:     req.Website,
+		Instagram:   req.Instagram,
+		NoRekening:  req.NoRekening,
+		Avatar:      imageUrl,
 	}
 
 	_, err = h.adminService.UpdateOrganization(uint(id), organization)

@@ -19,6 +19,8 @@ type AdminRepository interface {
 	FindOrganizationByID(id int) (entities.Organization, error)
 	UpdateOrganizationByID(id uint, organization entities.Organization) (entities.Organization, error)
 	DeleteOrganizationByID(id uint) error
+	GetFundraisingByOrganizationID(id int, page, limit int) ([]entities.Fundraising, int, error)
+	GetVolunteerByOrganizationID(id int, page, limit int) ([]entities.Volunteer, int, error)
 
 	FindUsers(limit int, offset int) ([]entities.User, error)
 	FindUserByID(id int) (entities.User, error)
@@ -121,6 +123,40 @@ func (r *adminRepository) DeleteOrganizationByID(id uint) error {
 		return err
 	}
 	return nil
+}
+
+func (r *adminRepository) GetFundraisingByOrganizationID(id int, page, limit int) ([]entities.Fundraising, int, error) {
+
+	var fundraisings []entities.Fundraising
+
+	var total int64
+
+	offset := (page - 1) * limit
+
+	if err := r.db.Preload("Organization").Where("organization_id = ?", id).Limit(limit).Offset(offset).Find(&fundraisings).Error; err != nil {
+		return []entities.Fundraising{}, 0, err
+	}
+
+	r.db.Model(&entities.Fundraising{}).Where("organization_id = ?", id).Count(&total)
+
+	return fundraisings, int(total), nil
+}
+
+func (r *adminRepository) GetVolunteerByOrganizationID(id int, page, limit int) ([]entities.Volunteer, int, error) {
+
+	var volunteers []entities.Volunteer
+
+	var total int64
+
+	offset := (page - 1) * limit
+
+	if err := r.db.Where("organization_id = ?", id).Limit(limit).Offset(offset).Find(&volunteers).Error; err != nil {
+		return []entities.Volunteer{}, 0, err
+	}
+
+	r.db.Model(&entities.Volunteer{}).Where("organization_id = ?", id).Count(&total)
+
+	return volunteers, int(total), nil
 }
 
 func (r *adminRepository) FindUsers(limit int, offset int) ([]entities.User, error) {
