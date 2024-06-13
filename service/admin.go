@@ -24,8 +24,8 @@ type AdminService interface {
 	GetOrganizationByID(id int) (entities.Organization, error)
 	UpdateOrganization(id uint, organization entities.Organization) (entities.Organization, error)
 	DeleteOrganization(id uint) error
-	GetVolunteerByOrganizationID(id int, page, limit int) ([]entities.Volunteer, int, error)
-	GetFundraisingByOrganizationID(id int, page, limit int) ([]entities.Fundraising, int, error)
+	GetVolunteerByOrganizationID(id int, limit, offest int) ([]entities.Volunteer, error)
+	GetFundraisingByOrganizationID(id int, limit, offest int) ([]entities.Fundraising, error)
 	SaveImageOraganization(id uint, image string) (entities.Organization, error)
 
 	GetUsers(limit int, offset int) ([]entities.User, error)
@@ -141,12 +141,12 @@ func (s *adminService) DeleteOrganization(id uint) error {
 	return s.adminRepository.DeleteOrganizationByID(id)
 }
 
-func (s *adminService) GetVolunteerByOrganizationID(id int, page, limit int) ([]entities.Volunteer, int, error) {
-	return s.adminRepository.GetVolunteerByOrganizationID(id, page, limit)
+func (s *adminService) GetVolunteerByOrganizationID(id int, limit int, offset int) ([]entities.Volunteer, error) {
+	return s.adminRepository.GetVolunteerByOrganizationID(id, limit, offset)
 }
 
-func (s *adminService) GetFundraisingByOrganizationID(id int, page, limit int) ([]entities.Fundraising, int, error) {
-	return s.adminRepository.GetFundraisingByOrganizationID(id, page, limit)
+func (s *adminService) GetFundraisingByOrganizationID(id int, limit, offest int) ([]entities.Fundraising, error) {
+	return s.adminRepository.GetFundraisingByOrganizationID(id, limit, offest)
 }
 
 func (s *adminService) SaveImageOraganization(id uint, image string) (entities.Organization, error) {
