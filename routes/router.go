@@ -72,13 +72,20 @@ func NewRouter(router *echo.Echo) {
 	donationManualHandler := handler.NewDonationManualHandler(donationManualService, userService, fundraisingService)
 	organizatonHandler := handler.NewOrganizationHandler(organizationService)
 
-	api := router.Group("api/v1")
+	api := router.Group("/api/v1")
 
 	api.POST("/register", userHandler.Register)
 	api.POST("/login", userHandler.Login)
 	api.POST("/forget-password", userHandler.ForgetPassword)
 	api.POST("/reset-password", userHandler.ResetPassword)
 
+	api.GET("/profile", userHandler.GetUserProfile)
+	api.PUT("/profile/edit", userHandler.EditProfile)
+	api.PUT("/profile/change-password", userHandler.ChangePassword)
+
+	api.GET("/profile/history/fundraisings", userHandler.GetHistoryDonation)
+	api.GET("/profile/history/volunteers", userHandler.GetHistoryVolunteer)
+	api.GET("/profile/history/volunteers/:id", userHandler.GetHistoryVolunteerDetail)
 	api.POST("/transactions/notification", donationHandler.GetPaymentCallback)
 
 	api.POST("/refresh-token", userHandler.RefreshToken)

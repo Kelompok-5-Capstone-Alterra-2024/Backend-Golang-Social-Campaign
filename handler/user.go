@@ -6,6 +6,7 @@ import (
 	middleware "capstone/middlewares"
 	"capstone/service"
 	"errors"
+	"strconv"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -123,6 +124,111 @@ func (h *UserHandler) ResetPassword(c echo.Context) error {
 		return c.JSON(500, helper.ErrorResponse(false, "validation failed", err.Error()))
 	}
 	return c.JSON(200, helper.GeneralResponse(true, "Password reset successfully"))
+}
+
+func (h *UserHandler) GetUserProfile(c echo.Context) error {
+	userID, err := helper.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.JSON(401, helper.ErrorResponse(false, "Unauthorized.", err.Error()))
+	}
+
+	userProfile, err := h.userService.GetUserProfile(userID)
+	if err != nil {
+		return c.JSON(404, helper.ErrorResponse(false, "Profile not found.", err.Error()))
+	}
+
+	response := dto.UserProfileResponse{
+		ID:       userProfile.ID,
+		Avatar:   userProfile.Avatar,
+		Username: userProfile.Username,
+	}
+
+	return c.JSON(200, helper.ResponseWithData(true, "", response))
+}
+
+func (h *UserHandler) EditProfile(c echo.Context) error {
+	var request dto.EditProfileRequest
+	c.Bind(&request)
+
+	userID, err := helper.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.JSON(401, helper.ErrorResponse(false, "Unauthorized.", err.Error()))
+	}
+
+	// request.ID = uint(userID)
+	editProfile, err := h.userService.EditProfile(userID, request)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "validation failed", err.Error()))
+	}
+
+	response := dto.EditProfileRequest{
+		// ID:       editProfile.ID,
+		Fullname: editProfile.Fullname,
+		Email:    editProfile.Email,
+		Avatar:   editProfile.Avatar,
+		Username: editProfile.Username,
+	}
+
+	return c.JSON(200, helper.ResponseWithData(true, "Profile updated successfully", response))
+}
+
+func (h *UserHandler) ChangePassword(c echo.Context) error {
+	var request dto.ChangePasswordRequest
+	c.Bind(&request)
+
+	if request.NewPassword != request.ConfirmPassword {
+		return c.JSON(500, helper.ErrorResponse(false, "validation failed", errors.New("password doesn't match").Error()))
+	}
+
+	userID, err := helper.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.JSON(401, helper.ErrorResponse(false, "Unauthorized.", err.Error()))
+	}
+
+	err = h.userService.ChangePassword(userID, request)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "validation failed", err.Error()))
+	}
+
+	return c.JSON(200, helper.GeneralResponse(true, "Password changed successfully"))
+}
+
+func (h *UserHandler) GetHistoryVolunteer(c echo.Context) error {
+	userID, err := helper.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.JSON(401, helper.ErrorResponse(false, "Unauthorized.", err.Error()))
+	}
+
+	history, err := h.userService.GetHistoryVolunteer(uint(userID))
+	if err != nil {
+		return c.JSON(404, helper.ErrorResponse(false, "History not found.", err.Error()))
+	}
+
+	return c.JSON(200, helper.ResponseWithData(true, "", history))
+}
+
+func (h *UserHandler) GetHistoryVolunteerDetail(c echo.Context) error {
+	historyID, _ := strconv.Atoi(c.Param("id"))
+	history, err := h.userService.GetHistoryVolunteerDetail(historyID)
+	if err != nil {
+		return c.JSON(404, helper.ErrorResponse(false, "History not found.", err.Error()))
+	}
+
+	return c.JSON(200, helper.ResponseWithData(true, "", history))
+}
+
+func (h *UserHandler) GetHistoryDonation(c echo.Context) error {
+	userID, err := helper.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.JSON(401, helper.ErrorResponse(false, "Unauthorized.", err.Error()))
+	}
+
+	history, err := h.userService.GetHistoryDonation(uint(userID))
+	if err != nil {
+		return c.JSON(404, helper.ErrorResponse(false, "History not found.", err.Error()))
+	}
+
+	return c.JSON(200, helper.ResponseWithData(true, "", history))
 }
 
 // func (h *UserHandler) RefreshToken(c echo.Context) error {

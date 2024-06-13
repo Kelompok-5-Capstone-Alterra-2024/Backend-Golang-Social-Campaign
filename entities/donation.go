@@ -30,3 +30,4 @@ type LikeDonationComment struct {
 	UserID            uint            `json:"-"`
 	User              User            `json:"user" gorm:"foreignKey:UserID"`
 }
+

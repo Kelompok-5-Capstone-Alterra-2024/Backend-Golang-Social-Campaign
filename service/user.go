@@ -17,6 +17,12 @@ type UserService interface {
 	GetUserByID(id uint) (entities.User, error)
 	GenerateResetToken(email string) error
 	ResetPassword(resetToken, newPassword string) error
+	GetUserProfile(id int) (entities.User, error)
+	EditProfile(userid int, request dto.EditProfileRequest) (entities.User, error)
+	ChangePassword(userid int, request dto.ChangePasswordRequest) error
+	GetHistoryVolunteer(id uint) ([]dto.UserVolunteerHistory, error)
+	GetHistoryVolunteerDetail(id int) (dto.UserVolunteerHistoryDetail, error)
+	GetHistoryDonation(id uint) ([]dto.UserDonationHistory, error)
 }
 
 type userService struct {
@@ -135,4 +141,113 @@ func (s *userService) ResetPassword(resetToken, newPassword string) error {
 
 func (s *userService) GetUserByID(id uint) (entities.User, error) {
 	return s.userRepository.FindByID(id)
+}
+
+func (s *userService) GetUserProfile(id int) (entities.User, error) {
+	return s.userRepository.FindByID(uint(id))
+}
+
+func (s *userService) EditProfile(userid int, request dto.EditProfileRequest) (entities.User, error) {
+
+	var existingUser entities.User
+	existingUser, err := s.userRepository.FindByID(uint(userid))
+	if err != nil {
+		return entities.User{}, err
+	}
+
+	if request.Fullname != "" {
+		existingUser.Fullname = request.Fullname
+	}
+	if request.Username != "" {
+		existingUser.Username = request.Username
+	}
+	if request.Avatar != "" {
+		existingUser.Avatar = request.Avatar
+	}
+	if request.Email != "" {
+		existingUser.Email = request.Email
+	}
+
+	return existingUser, s.userRepository.UpdateProfile(uint(userid), existingUser)
+}
+
+func (s *userService) ChangePassword(userid int, request dto.ChangePasswordRequest) error {
+	user, err := s.userRepository.FindByID(uint(userid))
+	if err != nil {
+		return err
+	}
+
+	if user.Password != request.CurrentPassword {
+		return errors.New("wrong current password")
+	}
+
+	if request.NewPassword != request.ConfirmPassword {
+		return errors.New("password doesn't match")
+	}
+
+	user.Password = request.NewPassword
+	return s.userRepository.Update(user)
+}
+
+func (s *userService) GetHistoryVolunteer(id uint) ([]dto.UserVolunteerHistory, error) {
+	userHistory, err := s.userRepository.GetHistoryVolunteer(id)
+	if err != nil {
+		return nil, err
+	}
+
+	var userVolunteerHistory []dto.UserVolunteerHistory
+	for _, history := range userHistory {
+		Volunteers, err := s.userRepository.GetVolunteerById(history.VacancyID)
+		if err != nil {
+			return nil, err
+		}
+		userVolunteerHistory = append(userVolunteerHistory, dto.UserVolunteerHistory{
+			ID:       Volunteers.ID,
+			Title:    Volunteers.Title,
+			Location: Volunteers.Location,
+			ImageURL: Volunteers.ImageURL,
+			Date:     Volunteers.StartDate,
+		})
+	}
+
+	return userVolunteerHistory, nil
+}
+
+func (s *userService) GetHistoryVolunteerDetail(id int) (dto.UserVolunteerHistoryDetail, error) {
+	Volunteers, err := s.userRepository.GetVolunteerById(uint(id))
+	if err != nil {
+		return dto.UserVolunteerHistoryDetail{}, err
+	}
+
+	return dto.UserVolunteerHistoryDetail{
+		ID:              Volunteers.ID,
+		Title:           Volunteers.Title,
+		ImageURL:        Volunteers.ImageURL,
+		Location:        Volunteers.Location,
+		ContentActivity: Volunteers.ContentActivity,
+	}, nil
+}
+
+func (s *userService) GetHistoryDonation(id uint) ([]dto.UserDonationHistory, error) {
+	userHistory, err := s.userRepository.GetHistoryDonation(id)
+	if err != nil {
+		return nil, err
+	}
+
+	var userDonationHistory []dto.UserDonationHistory
+	for _, history := range userHistory {
+		Donations, err := s.userRepository.GetFundraisingById(history.FundraisingID)
+		if err != nil {
+			return nil, err
+		}
+		userDonationHistory = append(userDonationHistory, dto.UserDonationHistory{
+			ID:       Donations.ID,
+			Tittle:   Donations.Title,
+			ImageURL: Donations.ImageUrl,
+			Status:   Donations.Status,
+			Amount:   history.Amount,
+		})
+	}
+
+	return userDonationHistory, nil
 }

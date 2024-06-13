@@ -3,7 +3,6 @@ package main
 import (
 	"capstone/routes"
 	"capstone/utils/database"
-	"capstone/utils/migration"
 	"log"
 	"os"
 
@@ -21,7 +20,7 @@ func main() {
 	}
 
 	database.InitDB()
-	migration.Migration()
+	// migration.Migration()
 
 	app := echo.New()
 	routes.NewRouter(app)

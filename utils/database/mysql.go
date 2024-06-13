@@ -18,6 +18,12 @@ func InitDB() {
 	dbName := os.Getenv("DB_NAME")
 	dbPort := os.Getenv("DB_PORT")
 
+	// dbHost := "127.0.0.1"
+	// dbUser := "root"
+	// dbPassword := "Warga203"
+	// dbName := "capstone-mvc"
+	// dbPort := "3306"
+
 	var err error
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", dbUser, dbPassword, dbHost, dbPort, dbName)
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
