@@ -4,7 +4,6 @@ import (
 	"capstone/entities"
 	"capstone/repositories"
 	"errors"
-	"time"
 )
 
 type VolunteerService interface {
@@ -64,12 +63,12 @@ func (s *volunteerService) ApplyForVolunteer(volunteerID uint, customerID uint) 
 	}
 
 	// Check if the current date is past the registration deadline
-	loc, _ := time.LoadLocation("Asia/Jakarta")
-	currentDate := time.Now().In(loc).Format("02/01/2006")
-	registrationDeadline := volunteer.RegistrationDeadline.Format("02/01/2006")
-	if currentDate == registrationDeadline {
-		return volunteer, errors.New("registration deadline has passed")
-	}
+	// loc, _ := time.LoadLocation("Asia/Jakarta")
+	// currentDate := time.Now().In(loc).Format("02/01/2006")
+	// registrationDeadline := volunteer.RegistrationDeadline.Format("02/01/2006")
+	// if currentDate == registrationDeadline {
+	// 	return volunteer, errors.New("registration deadline has passed")
+	// }
 
 	// Register the customer
 	volunteer.RegisteredVolunteer++
