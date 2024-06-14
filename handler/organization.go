@@ -69,7 +69,7 @@ func (h *OrganizationHandler) GetOrganizations(c echo.Context) error {
 	return c.JSON(200, helper.ResponseWithData(true, "organizations retrieved successfully", organizations))
 }
 
-func (h *OrganizationHandler) GetOrganizationByID(c echo.Context) error {
+func (h *OrganizationHandler) GetFundraisingsOrganizationByID(c echo.Context) error {
 
 	id, _ := strconv.Atoi(c.Param("id"))
 	organization, err := h.organizationService.FindOrganizationByID(id)
@@ -77,11 +77,58 @@ func (h *OrganizationHandler) GetOrganizationByID(c echo.Context) error {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to get organization", err.Error()))
 	}
 
-	fundraisings, err := h.organizationService.FindFundraisingByOrganizationID(id)
+	limitStr := c.QueryParam("limit")
+	pageStr := c.QueryParam("page")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		limit = 10
+	}
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	offset := (page - 1) * limit
+
+	fundraisings, err := h.organizationService.FindFundraisingByOrganizationID(id, limit, offset)
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to get organization", err.Error()))
 	}
 
-	response := dto.ToOrganizationResponse(organization, fundraisings)
-	return c.JSON(200, helper.ResponseWithData(true, "organization retrieved successfully", response))
+	response := dto.ToOrganizationFundraisingResponse(organization, fundraisings)
+	return c.JSON(200, helper.ResponseWithPagination("success", "organization retrieved successfully", response, page, limit, int64(len(fundraisings))))
+}
+
+func (h *OrganizationHandler) GetVolunteersByOrganizationByID(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+	organization, err := h.organizationService.FindOrganizationByID(id)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get organization", err.Error()))
+	}
+
+	limitStr := c.QueryParam("limit")
+	pageStr := c.QueryParam("page")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		limit = 10
+	}
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	offset := (page - 1) * limit
+
+	volunteers, err := h.organizationService.FindVolunteersByOrganizationID(id, limit, offset)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get organization", err.Error()))
+	}
+
+	response := dto.ToOrganizationVolunteerResponse(organization, volunteers)
+	return c.JSON(200, helper.ResponseWithPagination("success", "organization retrieved successfully", response, page, limit, int64(len(volunteers))))
+
 }

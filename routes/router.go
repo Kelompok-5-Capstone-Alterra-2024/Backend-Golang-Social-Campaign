@@ -93,7 +93,8 @@ func NewRouter(router *echo.Echo) {
 	api.Use(jwt, routeMiddleware.UserMiddleware)
 
 	api.GET("/organizations", organizatonHandler.GetOrganizations)
-	api.GET("/organizations/:id", organizatonHandler.GetOrganizationByID)
+	api.GET("fundraising/organizations/:id", organizatonHandler.GetFundraisingsOrganizationByID)
+	api.GET("volunteer/organizations/:id", organizatonHandler.GetVolunteersByOrganizationByID)
 
 	api.GET("/fundraisings", fundraisingHandler.GetFundraisings)
 	api.GET("/fundraisings/top", fundraisingHandler.GetTopFundraisings)
@@ -104,7 +105,6 @@ func NewRouter(router *echo.Echo) {
 	api.POST("/fundraising/:id/donations", donationHandler.CreateDonation)
 
 	api.POST("/fundraising/:id/donations-manual", donationManualHandler.CreateManualDonation)
-
 	api.GET("/history/donations-manual", donationManualHandler.GetDonationManualByUserID)
 	api.GET("/history/donations-manual/:id", donationManualHandler.GetDonationManualByID)
 
