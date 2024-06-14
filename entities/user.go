@@ -17,6 +17,30 @@ type User struct {
 	OTP        string `gorm:"type:varchar(255)"`
 }
 
+type UserBookmarkVolunteerVacancy struct {
+	gorm.Model
+	UserID             uint      `json:"-"`
+	User               User      `json:"user" gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
+	VolunteerVacancyID uint      `json:"-"`
+	Volunteer          Volunteer `json:"volunteer" gorm:"foreignKey:VolunteerVacancyID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
+}
+
+type UserBookmarkFundraising struct {
+	gorm.Model
+	UserID        uint        `json:"-"`
+	User          User        `json:"user" gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
+	FundraisingID uint        `json:"-"`
+	Fundraising   Fundraising `json:"fundraising" gorm:"foreignKey:FundraisingID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
+}
+
+type UserBookmarkArticle struct {
+	gorm.Model
+	UserID    uint    `json:"-"`
+	User      User    `json:"user" gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
+	ArticleID uint    `json:"-"`
+	Article   Article `json:"article" gorm:"foreignKey:ArticleID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
+}
+
 // type OTP struct {
 // 	gorm.Model
 // 	UserID     int    `json:"user_id" gorm:"index;unique"`
