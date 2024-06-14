@@ -6,8 +6,8 @@ import (
 	middleware "capstone/middlewares"
 	"capstone/service"
 	"errors"
-	"strconv"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -138,9 +138,8 @@ func (h *UserHandler) GetUserProfile(c echo.Context) error {
 		Username: userProfile.Username,
 	}
 
-	return c.JSON(200, helper.ResponseWithData(true, "", response))
+	return c.JSON(200, helper.ResponseWithData(true, "Profile retrieved successfully", response))
 }
-
 func (h *UserHandler) EditProfile(c echo.Context) error {
 	var request dto.EditProfileRequest
 	c.Bind(&request)
@@ -150,7 +149,6 @@ func (h *UserHandler) EditProfile(c echo.Context) error {
 		return c.JSON(401, helper.ErrorResponse(false, "Unauthorized.", err.Error()))
 	}
 
-	// request.ID = uint(userID)
 	editProfile, err := h.userService.EditProfile(userID, request)
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "validation failed", err.Error()))
@@ -162,6 +160,7 @@ func (h *UserHandler) EditProfile(c echo.Context) error {
 		Email:    editProfile.Email,
 		Avatar:   editProfile.Avatar,
 		Username: editProfile.Username,
+		NoTelp:   editProfile.NoTelp,
 	}
 
 	return c.JSON(200, helper.ResponseWithData(true, "Profile updated successfully", response))

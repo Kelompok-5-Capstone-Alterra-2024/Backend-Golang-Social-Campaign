@@ -10,8 +10,8 @@ type OrganizationRepository interface {
 	Save(organization entities.Organization) (entities.Organization, error)
 	FindAll() ([]entities.Organization, error)
 	FindByID(id int) (entities.Organization, error)
-	FindFundraisingByOrganizationID(id int) ([]entities.Fundraising, error)
-	FindVolunteersByOrganizationID(id int) ([]entities.Volunteer, error)
+	FindFundraisingByOrganizationID(id int, limit int, offset int) ([]entities.Fundraising, error)
+	FindVolunteersByOrganizationID(id int, limit int, offset int) ([]entities.Volunteer, error)
 }
 
 type organizationRepository struct {
@@ -45,17 +45,17 @@ func (r *organizationRepository) FindByID(id int) (entities.Organization, error)
 	return organization, nil
 }
 
-func (r *organizationRepository) FindFundraisingByOrganizationID(id int) ([]entities.Fundraising, error) {
+func (r *organizationRepository) FindFundraisingByOrganizationID(id int, limit int, offset int) ([]entities.Fundraising, error) {
 	var fundraisings []entities.Fundraising
-	if err := r.db.Preload("Organization").Preload("FundraisingCategory").Where("organization_id = ?", id).Find(&fundraisings).Error; err != nil {
+	if err := r.db.Preload("Organization").Preload("FundraisingCategory").Limit(limit).Offset(offset).Where("organization_id = ?", id).Find(&fundraisings).Error; err != nil {
 		return []entities.Fundraising{}, err
 	}
 	return fundraisings, nil
 }
 
-func (r *organizationRepository) FindVolunteersByOrganizationID(id int) ([]entities.Volunteer, error) {
+func (r *organizationRepository) FindVolunteersByOrganizationID(id int, limit int, offset int) ([]entities.Volunteer, error) {
 	var volunteers []entities.Volunteer
-	if err := r.db.Preload("Organization").Where("organization_id = ?", id).Find(&volunteers).Error; err != nil {
+	if err := r.db.Preload("Organization").Limit(limit).Offset(offset).Where("organization_id = ?", id).Find(&volunteers).Error; err != nil {
 		return []entities.Volunteer{}, err
 	}
 	return volunteers, nil

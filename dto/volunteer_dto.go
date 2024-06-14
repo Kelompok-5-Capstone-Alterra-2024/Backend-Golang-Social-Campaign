@@ -7,15 +7,16 @@ import (
 )
 
 type VolunteerRequest struct {
-	OrganizationID      uint   `json:"organization_id" form:"organization_id"`
-	Title               string `json:"title" form:"title"`
-	ContentActivity     string `json:"content_activity" form:"content_activity"`
-	Location            string `json:"location" form:"location"`
-	StarDate            string `json:"start_date" form:"start_date"`
-	EndDate             string `json:"end_date" form:"end_date"`
-	TargetVolunteer     int    `json:"target_volunteer" form:"target_volunteer"`
-	RegisteredVolunteer int    `json:"registered_volunteer"`
-	ImageURL            string `json:"image_url" form:"image_url"`
+	OrganizationID       uint   `json:"organization_id" form:"organization_id"`
+	Title                string `json:"title" form:"title"`
+	ContentActivity      string `json:"content_activity" form:"content_activity"`
+	Location             string `json:"location" form:"location"`
+	StarDate             string `json:"start_date" form:"start_date"`
+	EndDate              string `json:"end_date" form:"end_date"`
+	TargetVolunteer      int    `json:"target_volunteer" form:"target_volunteer"`
+	RegisteredVolunteer  int    `json:"registered_volunteer"`
+	RegistrationDeadline string `json:"registration_deadline" form:"registration_deadline"`
+	ImageURL             string `json:"image_url" form:"image_url"`
 }
 
 func (r *VolunteerRequest) ToEntity(imgUrl string) (entities.Volunteer, error) {
@@ -49,33 +50,45 @@ func (r *VolunteerRequest) ToEntity(imgUrl string) (entities.Volunteer, error) {
 		return entities.Volunteer{}, fmt.Errorf("Invalid end date format")
 	}
 
+	registrationDeadline, err := time.Parse("2006-01-02", r.RegistrationDeadline)
+	if err != nil {
+		return entities.Volunteer{}, fmt.Errorf("Invalid registration deadline format")
+	}
+
 	return entities.Volunteer{
-		OrganizationID:  r.OrganizationID,
-		Title:           r.Title,
-		ContentActivity: r.ContentActivity,
-		Location:        r.Location,
-		StartDate:       startDate,
-		EndDate:         endDate,
-		TargetVolunteer: r.TargetVolunteer,
-		ImageURL:        imgUrl,
-		Status:          "active",
+		OrganizationID:       r.OrganizationID,
+		Title:                r.Title,
+		ContentActivity:      r.ContentActivity,
+		Location:             r.Location,
+		StartDate:            startDate,
+		EndDate:              endDate,
+		TargetVolunteer:      r.TargetVolunteer,
+		RegistrationDeadline: registrationDeadline,
+		ImageURL:             imgUrl,
+		Status:               "active",
 	}, nil
 }
 
 type VolunteerResponse struct {
-	ID                   uint                   `json:"id"`
-	OrganizationID       uint                   `json:"organization_id"`
-	OrgIsVerified        bool                   `json:"org_is_verified"`
-	Title                string                 `json:"title"`
-	ContentActivity      string                 `json:"content_activity"`
-	Location             string                 `json:"location"`
-	StartDate            string                 `json:"start_date"`
-	EndDate              string                 `json:"end_date"`
-	TargetVolunteer      int                    `json:"target_volunteer"`
-	RegisteredVolunteer  int                    `json:"registered_volunteer"`
-	RegistrationDeadline string                 `json:"registration_deadline"`
-	ImageURL             string                 `json:"image_url"`
-	UserRegistered       UserRegisteredResponse `json:"user_registered"`
+	ID                  uint                   `json:"id"`
+	Organization        VolunteerOrg           `json:"organization"`
+	Title               string                 `json:"title"`
+	ContentActivity     string                 `json:"content_activity"`
+	Location            string                 `json:"location"`
+	StartDate           string                 `json:"start_date"`
+	EndDate             string                 `json:"end_date"`
+	TargetVolunteer     int                    `json:"target_volunteer"`
+	RegisteredVolunteer int                    `json:"registered_volunteer"`
+	RegisTionDeadline   string                 `json:"registration_deadline"`
+	ImageURL            string                 `json:"image_url"`
+	UserRegistered      UserRegisteredResponse `json:"user_registered"`
+}
+
+type VolunteerOrg struct {
+	ID         uint   `json:"id"`
+	Name       string `json:"name"`
+	Avatar     string `json:"avatar"`
+	IsVerified bool   `json:"is_verified"`
 }
 
 type UserRegisteredResponse struct {
@@ -112,10 +125,16 @@ func ToVolunteerResponse(volunteer entities.Volunteer, application []entities.Ap
 		TotalRegisteredVolunteer: len(application),
 	}
 
+	volunteerOrg := VolunteerOrg{
+		ID:         volunteer.Organization.ID,
+		Name:       volunteer.Organization.Name,
+		Avatar:     volunteer.Organization.Avatar,
+		IsVerified: volunteer.Organization.IsVerified,
+	}
+
 	return VolunteerResponse{
 		ID:                  volunteer.ID,
-		OrganizationID:      volunteer.Organization.ID,
-		OrgIsVerified:       volunteer.Organization.IsVerified,
+		Organization:        volunteerOrg,
 		Title:               volunteer.Title,
 		ContentActivity:     volunteer.ContentActivity,
 		Location:            volunteer.Location,
@@ -123,6 +142,7 @@ func ToVolunteerResponse(volunteer entities.Volunteer, application []entities.Ap
 		EndDate:             volunteer.EndDate.Format("2006-01-02"),
 		TargetVolunteer:     volunteer.TargetVolunteer,
 		RegisteredVolunteer: volunteer.RegisteredVolunteer,
+		RegisTionDeadline:   volunteer.RegistrationDeadline.Format("2006-01-02"),
 		ImageURL:            volunteer.ImageURL,
 		UserRegistered:      userRegisteredResponse,
 	}
@@ -141,12 +161,13 @@ type VolunteersResponses struct {
 func ToVolunteersResponses(volunteer entities.Volunteer) VolunteersResponses {
 
 	return VolunteersResponses{
-		ID:                  volunteer.ID,
-		Title:               volunteer.Title,
-		OrganizationName:    volunteer.Organization.Name,
-		RegisteredVolunteer: volunteer.RegisteredVolunteer,
-		TargetVolunteer:     volunteer.TargetVolunteer,
-		ImageUrl:            volunteer.ImageURL,
+		ID:                   volunteer.ID,
+		Title:                volunteer.Title,
+		OrganizationName:     volunteer.Organization.Name,
+		RegisteredVolunteer:  volunteer.RegisteredVolunteer,
+		TargetVolunteer:      volunteer.TargetVolunteer,
+		RegistrationDeadline: volunteer.RegistrationDeadline.Format("2006-01-02"),
+		ImageUrl:             volunteer.ImageURL,
 	}
 }
 

@@ -19,7 +19,7 @@ type UserRepository interface {
 	UpdateProfile(userid uint, user entities.User) error
 	GetHistoryVolunteer(id uint) ([]entities.Application, error)
 	GetVolunteerById(id uint) (entities.Volunteer, error)
-	GetHistoryDonation(id uint) ([]entities.Donation, error)
+	GetHistoryDonation(id uint) ([]entities.DonationManual, error)
 	GetFundraisingById(id uint) (entities.Fundraising, error)
 }
 
@@ -122,8 +122,8 @@ func (r *userRepository) GetVolunteerById(id uint) (entities.Volunteer, error) {
 	return volunteer, nil
 }
 
-func (r *userRepository) GetHistoryDonation(id uint) ([]entities.Donation, error) {
-	var donation []entities.Donation
+func (r *userRepository) GetHistoryDonation(id uint) ([]entities.DonationManual, error) {
+	var donation []entities.DonationManual
 	if err := r.db.Where("user_id = ?", id).Preload("Fundraising").Find(&donation).Error; err != nil {
 		return donation, err
 	}
