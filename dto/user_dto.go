@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"capstone/entities"
 	"time"
 )
 
@@ -75,4 +76,36 @@ type UserDonationHistory struct {
 	ImageURL string `json:"image_url"`
 	Status   string `json:"status"`
 	Amount   int    `json:"amount"`
+}
+
+type UserFundraisingsResponse struct {
+	ID              uint   `json:"id"`
+	FundraisingID   uint   `json:"fundraising_id"`
+	ImageUrl        string `json:"image_url"`
+	Title           string `json:"title"`
+	CategoryName    string `json:"category_name"`
+	CurrentProgress int    `json:"current_progress"`
+	TargetAmount    int    `json:"target_amount"`
+	EndDate         string `json:"end_date"`
+}
+
+func ToUserFundraisingsResponse(fundraising entities.UserBookmarkFundraising) UserFundraisingsResponse {
+	return UserFundraisingsResponse{
+		ID:              fundraising.ID,
+		FundraisingID:   fundraising.Fundraising.ID,
+		ImageUrl:        fundraising.Fundraising.ImageUrl,
+		Title:           fundraising.Fundraising.Title,
+		CategoryName:    fundraising.Fundraising.FundraisingCategory.Name,
+		CurrentProgress: fundraising.Fundraising.CurrentProgress,
+		TargetAmount:    fundraising.Fundraising.GoalAmount,
+		EndDate:         fundraising.Fundraising.EndDate.Format("2006-01-02"),
+	}
+}
+
+func ToAllUserFundraisingsResponse(fundraisings []entities.UserBookmarkFundraising) []UserFundraisingsResponse {
+	var result []UserFundraisingsResponse
+	for _, fundraising := range fundraisings {
+		result = append(result, ToUserFundraisingsResponse(fundraising))
+	}
+	return result
 }

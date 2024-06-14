@@ -24,6 +24,10 @@ type UserService interface {
 	GetHistoryVolunteer(id uint) ([]dto.UserVolunteerHistory, error)
 	GetHistoryVolunteerDetail(id int) (dto.UserVolunteerHistoryDetail, error)
 	GetHistoryDonation(id uint) ([]dto.UserDonationHistory, error)
+
+	GetUserFundraisingBookmark(id uint, limit int, offset int) ([]entities.UserBookmarkFundraising, error)
+	AddUserFundraisingBookmark(id, userId uint) error
+	DeleteUserFundraisingBookmark(id uint, userid uint) error
 }
 
 type userService struct {
@@ -279,4 +283,31 @@ func (s *userService) GetHistoryDonation(id uint) ([]dto.UserDonationHistory, er
 	}
 
 	return userDonationHistory, nil
+}
+
+func (s *userService) GetUserFundraisingBookmark(id uint, limit int, offset int) ([]entities.UserBookmarkFundraising, error) {
+	return s.userRepository.FindUserFundraisingBookmark(id, limit, offset)
+}
+
+func (s *userService) AddUserFundraisingBookmark(id, userId uint) error {
+	added, err := s.userRepository.IsFundraisingBookmark(id, userId)
+	if err != nil {
+		return err
+	}
+
+	if added {
+		return nil
+	}
+
+	user := entities.UserBookmarkFundraising{
+		UserID:        userId,
+		FundraisingID: id,
+	}
+
+	return s.userRepository.AddUserFundraisingBookmark(user)
+}
+
+func (s *userService) DeleteUserFundraisingBookmark(id uint, userid uint) error {
+
+	return s.userRepository.DeleteUserFundraisingBookmark(id, userid)
 }

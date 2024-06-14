@@ -225,6 +225,75 @@ func (h *UserHandler) GetHistoryDonation(c echo.Context) error {
 	return c.JSON(200, helper.ResponseWithData(true, "", history))
 }
 
+func (h *UserHandler) CreateBookmarkFundraising(c echo.Context) error {
+	fundraisingID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid ID format", err.Error()))
+	}
+
+	userID, err := helper.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.JSON(401, helper.ErrorResponse(false, "unauthorized", err.Error()))
+	}
+
+	err = h.userService.AddUserFundraisingBookmark(uint(fundraisingID), uint(userID))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to add bookmark", err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "bookmark added successfully"))
+}
+
+func (h *UserHandler) DeleteBookmarkFundraising(c echo.Context) error {
+	fundraisingID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid ID format", err.Error()))
+	}
+
+	userID, err := helper.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.JSON(401, helper.ErrorResponse(false, "unauthorized", err.Error()))
+	}
+
+	err = h.userService.DeleteUserFundraisingBookmark(uint(fundraisingID), uint(userID))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to delete bookmark", err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "bookmark deleted successfully"))
+}
+
+func (h *UserHandler) GetBookmarkFundraising(c echo.Context) error {
+	userID, err := helper.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.JSON(401, helper.ErrorResponse(false, "unauthorized", err.Error()))
+	}
+
+	limitStr := c.QueryParam("limit")
+	pageStr := c.QueryParam("page")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		limit = 6
+	}
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	offset := (page - 1) * limit
+
+	bookmarks, err := h.userService.GetUserFundraisingBookmark(uint(userID), limit, offset)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to get bookmarks", err.Error()))
+	}
+
+	response := dto.ToAllUserFundraisingsResponse(bookmarks)
+
+	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "success get bookmarks", bookmarks, page, limit, int64(len(response))))
+}
+
 // func (h *UserHandler) RefreshToken(c echo.Context) error {
 // 	refreshToken := c.Request().Header.Get("Refresh-Token")
 // 	if refreshToken == "" {

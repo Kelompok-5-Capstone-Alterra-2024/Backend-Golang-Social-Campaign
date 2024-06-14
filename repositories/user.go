@@ -21,6 +21,10 @@ type UserRepository interface {
 	GetVolunteerById(id uint) (entities.Volunteer, error)
 	GetHistoryDonation(id uint) ([]entities.DonationManual, error)
 	GetFundraisingById(id uint) (entities.Fundraising, error)
+	FindUserFundraisingBookmark(id uint, limit int, offset int) ([]entities.UserBookmarkFundraising, error)
+	AddUserFundraisingBookmark(user entities.UserBookmarkFundraising) error
+	DeleteUserFundraisingBookmark(id uint, userid uint) error
+	IsFundraisingBookmark(id uint, userid uint) (bool, error)
 }
 
 type userRepository struct {
@@ -136,4 +140,32 @@ func (r *userRepository) GetFundraisingById(id uint) (entities.Fundraising, erro
 		return donation, err
 	}
 	return donation, nil
+}
+
+func (r *userRepository) FindUserFundraisingBookmark(id uint, limit int, offset int) ([]entities.UserBookmarkFundraising, error) {
+	var bookmark []entities.UserBookmarkFundraising
+
+	if err := r.db.Preload("Fundraising").Preload("Fundraising.FundraisingCategory").Limit(limit).Offset(offset).Where("user_id = ?", id).Find(&bookmark).Error; err != nil {
+		return bookmark, err
+	}
+	return bookmark, nil
+}
+
+func (r *userRepository) AddUserFundraisingBookmark(user entities.UserBookmarkFundraising) error {
+
+	return r.db.Create(&user).Error
+}
+
+func (r *userRepository) DeleteUserFundraisingBookmark(id uint, userid uint) error {
+
+	return r.db.Where("fundraising_id = ? AND user_id = ?", id, userid).Delete(&entities.UserBookmarkFundraising{}).Error
+}
+
+func (r *userRepository) IsFundraisingBookmark(id uint, userid uint) (bool, error) {
+
+	var count int64
+	if err := r.db.Model(&entities.UserBookmarkFundraising{}).Where("fundraising_id = ? AND user_id = ?", id, userid).Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }
