@@ -71,8 +71,7 @@ func (r *VolunteerRequest) ToEntity(imgUrl string) (entities.Volunteer, error) {
 
 type VolunteerResponse struct {
 	ID                  uint                   `json:"id"`
-	OrganizationID      uint                   `json:"organization_id"`
-	OrgIsVerified       bool                   `json:"org_is_verified"`
+	Organization        VolunteerOrg           `json:"organization"`
 	Title               string                 `json:"title"`
 	ContentActivity     string                 `json:"content_activity"`
 	Location            string                 `json:"location"`
@@ -83,6 +82,13 @@ type VolunteerResponse struct {
 	RegisTionDeadline   string                 `json:"registration_deadline"`
 	ImageURL            string                 `json:"image_url"`
 	UserRegistered      UserRegisteredResponse `json:"user_registered"`
+}
+
+type VolunteerOrg struct {
+	ID         uint   `json:"id"`
+	Name       string `json:"name"`
+	Avatar     string `json:"avatar"`
+	IsVerified bool   `json:"is_verified"`
 }
 
 type UserRegisteredResponse struct {
@@ -119,10 +125,16 @@ func ToVolunteerResponse(volunteer entities.Volunteer, application []entities.Ap
 		TotalRegisteredVolunteer: len(application),
 	}
 
+	volunteerOrg := VolunteerOrg{
+		ID:         volunteer.Organization.ID,
+		Name:       volunteer.Organization.Name,
+		Avatar:     volunteer.Organization.Avatar,
+		IsVerified: volunteer.Organization.IsVerified,
+	}
+
 	return VolunteerResponse{
 		ID:                  volunteer.ID,
-		OrganizationID:      volunteer.Organization.ID,
-		OrgIsVerified:       volunteer.Organization.IsVerified,
+		Organization:        volunteerOrg,
 		Title:               volunteer.Title,
 		ContentActivity:     volunteer.ContentActivity,
 		Location:            volunteer.Location,

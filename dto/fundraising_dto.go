@@ -47,17 +47,23 @@ func ToAllFundraisingsResponse(fundraisings []entities.Fundraising) []Fundraisin
 }
 
 type FundraisingResponse struct {
-	ID               uint                         `json:"id"`
-	ImageUrl         string                       `json:"image_url"`
-	Title            string                       `json:"title"`
-	GoalAmount       int                          `json:"goal_amount"`
-	CurrentProgress  int                          `json:"current_progress"`
-	EndDate          string                       `json:"end_date"`
-	OrganizationName string                       `json:"organization_name"`
-	OrgIsVerified    bool                         `json:"org_is_verified"`
-	Description      string                       `json:"description"`
-	UserDonated      UserDonatedResponse          `json:"user_donated"`
-	Comment          []FundraisingCommentResponse `json:"comment"`
+	ID              uint                         `json:"id"`
+	Organization    FundraisingOrg               `json:"organization"`
+	ImageUrl        string                       `json:"image_url"`
+	Title           string                       `json:"title"`
+	GoalAmount      int                          `json:"goal_amount"`
+	CurrentProgress int                          `json:"current_progress"`
+	EndDate         string                       `json:"end_date"`
+	Description     string                       `json:"description"`
+	UserDonated     UserDonatedResponse          `json:"user_donated"`
+	Comment         []FundraisingCommentResponse `json:"comment"`
+}
+
+type FundraisingOrg struct {
+	ID         uint   `json:"id"`
+	Name       string `json:"name"`
+	Avatar     string `json:"avatar"`
+	IsVerified bool   `json:"is_verified"`
 }
 
 type UserDonatedResponse struct {
@@ -104,6 +110,12 @@ func ToFundraisingResponse(fundraising entities.Fundraising, comments []entities
 		TotalUserDonated:          len(uniqueUserAvatars),
 	}
 
+	fundraisingOrg := FundraisingOrg{
+		ID:     fundraising.Organization.ID,
+		Name:   fundraising.Organization.Name,
+		Avatar: fundraising.Organization.Avatar,
+	}
+
 	commentResponses := make([]FundraisingCommentResponse, len(comments))
 	for i, comment := range comments {
 		commentResponses[i] = FundraisingCommentResponse{
@@ -118,16 +130,15 @@ func ToFundraisingResponse(fundraising entities.Fundraising, comments []entities
 	}
 
 	return FundraisingResponse{
-		ID:               fundraising.ID,
-		ImageUrl:         fundraising.ImageUrl,
-		Title:            fundraising.Title,
-		GoalAmount:       fundraising.GoalAmount,
-		CurrentProgress:  fundraising.CurrentProgress,
-		EndDate:          fundraising.EndDate.Format("2006-01-02"),
-		OrganizationName: fundraising.Organization.Name,
-		OrgIsVerified:    fundraising.Organization.IsVerified,
-		Description:      fundraising.Description,
-		UserDonated:      userDonatedResponse,
-		Comment:          commentResponses,
+		ID:              fundraising.ID,
+		ImageUrl:        fundraising.ImageUrl,
+		Title:           fundraising.Title,
+		GoalAmount:      fundraising.GoalAmount,
+		CurrentProgress: fundraising.CurrentProgress,
+		EndDate:         fundraising.EndDate.Format("2006-01-02"),
+		Organization:    fundraisingOrg,
+		Description:     fundraising.Description,
+		UserDonated:     userDonatedResponse,
+		Comment:         commentResponses,
 	}
 }
