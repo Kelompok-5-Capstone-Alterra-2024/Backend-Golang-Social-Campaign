@@ -14,6 +14,7 @@ type UserRepository interface {
 	FindByFullName(fullname string) (entities.User, error)
 	FindByNoTelp(notel string) (entities.User, error)
 	FindByResetToken(token string) (entities.User, error)
+	FindByOTP(otp string) (entities.User, error)
 	Update(user entities.User) error
 	UpdateProfile(userid uint, user entities.User) error
 }
@@ -76,6 +77,14 @@ func (r *userRepository) FindByEmail(email string) (entities.User, error) {
 func (r *userRepository) FindByResetToken(token string) (entities.User, error) {
 	var user entities.User
 	if err := r.db.Where("reset_token = ?", token).First(&user).Error; err != nil {
+		return user, err
+	}
+	return user, nil
+}
+
+func (r *userRepository) FindByOTP(otp string) (entities.User, error) {
+	var user entities.User
+	if err := r.db.Where("otp = ?", otp).First(&user).Error; err != nil {
 		return user, err
 	}
 	return user, nil

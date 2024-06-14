@@ -1,12 +1,14 @@
 package helper
 
 import (
-	"crypto/rand"
+	// "crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 	"strings"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"gopkg.in/gomail.v2"
@@ -126,8 +128,39 @@ func SendTokenRestPassword(email string, token string) error {
 	return dialer.DialAndSend(m)
 }
 
+func SendOtpResetPassword(email string, otp string) error {
+	dialer := gomail.NewDialer(
+		"smtp.gmail.com",
+		587,
+		"hanggoroseto8@gmail.com",
+		"pcxf rviq wvfz nfyy",
+	)
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", "hanggoroseto8@gmail.com")
+	m.SetHeader("To", email)
+	m.SetHeader("Subject", "Password Reset Request")
+	m.SetBody("text/plain", "Your OTP is: "+otp)
+
+	return dialer.DialAndSend(m)
+}
+
 func GenerateToken() string {
 	b := make([]byte, 32)
 	rand.Read(b)
 	return base64.URLEncoding.EncodeToString(b)
+}
+
+func GenerateRandomOTP(length int) string {
+	src := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(src)
+
+	const n = "0123456789"
+
+	otp := make([]byte, length)
+	for i := range otp {
+		otp[i] = n[r.Intn(len(n))]
+	}
+
+	return string(otp)
 }

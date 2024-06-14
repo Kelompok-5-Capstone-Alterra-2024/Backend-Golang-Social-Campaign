@@ -16,6 +16,7 @@ type UserService interface {
 	GetUserByID(id uint) (entities.User, error)
 	GenerateResetToken(email string) error
 	ResetPassword(resetToken, newPassword string) error
+	GenerateOTP(email string) error
 	GetUserProfile(id int) (entities.User, error)
 	EditProfile(userid int, request dto.EditProfileRequest) (entities.User, error)
 	ChangePassword(userid int, request dto.ChangePasswordRequest) error
@@ -101,18 +102,46 @@ func (s *userService) GenerateResetToken(email string) error {
 	return helper.SendTokenRestPassword(email, resetToken)
 }
 
-func (s *userService) ResetPassword(resetToken, newPassword string) error {
-	user, err := s.userRepository.FindByResetToken(resetToken)
+func (s *userService) GenerateOTP(email string) error {
+	user, err := s.userRepository.FindByEmail(email)
+	if err != nil {
+		return err
+	}
+	otp := helper.GenerateRandomOTP(6)
+	user.OTP = otp
+
+	err = s.userRepository.Update(user)
 	if err != nil {
 		return err
 	}
 
-	if user.ResetToken != resetToken {
-		return errors.New("invalid or expired reset token")
+	return helper.SendOtpResetPassword(email, otp)
+}
+
+func (s *userService) ResetPassword(otp, newPassword string) error {
+	// user, err := s.userRepository.FindByResetToken(resetToken)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// if user.ResetToken != resetToken {
+	// 	return errors.New("invalid or expired reset token")
+	// }
+
+	// user.Password = newPassword
+	// user.ResetToken = ""
+	user, err := s.userRepository.FindByOTP(otp)
+	if err != nil {
+		return err
 	}
 
+	if user.OTP != otp {
+		return errors.New("invalid or expired otp")
+	}
+
+	user.OTP = ""
 	user.Password = newPassword
-	user.ResetToken = ""
+
 	return s.userRepository.Update(user)
 }
 

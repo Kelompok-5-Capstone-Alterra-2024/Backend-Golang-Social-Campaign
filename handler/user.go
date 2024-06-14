@@ -41,7 +41,7 @@ func (h *UserHandler) Login(c echo.Context) error {
 func (h *UserHandler) ForgetPassword(c echo.Context) error {
 	var request dto.ForgetPasswordRequest
 	c.Bind(&request)
-	err := h.userService.GenerateResetToken(request.Email)
+	err := h.userService.GenerateOTP(request.Email)
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "validation failed", err.Error()))
 	}
@@ -56,12 +56,7 @@ func (h *UserHandler) ResetPassword(c echo.Context) error {
 		return c.JSON(500, helper.ErrorResponse(false, "validation failed", errors.New("password doesn't match").Error()))
 	}
 
-	resetToken := c.QueryParam("token")
-	if resetToken == "" {
-		return c.JSON(500, helper.ErrorResponse(false, "validation failed", "token not found"))
-	}
-
-	err := h.userService.ResetPassword(resetToken, request.Password)
+	err := h.userService.ResetPassword(request.OTP, request.Password)
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "validation failed", err.Error()))
 	}

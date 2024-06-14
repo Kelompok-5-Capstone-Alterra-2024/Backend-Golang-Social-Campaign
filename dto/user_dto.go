@@ -23,6 +23,7 @@ type ForgetPasswordRequest struct {
 }
 
 type ResetPasswordRequest struct {
+	OTP         string `json:"otp"`
 	Password    string `json:"new_password"`
 	ConfirmPass string `json:"confirm_password"`
 }
