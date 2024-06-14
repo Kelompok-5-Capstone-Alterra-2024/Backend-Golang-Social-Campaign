@@ -63,19 +63,18 @@ func (r *VolunteerRequest) ToEntity(imgUrl string) (entities.Volunteer, error) {
 }
 
 type VolunteerResponse struct {
-	ID                   uint                   `json:"id"`
-	OrganizationID       uint                   `json:"organization_id"`
-	OrgIsVerified        bool                   `json:"org_is_verified"`
-	Title                string                 `json:"title"`
-	ContentActivity      string                 `json:"content_activity"`
-	Location             string                 `json:"location"`
-	StartDate            string                 `json:"start_date"`
-	EndDate              string                 `json:"end_date"`
-	TargetVolunteer      int                    `json:"target_volunteer"`
-	RegisteredVolunteer  int                    `json:"registered_volunteer"`
-	RegistrationDeadline string                 `json:"registration_deadline"`
-	ImageURL             string                 `json:"image_url"`
-	UserRegistered       UserRegisteredResponse `json:"user_registered"`
+	ID                  uint                   `json:"id"`
+	OrganizationID      uint                   `json:"organization_id"`
+	OrgIsVerified       bool                   `json:"org_is_verified"`
+	Title               string                 `json:"title"`
+	ContentActivity     string                 `json:"content_activity"`
+	Location            string                 `json:"location"`
+	StartDate           string                 `json:"start_date"`
+	EndDate             string                 `json:"end_date"`
+	TargetVolunteer     int                    `json:"target_volunteer"`
+	RegisteredVolunteer int                    `json:"registered_volunteer"`
+	ImageURL            string                 `json:"image_url"`
+	UserRegistered      UserRegisteredResponse `json:"user_registered"`
 }
 
 type UserRegisteredResponse struct {
@@ -129,13 +128,13 @@ func ToVolunteerResponse(volunteer entities.Volunteer, application []entities.Ap
 }
 
 type VolunteersResponses struct {
-	ID                   uint   `json:"id"`
-	Title                string `json:"title"`
-	OrganizationName     string `json:"organization_name"`
-	RegisteredVolunteer  int    `json:"registered_volunteer"`
-	TargetVolunteer      int    `json:"target_volunteer"`
-	RegistrationDeadline string `json:"registration_deadline"`
-	ImageUrl             string `json:"image_url"`
+	ID                  uint   `json:"id"`
+	Title               string `json:"title"`
+	OrganizationName    string `json:"organization_name"`
+	RegisteredVolunteer int    `json:"registered_volunteer"`
+	TargetVolunteer     int    `json:"target_volunteer"`
+	StartDate           string `json:"start_date"`
+	ImageUrl            string `json:"image_url"`
 }
 
 func ToVolunteersResponses(volunteer entities.Volunteer) VolunteersResponses {
@@ -146,6 +145,7 @@ func ToVolunteersResponses(volunteer entities.Volunteer) VolunteersResponses {
 		OrganizationName:    volunteer.Organization.Name,
 		RegisteredVolunteer: volunteer.RegisteredVolunteer,
 		TargetVolunteer:     volunteer.TargetVolunteer,
+		StartDate:           volunteer.StartDate.Format("2006-01-02"),
 		ImageUrl:            volunteer.ImageURL,
 	}
 }
