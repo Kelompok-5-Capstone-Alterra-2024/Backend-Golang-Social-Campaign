@@ -17,6 +17,10 @@ type UserRepository interface {
 	FindByOTP(otp string) (entities.User, error)
 	Update(user entities.User) error
 	UpdateProfile(userid uint, user entities.User) error
+	GetHistoryVolunteer(id uint) ([]entities.Application, error)
+	GetVolunteerById(id uint) (entities.Volunteer, error)
+	GetHistoryDonation(id uint) ([]entities.Donation, error)
+	GetFundraisingById(id uint) (entities.Fundraising, error)
 }
 
 type userRepository struct {
@@ -100,4 +104,36 @@ func (r *userRepository) UpdateProfile(userid uint, user entities.User) error {
 
 func (r *userRepository) UpdatePassword(id uint, password string) error {
 	return r.db.Model(&entities.User{}).Where("id = ?", id).Update("password", password).Error
+}
+
+func (r *userRepository) GetHistoryVolunteer(id uint) ([]entities.Application, error) {
+	var application []entities.Application
+	if err := r.db.Where("user_id = ?", id).Preload("Volunteer").Find(&application).Error; err != nil {
+		return application, err
+	}
+	return application, nil
+}
+
+func (r *userRepository) GetVolunteerById(id uint) (entities.Volunteer, error) {
+	var volunteer entities.Volunteer
+	if err := r.db.Where("id = ?", id).First(&volunteer).Error; err != nil {
+		return volunteer, err
+	}
+	return volunteer, nil
+}
+
+func (r *userRepository) GetHistoryDonation(id uint) ([]entities.Donation, error) {
+	var donation []entities.Donation
+	if err := r.db.Where("user_id = ?", id).Preload("Fundraising").Find(&donation).Error; err != nil {
+		return donation, err
+	}
+	return donation, nil
+}
+
+func (r *userRepository) GetFundraisingById(id uint) (entities.Fundraising, error) {
+	var donation entities.Fundraising
+	if err := r.db.Where("id = ?", id).First(&donation).Error; err != nil {
+		return donation, err
+	}
+	return donation, nil
 }

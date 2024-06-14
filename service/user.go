@@ -12,7 +12,8 @@ import (
 
 type UserService interface {
 	Register(request dto.RegisterRequest) (entities.User, error)
-	Login(request dto.LoginRequest) (entities.User, error)
+	// Login(request dto.LoginRequest) (entities.User, error)
+	Login(request dto.LoginRequest) (entities.User, string, string, error)
 	GetUserByID(id uint) (entities.User, error)
 	GenerateResetToken(email string) error
 	ResetPassword(resetToken, newPassword string) error
@@ -20,6 +21,9 @@ type UserService interface {
 	GetUserProfile(id int) (entities.User, error)
 	EditProfile(userid int, request dto.EditProfileRequest) (entities.User, error)
 	ChangePassword(userid int, request dto.ChangePasswordRequest) error
+	GetHistoryVolunteer(id uint) ([]dto.UserVolunteerHistory, error)
+	GetHistoryVolunteerDetail(id int) (dto.UserVolunteerHistoryDetail, error)
+	GetHistoryDonation(id uint) ([]dto.UserDonationHistory, error)
 }
 
 type userService struct {
@@ -68,22 +72,41 @@ func (s *userService) Register(request dto.RegisterRequest) (entities.User, erro
 	return s.userRepository.Save(user)
 }
 
-func (s *userService) Login(request dto.LoginRequest) (entities.User, error) {
+// func (s *userService) Login(request dto.LoginRequest) (entities.User, error) {
+// 	username := request.Username
+// 	password := request.Password
+
+// 	user, err := s.userRepository.FindByUsername(username)
+// 	if err != nil {
+// 		return user, err
+// 	}
+
+// 	if user.Password != password {
+// 		return user, fmt.Errorf("wrong password")
+// 	}
+
+// 	user.Token = middleware.GenerateToken(user.ID, user.Username, "user")
+
+// 	return user, nil
+// }
+
+func (s *userService) Login(request dto.LoginRequest) (entities.User, string, string, error) {
 	username := request.Username
 	password := request.Password
 
 	user, err := s.userRepository.FindByUsername(username)
 	if err != nil {
-		return user, err
+		return user, "", "", err
 	}
 
 	if user.Password != password {
-		return user, fmt.Errorf("wrong password")
+		return user, "", "", fmt.Errorf("wrong password")
 	}
 
-	user.Token = middleware.GenerateToken(user.ID, user.Username, "user")
+	accessToken, refreshToken := middleware.GenerateToken(user.ID, user.Username, "user")
+	user.Token = accessToken
 
-	return user, nil
+	return user, accessToken, refreshToken, nil
 }
 
 func (s *userService) GenerateResetToken(email string) error {
@@ -193,4 +216,67 @@ func (s *userService) ChangePassword(userid int, request dto.ChangePasswordReque
 
 	user.Password = request.NewPassword
 	return s.userRepository.Update(user)
+}
+
+func (s *userService) GetHistoryVolunteer(id uint) ([]dto.UserVolunteerHistory, error) {
+	userHistory, err := s.userRepository.GetHistoryVolunteer(id)
+	if err != nil {
+		return nil, err
+	}
+
+	var userVolunteerHistory []dto.UserVolunteerHistory
+	for _, history := range userHistory {
+		Volunteers, err := s.userRepository.GetVolunteerById(history.VacancyID)
+		if err != nil {
+			return nil, err
+		}
+		userVolunteerHistory = append(userVolunteerHistory, dto.UserVolunteerHistory{
+			ID:       Volunteers.ID,
+			Title:    Volunteers.Title,
+			Location: Volunteers.Location,
+			ImageURL: Volunteers.ImageURL,
+			Date:     Volunteers.StartDate,
+		})
+	}
+
+	return userVolunteerHistory, nil
+}
+
+func (s *userService) GetHistoryVolunteerDetail(id int) (dto.UserVolunteerHistoryDetail, error) {
+	Volunteers, err := s.userRepository.GetVolunteerById(uint(id))
+	if err != nil {
+		return dto.UserVolunteerHistoryDetail{}, err
+	}
+
+	return dto.UserVolunteerHistoryDetail{
+		ID:              Volunteers.ID,
+		Title:           Volunteers.Title,
+		ImageURL:        Volunteers.ImageURL,
+		Location:        Volunteers.Location,
+		ContentActivity: Volunteers.ContentActivity,
+	}, nil
+}
+
+func (s *userService) GetHistoryDonation(id uint) ([]dto.UserDonationHistory, error) {
+	userHistory, err := s.userRepository.GetHistoryDonation(id)
+	if err != nil {
+		return nil, err
+	}
+
+	var userDonationHistory []dto.UserDonationHistory
+	for _, history := range userHistory {
+		Donations, err := s.userRepository.GetFundraisingById(history.FundraisingID)
+		if err != nil {
+			return nil, err
+		}
+		userDonationHistory = append(userDonationHistory, dto.UserDonationHistory{
+			ID:       Donations.ID,
+			Tittle:   Donations.Title,
+			ImageURL: Donations.ImageUrl,
+			Status:   Donations.Status,
+			Amount:   history.Amount,
+		})
+	}
+
+	return userDonationHistory, nil
 }
