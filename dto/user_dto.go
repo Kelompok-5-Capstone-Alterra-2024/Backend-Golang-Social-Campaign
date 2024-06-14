@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"capstone/entities"
 	"time"
 )
 
@@ -27,6 +28,7 @@ type ForgetPasswordRequest struct {
 }
 
 type ResetPasswordRequest struct {
+	OTP         string `json:"otp"`
 	Password    string `json:"new_password"`
 	ConfirmPass string `json:"confirm_password"`
 }
@@ -74,4 +76,36 @@ type UserDonationHistory struct {
 	ImageURL string `json:"image_url"`
 	Status   string `json:"status"`
 	Amount   int    `json:"amount"`
+}
+
+type UserFundraisingsResponse struct {
+	ID              uint   `json:"id"`
+	FundraisingID   uint   `json:"fundraising_id"`
+	ImageUrl        string `json:"image_url"`
+	Title           string `json:"title"`
+	CategoryName    string `json:"category_name"`
+	CurrentProgress int    `json:"current_progress"`
+	TargetAmount    int    `json:"target_amount"`
+	EndDate         string `json:"end_date"`
+}
+
+func ToUserFundraisingsResponse(fundraisingBookmark entities.UserBookmarkFundraising) UserFundraisingsResponse {
+	return UserFundraisingsResponse{
+		ID:              fundraisingBookmark.ID,
+		FundraisingID:   fundraisingBookmark.FundraisingID,
+		ImageUrl:        fundraisingBookmark.Fundraising.ImageUrl,
+		Title:           fundraisingBookmark.Fundraising.Title,
+		CategoryName:    fundraisingBookmark.Fundraising.FundraisingCategory.Name,
+		CurrentProgress: fundraisingBookmark.Fundraising.CurrentProgress,
+		TargetAmount:    fundraisingBookmark.Fundraising.GoalAmount,
+		EndDate:         fundraisingBookmark.Fundraising.EndDate.Format("2006-01-02"),
+	}
+}
+
+func ToAllUserFundraisingsResponse(fundraisings []entities.UserBookmarkFundraising) []UserFundraisingsResponse {
+	var result []UserFundraisingsResponse
+	for _, fundraising := range fundraisings {
+		result = append(result, ToUserFundraisingsResponse(fundraising))
+	}
+	return result
 }

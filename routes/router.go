@@ -88,6 +88,10 @@ func NewRouter(router *echo.Echo) {
 	api.GET("/history/volunteers/:id", userHandler.GetHistoryVolunteerDetail)
 	api.POST("/transactions/notification", donationHandler.GetPaymentCallback)
 
+	api.GET("/profile/bookmark/fundraisings", userHandler.GetBookmarkFundraising)
+	api.POST("/fundraisings/bookmark/:id", userHandler.CreateBookmarkFundraising)
+	api.DELETE("/fundraisings/bookmark/:id", userHandler.DeleteBookmarkFundraising)
+
 	api.POST("/refresh-token", userHandler.RefreshToken)
 
 	api.Use(jwt, routeMiddleware.UserMiddleware)

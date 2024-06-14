@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+
 	"mime/multipart"
 	"strconv"
 	"strings"
@@ -177,6 +178,23 @@ func SendTokenRestPassword(email string, token string) error {
 	return dialer.DialAndSend(m)
 }
 
+func SendOtpResetPassword(email string, otp string) error {
+	dialer := gomail.NewDialer(
+		"smtp.gmail.com",
+		587,
+		"hanggoroseto8@gmail.com",
+		"pcxf rviq wvfz nfyy",
+	)
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", "hanggoroseto8@gmail.com")
+	m.SetHeader("To", email)
+	m.SetHeader("Subject", "Password Reset Request")
+	m.SetBody("text/plain", "Your OTP is: "+otp)
+
+	return dialer.DialAndSend(m)
+}
+
 func GenerateToken() string {
 	b := make([]byte, 32)
 	rand.Read(b)
@@ -196,7 +214,6 @@ func GenerateRandomOTP(otpLent int) string {
 
 	return string(otp)
 }
-
 func GetPaymentUrl(donation entities.PaymentTransaction, user entities.User) (string, error) {
 	midClient := midtrans.NewClient()
 	server := "SB-Mid-server-x_R3_BBoJmSU_bRRxcBWV9pg"

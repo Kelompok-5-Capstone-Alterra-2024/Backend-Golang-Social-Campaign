@@ -14,12 +14,23 @@ type UserRepository interface {
 	FindByFullName(fullname string) (entities.User, error)
 	FindByNoTelp(notel string) (entities.User, error)
 	FindByResetToken(token string) (entities.User, error)
+	FindByOTP(otp string) (entities.User, error)
 	Update(user entities.User) error
 	UpdateProfile(userid uint, user entities.User) error
 	GetHistoryVolunteer(id uint) ([]entities.Application, error)
 	GetVolunteerById(id uint) (entities.Volunteer, error)
 	GetHistoryDonation(id uint) ([]entities.DonationManual, error)
 	GetFundraisingById(id uint) (entities.Fundraising, error)
+
+	FindUserFundraisingBookmark(id uint, limit int, offset int) ([]entities.UserBookmarkFundraising, error)
+	AddUserFundraisingBookmark(user entities.UserBookmarkFundraising) error
+	DeleteUserFundraisingBookmark(id uint, userid uint) error
+	IsFundraisingBookmark(id uint, userid uint) (bool, error)
+
+	FindUserArticleBookmark(id uint, limit int, offset int) ([]entities.UserBookmarkArticle, error)
+	AddUserArticleBookmark(user entities.UserBookmarkArticle) error
+	DeleteUserArticleBookmark(id uint, userid uint) error
+	IsArticleBookmark(id uint, userid uint) (bool, error)
 }
 
 type userRepository struct {
@@ -85,6 +96,14 @@ func (r *userRepository) FindByResetToken(token string) (entities.User, error) {
 	return user, nil
 }
 
+func (r *userRepository) FindByOTP(otp string) (entities.User, error) {
+	var user entities.User
+	if err := r.db.Where("otp = ?", otp).First(&user).Error; err != nil {
+		return user, err
+	}
+	return user, nil
+}
+
 func (r *userRepository) Update(user entities.User) error {
 	return r.db.Save(&user).Error
 }
@@ -127,4 +146,62 @@ func (r *userRepository) GetFundraisingById(id uint) (entities.Fundraising, erro
 		return donation, err
 	}
 	return donation, nil
+}
+
+func (r *userRepository) FindUserFundraisingBookmark(id uint, limit int, offset int) ([]entities.UserBookmarkFundraising, error) {
+	var bookmark []entities.UserBookmarkFundraising
+
+	if err := r.db.Preload("Fundraising.FundraisingCategory").Limit(limit).Offset(offset).Where("user_id = ?", id).Find(&bookmark).Error; err != nil {
+		return bookmark, err
+	}
+	return bookmark, nil
+}
+
+func (r *userRepository) AddUserFundraisingBookmark(user entities.UserBookmarkFundraising) error {
+
+	return r.db.Create(&user).Error
+}
+
+func (r *userRepository) DeleteUserFundraisingBookmark(id uint, userid uint) error {
+
+	return r.db.Where("fundraising_id = ? AND user_id = ?", id, userid).Delete(&entities.UserBookmarkFundraising{}).Error
+}
+
+func (r *userRepository) IsFundraisingBookmark(id uint, userid uint) (bool, error) {
+
+	var count int64
+	if err := r.db.Model(&entities.UserBookmarkFundraising{}).Where("fundraising_id = ? AND user_id = ?", id, userid).Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+func (r *userRepository) FindUserArticleBookmark(id uint, limit int, offset int) ([]entities.UserBookmarkArticle, error) {
+
+	var bookmark []entities.UserBookmarkArticle
+
+	if err := r.db.Preload("Article").Limit(limit).Offset(offset).Where("user_id = ?", id).Find(&bookmark).Error; err != nil {
+		return bookmark, err
+	}
+	return bookmark, nil
+}
+
+func (r *userRepository) AddUserArticleBookmark(user entities.UserBookmarkArticle) error {
+
+	return r.db.Create(&user).Error
+}
+
+func (r *userRepository) DeleteUserArticleBookmark(id uint, userid uint) error {
+
+	return r.db.Where("article_id = ? AND user_id = ?", id, userid).Delete(&entities.UserBookmarkArticle{}).Error
+}
+
+func (r *userRepository) IsArticleBookmark(id uint, userid uint) (bool, error) {
+
+	var count int64
+
+	if err := r.db.Model(&entities.UserBookmarkArticle{}).Where("article_id = ? AND user_id = ?", id, userid).Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }

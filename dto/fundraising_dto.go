@@ -111,9 +111,10 @@ func ToFundraisingResponse(fundraising entities.Fundraising, comments []entities
 	}
 
 	fundraisingOrg := FundraisingOrg{
-		ID:     fundraising.Organization.ID,
-		Name:   fundraising.Organization.Name,
-		Avatar: fundraising.Organization.Avatar,
+		ID:         fundraising.Organization.ID,
+		Name:       fundraising.Organization.Name,
+		Avatar:     fundraising.Organization.Avatar,
+		IsVerified: fundraising.Organization.IsVerified,
 	}
 
 	commentResponses := make([]FundraisingCommentResponse, len(comments))
