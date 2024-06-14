@@ -89,16 +89,16 @@ type UserFundraisingsResponse struct {
 	EndDate         string `json:"end_date"`
 }
 
-func ToUserFundraisingsResponse(fundraising entities.UserBookmarkFundraising) UserFundraisingsResponse {
+func ToUserFundraisingsResponse(fundraisingBookmark entities.UserBookmarkFundraising) UserFundraisingsResponse {
 	return UserFundraisingsResponse{
-		ID:              fundraising.ID,
-		FundraisingID:   fundraising.Fundraising.ID,
-		ImageUrl:        fundraising.Fundraising.ImageUrl,
-		Title:           fundraising.Fundraising.Title,
-		CategoryName:    fundraising.Fundraising.FundraisingCategory.Name,
-		CurrentProgress: fundraising.Fundraising.CurrentProgress,
-		TargetAmount:    fundraising.Fundraising.GoalAmount,
-		EndDate:         fundraising.Fundraising.EndDate.Format("2006-01-02"),
+		ID:              fundraisingBookmark.ID,
+		FundraisingID:   fundraisingBookmark.FundraisingID,
+		ImageUrl:        fundraisingBookmark.Fundraising.ImageUrl,
+		Title:           fundraisingBookmark.Fundraising.Title,
+		CategoryName:    fundraisingBookmark.Fundraising.FundraisingCategory.Name,
+		CurrentProgress: fundraisingBookmark.Fundraising.CurrentProgress,
+		TargetAmount:    fundraisingBookmark.Fundraising.GoalAmount,
+		EndDate:         fundraisingBookmark.Fundraising.EndDate.Format("2006-01-02"),
 	}
 }
 

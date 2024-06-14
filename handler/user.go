@@ -291,7 +291,7 @@ func (h *UserHandler) GetBookmarkFundraising(c echo.Context) error {
 
 	response := dto.ToAllUserFundraisingsResponse(bookmarks)
 
-	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "success get bookmarks", bookmarks, page, limit, int64(len(response))))
+	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "success get bookmarks", response, page, limit, int64(len(response))))
 }
 
 // func (h *UserHandler) RefreshToken(c echo.Context) error {
