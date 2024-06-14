@@ -84,8 +84,8 @@ func NewRouter(router *echo.Echo) {
 	api.PUT("/profile/change-password", userHandler.ChangePassword)
 
 	api.GET("/profile/history/fundraisings", userHandler.GetHistoryDonation)
-	api.GET("/profile/history/volunteers", userHandler.GetHistoryVolunteer)
-	api.GET("/profile/history/volunteers/:id", userHandler.GetHistoryVolunteerDetail)
+	api.GET("/history/volunteers", userHandler.GetHistoryVolunteer)
+	api.GET("/history/volunteers/:id", userHandler.GetHistoryVolunteerDetail)
 	api.POST("/transactions/notification", donationHandler.GetPaymentCallback)
 
 	api.POST("/refresh-token", userHandler.RefreshToken)

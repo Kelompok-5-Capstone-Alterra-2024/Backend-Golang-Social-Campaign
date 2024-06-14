@@ -39,10 +39,11 @@ type UserProfileResponse struct {
 
 type EditProfileRequest struct {
 	// ID       uint   `json:"user_id"`
-	Fullname string `json:"full_name"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Avatar   string `json:"avatar_url"`
+	Fullname string `json:"full_name" form:"full_name"`
+	Username string `json:"username" form:"username"`
+	Email    string `json:"email" form:"email"`
+	Avatar   string `json:"avatar_url" form:"avatar_url"`
+	NoTelp   string `json:"no_telp" form:"no_telp"`
 }
 
 type ChangePasswordRequest struct {
