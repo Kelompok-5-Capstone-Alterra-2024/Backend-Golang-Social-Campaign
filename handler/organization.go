@@ -37,7 +37,7 @@ func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
 	cloudinaryUsecase, _ := cloudinary.NewFromURL(urlCloudinary)
 	response, _ := cloudinaryUsecase.Upload.Upload(ctx, file, uploader.UploadParams{})
 
-	startDate, err := time.Parse("2006-01-02", req.StartDate)
+	startDate, err := time.Parse("2006-01-02", req.JoinDate)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, "Invalid start date format")
 	}

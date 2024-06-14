@@ -10,7 +10,7 @@ type OrganizationRequest struct {
 	Avatar      string `json:"avatar" form:"avatar" validate:"required"`
 	Description string `json:"description" form:"description" validate:"required"`
 	IsVerified  bool   `json:"is_verified" form:"is_verified" validate:"required"`
-	StartDate   string `json:"start_date" form:"start_date" validate:"required"`
+	JoinDate    string `json:"join_date" form:"join_date" validate:"required"`
 	Website     string `json:"website" form:"website" validate:"required"`
 	Instagram   string `json:"instagram" form:"instagram" validate:"required"`
 	NoRekening  string `json:"no_rek" form:"no_rek" validate:"required"`

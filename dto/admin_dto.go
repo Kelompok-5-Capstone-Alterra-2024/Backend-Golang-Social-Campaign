@@ -93,18 +93,26 @@ func ToAdminAllFundraisingDonationResponse(donations []entities.Donation) []Admi
 type AdminOrgResponse struct {
 	ID          uint   `json:"id"`
 	Name        string `json:"name"`
+	IsVerified  bool   `json:"is_verified"`
 	JoinDate    string `json:"join_date"`
 	Description string `json:"description"`
 	Avatar      string `json:"avatar"`
+	Website     string `json:"website"`
+	Instagram   string `json:"instagram"`
+	NoRekening  string `json:"no_rek"`
 }
 
 func ToAdminOrgResponse(organization entities.Organization) AdminOrgResponse {
 	return AdminOrgResponse{
 		ID:          organization.ID,
 		Name:        organization.Name,
+		IsVerified:  organization.IsVerified,
 		JoinDate:    organization.CreatedAt.Format("2006-01-02"),
 		Description: organization.Description,
 		Avatar:      organization.Avatar,
+		Website:     organization.Website,
+		Instagram:   organization.Instagram,
+		NoRekening:  organization.NoRekening,
 	}
 }
 

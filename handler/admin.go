@@ -361,7 +361,7 @@ func (h *AdminHandler) EditOrganization(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to upload image", err.Error()))
 	}
 
-	startDate, err := time.Parse("2006-01-02", req.StartDate)
+	startDate, err := time.Parse("2006-01-02", req.JoinDate)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, "Invalid start date format")
 	}
