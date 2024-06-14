@@ -93,8 +93,8 @@ func NewRouter(router *echo.Echo) {
 	api.Use(jwt, routeMiddleware.UserMiddleware)
 
 	api.GET("/organizations", organizatonHandler.GetOrganizations)
-	api.GET("fundraising/organizations/:id", organizatonHandler.GetFundraisingsOrganizationByID)
-	api.GET("volunteer/organizations/:id", organizatonHandler.GetVolunteersByOrganizationByID)
+	api.GET("/fundraising/organizations/:id", organizatonHandler.GetFundraisingsOrganizationByID)
+	api.GET("/volunteer/organizations/:id", organizatonHandler.GetVolunteersByOrganizationByID)
 
 	api.GET("/fundraisings", fundraisingHandler.GetFundraisings)
 	api.GET("/fundraisings/top", fundraisingHandler.GetTopFundraisings)
