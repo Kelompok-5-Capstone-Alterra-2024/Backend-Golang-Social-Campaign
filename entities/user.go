@@ -19,10 +19,10 @@ type User struct {
 
 type UserBookmarkVolunteerVacancy struct {
 	gorm.Model
-	UserID             uint      `json:"-"`
-	User               User      `json:"user" gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
-	VolunteerVacancyID uint      `json:"-"`
-	Volunteer          Volunteer `json:"volunteer" gorm:"foreignKey:VolunteerVacancyID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
+	UserID               uint      `json:"-"`
+	User                 User      `json:"user" gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
+	VolunteerVacanciesID uint      `json:"-"`
+	Volunteer            Volunteer `json:"volunteer" gorm:"foreignKey:VolunteerVacancyID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
 }
 
 type UserBookmarkFundraising struct {
