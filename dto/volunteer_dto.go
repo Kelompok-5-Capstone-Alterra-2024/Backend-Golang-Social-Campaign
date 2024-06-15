@@ -91,6 +91,7 @@ type VolunteerResponse struct {
 type VolunteerTestimoniResponse struct {
 	UserTestimoni UserCommentResponse `json:"user_testimoni"`
 	Body          string              `json:"body"`
+	Rating        string              `json:"rating"`
 	CreatedAt     string              `json:"created_at"`
 }
 
@@ -150,6 +151,7 @@ func ToVolunteerResponse(volunteer entities.Volunteer, application []entities.Ap
 				Username: testimoni.User.Username,
 			},
 			Body:      testimoni.Testimoni,
+			Rating:    testimoni.Rating,
 			CreatedAt: testimoni.CreatedAt.Format("2006-01-02"),
 		})
 	}
