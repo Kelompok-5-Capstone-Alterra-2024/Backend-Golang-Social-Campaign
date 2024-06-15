@@ -135,3 +135,36 @@ func ToAllUserArticleBookmarkResponse(articles []entities.UserBookmarkArticle) [
 	}
 	return result
 }
+
+type OrgVolunteer struct {
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
+}
+
+type UserVolunteerBookmark struct {
+	ID                   uint         `json:"id"`
+	VolunteerID          uint         `json:"volunteer_id"`
+	Organization         OrgVolunteer `json:"organization"`
+	Title                string       `json:"title"`
+	ImageURL             string       `json:"image_url"`
+	RegistrationDeadline string       `json:"registration_deadline"`
+}
+
+func ToUserVolunteerBookmarkResponse(volunteerBookmark entities.UserBookmarkVolunteerVacancy) UserVolunteerBookmark {
+	return UserVolunteerBookmark{
+		ID:                   volunteerBookmark.ID,
+		VolunteerID:          volunteerBookmark.VolunteerVacanciesID,
+		Organization:         OrgVolunteer{ID: volunteerBookmark.Volunteer.OrganizationID, Name: volunteerBookmark.Volunteer.Organization.Name},
+		Title:                volunteerBookmark.Volunteer.Title,
+		ImageURL:             volunteerBookmark.Volunteer.ImageURL,
+		RegistrationDeadline: volunteerBookmark.Volunteer.RegistrationDeadline.Format("2006-01-02"),
+	}
+}
+
+func ToAllUserVolunteerBookmarkResponse(volunteers []entities.UserBookmarkVolunteerVacancy) []UserVolunteerBookmark {
+	var result []UserVolunteerBookmark
+	for _, volunteer := range volunteers {
+		result = append(result, ToUserVolunteerBookmarkResponse(volunteer))
+	}
+	return result
+}

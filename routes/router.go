@@ -79,6 +79,10 @@ func NewRouter(router *echo.Echo) {
 	api.POST("/forget-password", userHandler.ForgetPassword)
 	api.POST("/reset-password", userHandler.ResetPassword)
 
+	api.POST("/refresh-token", userHandler.RefreshToken)
+
+	api.Use(jwt, routeMiddleware.UserMiddleware)
+
 	api.GET("/profile", userHandler.GetUserProfile)
 	api.PUT("/profile/edit", userHandler.EditProfile)
 	api.PUT("/profile/change-password", userHandler.ChangePassword)
@@ -96,9 +100,9 @@ func NewRouter(router *echo.Echo) {
 	api.POST("/articles/bookmark/:id", userHandler.CreateBookmarkArticle)
 	api.DELETE("/articles/bookmark/:id", userHandler.DeleteBookmarkArticle)
 
-	api.POST("/refresh-token", userHandler.RefreshToken)
-
-	api.Use(jwt, routeMiddleware.UserMiddleware)
+	api.GET("/profile/bookmark/volunteers", userHandler.GetUserBookmarkVolunteer)
+	api.POST("/volunteers/bookmark/:id", userHandler.CreateBookmarkVolunteer)
+	api.DELETE("/volunteers/bookmark/:id", userHandler.DeleteBookmarkVolunteer)
 
 	api.GET("/organizations", organizatonHandler.GetOrganizations)
 	api.GET("/fundraising/organizations/:id", organizatonHandler.GetFundraisingsOrganizationByID)

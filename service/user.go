@@ -32,6 +32,10 @@ type UserService interface {
 	GetUserArticleBookmark(id uint, limit int, offset int) ([]entities.UserBookmarkArticle, error)
 	AddUserArticleBookmark(id, userId uint) error
 	DeleteUserArticleBookmark(id uint, userid uint) error
+
+	GetUserVolunteerBookmark(id uint, limit int, offset int) ([]entities.UserBookmarkVolunteerVacancy, error)
+	AddUserVolunteerBookmark(id, userId uint) error
+	DeleteUserVolunteerBookmark(id uint, userid uint) error
 }
 
 type userService struct {
@@ -341,4 +345,31 @@ func (s *userService) AddUserArticleBookmark(id, userId uint) error {
 func (s *userService) DeleteUserArticleBookmark(id uint, userid uint) error {
 
 	return s.userRepository.DeleteUserArticleBookmark(id, userid)
+}
+
+func (s *userService) GetUserVolunteerBookmark(id uint, limit int, offset int) ([]entities.UserBookmarkVolunteerVacancy, error) {
+	return s.userRepository.FindUserVolunteerBookmark(id, limit, offset)
+}
+
+func (s *userService) AddUserVolunteerBookmark(id, userId uint) error {
+	added, err := s.userRepository.IsVolunteerBookmark(id, userId)
+	if err != nil {
+		return err
+	}
+
+	if added {
+		return nil
+	}
+
+	user := entities.UserBookmarkVolunteerVacancy{
+		UserID:               userId,
+		VolunteerVacanciesID: id,
+	}
+
+	return s.userRepository.AddUserVolunteerBookmark(user)
+}
+
+func (s *userService) DeleteUserVolunteerBookmark(id uint, userid uint) error {
+
+	return s.userRepository.DeleteUserVolunteerBookmark(id, userid)
 }
