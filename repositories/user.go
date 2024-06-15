@@ -215,7 +215,7 @@ func (r *userRepository) FindUserVolunteerBookmark(id uint, limit int, offset in
 
 	var bookmark []entities.UserBookmarkVolunteerVacancy
 
-	if err := r.db.Preload("Volunteer.Oraganization").Limit(limit).Offset(offset).Where("user_id = ?", id).Find(&bookmark).Error; err != nil {
+	if err := r.db.Preload("Volunteer.Organization").Limit(limit).Offset(offset).Where("user_id = ?", id).Find(&bookmark).Error; err != nil {
 		return bookmark, err
 	}
 

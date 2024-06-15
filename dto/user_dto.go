@@ -55,19 +55,24 @@ type ChangePasswordRequest struct {
 }
 
 type UserVolunteerHistory struct {
-	ID       uint      `json:"id"`
-	Title    string    `json:"title"`
-	ImageURL string    `json:"image_url"`
-	Location string    `json:"location"`
-	Date     time.Time `json:"date"`
+	ID        uint      `json:"id"`
+	Title     string    `json:"title"`
+	ImageURL  string    `json:"image_url"`
+	Location  string    `json:"location"`
+	StartDate time.Time `json:"start_date"`
+	EndDate   time.Time `json:"end_date"`
+	Status    string    `json:"status"`
 }
 
 type UserVolunteerHistoryDetail struct {
-	ID              uint   `json:"id"`
-	Title           string `json:"title"`
-	ImageURL        string `json:"image_url"`
-	Location        string `json:"location"`
-	ContentActivity string `json:"content_activity"`
+	ID              uint      `json:"id"`
+	Title           string    `json:"title"`
+	ImageURL        string    `json:"image_url"`
+	Location        string    `json:"location"`
+	ContentActivity string    `json:"content_activity"`
+	StartDate       time.Time `json:"start_date"`
+	EndDate         time.Time `json:"end_date"`
+	Status          string    `json:"status"`
 }
 
 type UserDonationHistory struct {
@@ -115,6 +120,7 @@ type UserArticleBookmark struct {
 	ArticleID uint   `json:"article_id"`
 	Title     string `json:"title"`
 	ImageURL  string `json:"image_url"`
+	Content   string `json:"content"`
 	Date      string `json:"date"`
 }
 
@@ -124,6 +130,7 @@ func ToUserArticleBookmarkResponse(articleBookmark entities.UserBookmarkArticle)
 		ArticleID: articleBookmark.ArticleID,
 		Title:     articleBookmark.Article.Title,
 		ImageURL:  articleBookmark.Article.ImageURL,
+		Content:   articleBookmark.Article.Content,
 		Date:      articleBookmark.Article.CreatedAt.Format("2006-01-02"),
 	}
 }

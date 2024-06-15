@@ -243,11 +243,13 @@ func (s *userService) GetHistoryVolunteer(id uint) ([]dto.UserVolunteerHistory, 
 			return nil, err
 		}
 		userVolunteerHistory = append(userVolunteerHistory, dto.UserVolunteerHistory{
-			ID:       Volunteers.ID,
-			Title:    Volunteers.Title,
-			Location: Volunteers.Location,
-			ImageURL: Volunteers.ImageURL,
-			Date:     Volunteers.StartDate,
+			ID:        Volunteers.ID,
+			Title:     Volunteers.Title,
+			Location:  Volunteers.Location,
+			ImageURL:  Volunteers.ImageURL,
+			StartDate: Volunteers.StartDate,
+			EndDate:   Volunteers.EndDate,
+			Status:    Volunteers.Status,
 		})
 	}
 
