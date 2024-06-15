@@ -89,10 +89,38 @@ type VolunteerResponse struct {
 }
 
 type VolunteerTestimoniResponse struct {
+	ID            uint                `json:"id"`
 	UserTestimoni UserCommentResponse `json:"user_testimoni"`
 	Body          string              `json:"body"`
 	Rating        string              `json:"rating"`
 	CreatedAt     string              `json:"created_at"`
+}
+
+func ToUserCommentResponse(user entities.User) UserCommentResponse {
+	return UserCommentResponse{
+		UserID:   user.ID,
+		Avatar:   user.Avatar,
+		Username: user.Username,
+	}
+}
+
+func ToVolunteerTestimoniResponse(testimoni entities.TestimoniVolunteer) VolunteerTestimoniResponse {
+	return VolunteerTestimoniResponse{
+		ID:            testimoni.ID,
+		UserTestimoni: ToUserCommentResponse(testimoni.User),
+		Body:          testimoni.Testimoni,
+		Rating:        testimoni.Rating,
+		CreatedAt:     testimoni.CreatedAt.String(),
+	}
+}
+
+func ToAllVolunteerTestimoniResponse(testimoni []entities.TestimoniVolunteer) []VolunteerTestimoniResponse {
+	result := []VolunteerTestimoniResponse{}
+	for _, t := range testimoni {
+		result = append(result, ToVolunteerTestimoniResponse(t))
+	}
+
+	return result
 }
 
 type VolunteerOrg struct {

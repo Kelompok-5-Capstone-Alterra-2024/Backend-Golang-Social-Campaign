@@ -77,6 +77,7 @@ type UserAvatarDonatedResponse struct {
 }
 
 type FundraisingCommentResponse struct {
+	ID                  uint                `json:"id"`
 	UserCommentResponse UserCommentResponse `json:"user_comment"`
 	Body                string              `json:"body"`
 	TotalLikes          int                 `json:"total_likes"`
@@ -84,6 +85,7 @@ type FundraisingCommentResponse struct {
 }
 
 type UserCommentResponse struct {
+	UserID   uint   `json:"user_id"`
 	Avatar   string `json:"avatar"`
 	Username string `json:"username"`
 }
@@ -122,7 +124,9 @@ func ToFundraisingResponse(fundraising entities.Fundraising, comments []entities
 	commentResponses := make([]FundraisingCommentResponse, len(comments))
 	for i, comment := range comments {
 		commentResponses[i] = FundraisingCommentResponse{
+			ID: comment.ID,
 			UserCommentResponse: UserCommentResponse{
+				UserID:   comment.DonationManual.User.ID,
 				Avatar:   comment.DonationManual.User.Avatar,
 				Username: comment.DonationManual.User.Username,
 			},

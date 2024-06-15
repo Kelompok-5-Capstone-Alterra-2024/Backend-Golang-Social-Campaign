@@ -120,8 +120,8 @@ func NewRouter(router *echo.Echo) {
 	api.GET("/history/donations-manual", donationManualHandler.GetDonationManualByUserID)
 	api.GET("/history/donations-manual/:id", donationManualHandler.GetDonationManualByID)
 
-	api.POST("/donations-manual/comments/:comment_id/like", donationManualHandler.LikeComment)
-	api.DELETE("/donations-manual/comments/:comment_id/unlike", donationManualHandler.UnlikeComment)
+	api.POST("/donations-manual/comments/:id/like", donationManualHandler.LikeComment)
+	api.DELETE("/donations-manual/comments/:id/unlike", donationManualHandler.UnlikeComment)
 
 	api.GET("/history/donations", donationHandler.GetUserDonation)
 	api.GET("/history/donations/:id", donationHandler.GetDonationByID)
@@ -165,6 +165,7 @@ func NewRouter(router *echo.Echo) {
 	api.POST("/volunteer/:id/testimoni-volunteers", testimoniVolunteerHandler.CreateTestimoniVolunteer)
 	api.GET("/testimoni-volunteers/:id", testimoniVolunteerHandler.GetTestimoniVolunteerByID)
 	api.GET("/testimoni-volunteers", testimoniVolunteerHandler.GetAllTestimoniVolunteers)
+	api.GET("/volunteer/:id/testimoni-volunteers", testimoniVolunteerHandler.GetAllTestimoniVolunteersByVacancyID)
 	api.DELETE("/testimoni-volunteers/:id", testimoniVolunteerHandler.DeleteTestimoniVolunteer)
 
 	// Admin

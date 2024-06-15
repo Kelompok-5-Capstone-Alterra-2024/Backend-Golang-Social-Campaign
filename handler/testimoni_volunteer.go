@@ -84,8 +84,23 @@ func (h *TestimoniVolunteerHandler) GetTestimoniVolunteerByID(c echo.Context) er
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "error retrieving testimoni volunteer", err.Error()))
 	}
 
-	response := dto.ToTestimoniVolunteerResponse(testimoniVolunteer)
+	response := dto.ToVolunteerTestimoniResponse(testimoniVolunteer)
 	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "retrieved testimoni volunteer successfully", response))
+}
+
+func (h *TestimoniVolunteerHandler) GetAllTestimoniVolunteersByVacancyID(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid ID", err.Error()))
+	}
+
+	testimoniVolunteers, err := h.testimoniVolunteerService.FindAllByVacancyID(uint(id))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "error retrieving testimoni volunteers", err.Error()))
+	}
+
+	responses := dto.ToAllVolunteerTestimoniResponse(testimoniVolunteers)
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "retrieved all testimoni volunteers successfully", responses))
 }
 
 func (h *TestimoniVolunteerHandler) GetAllTestimoniVolunteers(c echo.Context) error {
