@@ -630,3 +630,22 @@ func (h *AdminHandler) InputAmountDonationManual(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "donation amount added successfully"))
 }
+
+func (h *AdminHandler) GetDailyDonationSummary(c echo.Context) error {
+
+	donations, err := h.adminService.GetDailyDonationSummary()
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get donations", err.Error()))
+	}
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "donations retrieved successfully", donations))
+}
+
+func (h *AdminHandler) GetDataTotalContent(c echo.Context) error {
+
+	data, err := h.adminService.GetDataTotalContent()
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get data", err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "data retrieved successfully", data))
+}
