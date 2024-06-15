@@ -92,6 +92,10 @@ func NewRouter(router *echo.Echo) {
 	api.POST("/fundraisings/bookmark/:id", userHandler.CreateBookmarkFundraising)
 	api.DELETE("/fundraisings/bookmark/:id", userHandler.DeleteBookmarkFundraising)
 
+	api.GET("/profile/bookmark/articles", userHandler.GetBookmarkArticle)
+	api.POST("/articles/bookmark/:id", userHandler.CreateBookmarkArticle)
+	api.DELETE("/articles/bookmark/:id", userHandler.DeleteBookmarkArticle)
+
 	api.POST("/refresh-token", userHandler.RefreshToken)
 
 	api.Use(jwt, routeMiddleware.UserMiddleware)

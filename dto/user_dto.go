@@ -109,3 +109,29 @@ func ToAllUserFundraisingsResponse(fundraisings []entities.UserBookmarkFundraisi
 	}
 	return result
 }
+
+type UserArticleBookmark struct {
+	ID        uint   `json:"id"`
+	ArticleID uint   `json:"article_id"`
+	Title     string `json:"title"`
+	ImageURL  string `json:"image_url"`
+	Date      string `json:"date"`
+}
+
+func ToUserArticleBookmarkResponse(articleBookmark entities.UserBookmarkArticle) UserArticleBookmark {
+	return UserArticleBookmark{
+		ID:        articleBookmark.ID,
+		ArticleID: articleBookmark.ArticleID,
+		Title:     articleBookmark.Article.Title,
+		ImageURL:  articleBookmark.Article.ImageURL,
+		Date:      articleBookmark.Article.CreatedAt.Format("2006-01-02"),
+	}
+}
+
+func ToAllUserArticleBookmarkResponse(articles []entities.UserBookmarkArticle) []UserArticleBookmark {
+	var result []UserArticleBookmark
+	for _, article := range articles {
+		result = append(result, ToUserArticleBookmarkResponse(article))
+	}
+	return result
+}
