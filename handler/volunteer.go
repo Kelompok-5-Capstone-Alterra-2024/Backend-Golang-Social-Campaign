@@ -11,12 +11,13 @@ import (
 )
 
 type VolunteerHandler struct {
-	volunteerService   service.VolunteerService
-	applicationService service.ApplicationService
+	volunteerService          service.VolunteerService
+	applicationService        service.ApplicationService
+	testimoniVolunteerService service.TestimoniVolunteerService
 }
 
-func NewVolunteerHandler(volunteerService service.VolunteerService, applicationService service.ApplicationService) *VolunteerHandler {
-	return &VolunteerHandler{volunteerService: volunteerService, applicationService: applicationService}
+func NewVolunteerHandler(volunteerService service.VolunteerService, applicationService service.ApplicationService, testimoniVolunteerService service.TestimoniVolunteerService) *VolunteerHandler {
+	return &VolunteerHandler{volunteerService: volunteerService, applicationService: applicationService, testimoniVolunteerService: testimoniVolunteerService}
 }
 
 func (h *VolunteerHandler) CreateVolunteer(c echo.Context) error {
@@ -61,7 +62,12 @@ func (h *VolunteerHandler) GetVolunteerByID(c echo.Context) error {
 
 	applications, _, err := h.applicationService.GetApplicationByVacancyID(uint(id), 1, 4)
 
-	response := dto.ToVolunteerResponse(volunteer, applications)
+	testimoni, err := h.testimoniVolunteerService.FindAllByVacancyID(uint(id), 1, 4)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(false, "volunteer not found", err.Error()))
+	}
+
+	response := dto.ToVolunteerResponse(volunteer, applications, testimoni)
 	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "volunteer retrieved successfully", response))
 }
 

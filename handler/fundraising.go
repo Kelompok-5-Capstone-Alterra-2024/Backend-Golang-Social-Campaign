@@ -10,11 +10,11 @@ import (
 )
 
 type FundraisingHandler struct {
-	fundraisingService service.FundraisingService
-	donationService    service.DonationService
+	fundraisingService    service.FundraisingService
+	donationManualService service.DonationManualService
 }
 
-func NewFundraisingHandler(fundraisingService service.FundraisingService, donationService service.DonationService) *FundraisingHandler {
+func NewFundraisingHandler(fundraisingService service.FundraisingService, donationService service.DonationManualService) *FundraisingHandler {
 	return &FundraisingHandler{fundraisingService, donationService}
 }
 
@@ -62,9 +62,9 @@ func (h *FundraisingHandler) GetFundraisingByID(c echo.Context) error {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to get fundraising", err.Error()))
 	}
 
-	comments, err := h.donationService.GetDonationCommentByFundraisingID(id)
+	comments, err := h.donationManualService.GetDonationCommentByFundraisingID(id)
 
-	donations, err := h.donationService.GetByFundraisingID(id)
+	donations, err := h.donationManualService.GetByFundraisingID(id)
 
 	response := dto.ToFundraisingResponse(fundraising, comments, donations)
 	return c.JSON(200, helper.ResponseWithData(true, "fundraising retrieved successfully", response))

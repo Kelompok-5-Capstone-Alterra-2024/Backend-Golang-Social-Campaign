@@ -10,6 +10,7 @@ type TestimoniVolunteerService interface {
 	FindByID(id uint) (entities.TestimoniVolunteer, error)
 	FindAll(page, limit int) ([]entities.TestimoniVolunteer, int, error)
 	DeleteTestimoniVolunteer(id uint) error
+	FindAllByVacancyID(volunteerID uint, limit, offest int) ([]entities.TestimoniVolunteer, error)
 	CustomerJoinedVolunteer(customerID, volunteerID uint) bool
 	HasCustomerGivenTestimony(customerID, volunteerID uint) bool
 }
@@ -36,6 +37,10 @@ func (s *testimoniVolunteerService) FindAll(page, limit int) ([]entities.Testimo
 
 func (s *testimoniVolunteerService) DeleteTestimoniVolunteer(id uint) error {
 	return s.repo.Delete(id)
+}
+
+func (s *testimoniVolunteerService) FindAllByVacancyID(volunteerID uint, limit, offest int) ([]entities.TestimoniVolunteer, error) {
+	return s.repo.FindAllByVacancyID(volunteerID, limit, offest)
 }
 
 func (s *testimoniVolunteerService) CustomerJoinedVolunteer(customerID, volunteerID uint) bool {

@@ -88,7 +88,7 @@ type UserCommentResponse struct {
 	Username string `json:"username"`
 }
 
-func ToFundraisingResponse(fundraising entities.Fundraising, comments []entities.DonationComment, donations []entities.Donation) FundraisingResponse {
+func ToFundraisingResponse(fundraising entities.Fundraising, comments []entities.DonationManualComment, donations []entities.DonationManual) FundraisingResponse {
 
 	uniqueUserAvatars := make(map[uint]string)
 	for _, donation := range donations {
@@ -121,8 +121,8 @@ func ToFundraisingResponse(fundraising entities.Fundraising, comments []entities
 	for i, comment := range comments {
 		commentResponses[i] = FundraisingCommentResponse{
 			UserCommentResponse: UserCommentResponse{
-				Avatar:   comment.Donation.User.Avatar,
-				Username: comment.Donation.User.Username,
+				Avatar:   comment.DonationManual.User.Avatar,
+				Username: comment.DonationManual.User.Username,
 			},
 			Body:       comment.Comment,
 			TotalLikes: comment.TotalLikes,
