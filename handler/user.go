@@ -136,6 +136,9 @@ func (h *UserHandler) GetUserProfile(c echo.Context) error {
 		ID:       userProfile.ID,
 		Avatar:   userProfile.Avatar,
 		Username: userProfile.Username,
+		Fullname: userProfile.Fullname,
+		Email:    userProfile.Email,
+		NoTelp:   userProfile.NoTelp,
 	}
 
 	return c.JSON(200, helper.ResponseWithData(true, "Profile retrieved successfully", response))
@@ -149,6 +152,17 @@ func (h *UserHandler) EditProfile(c echo.Context) error {
 		return c.JSON(401, helper.ErrorResponse(false, "Unauthorized.", err.Error()))
 	}
 
+	imgFile, err := c.FormFile("avatar_url")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid image url", err.Error()))
+	}
+
+	imageUrl, err := helper.UploadToCloudinary(imgFile)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to upload image", err.Error()))
+	}
+
+	request.Avatar = imageUrl
 	editProfile, err := h.userService.EditProfile(userID, request)
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "validation failed", err.Error()))

@@ -37,6 +37,9 @@ type UserProfileResponse struct {
 	ID       uint   `json:"user_id"`
 	Avatar   string `json:"avatar_url"`
 	Username string `json:"username"`
+	Fullname string `json:"full_name"`
+	Email    string `json:"email"`
+	NoTelp   string `json:"no_telp"`
 }
 
 type EditProfileRequest struct {

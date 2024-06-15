@@ -77,6 +77,7 @@ type VolunteerResponse struct {
 	Title               string                 `json:"title"`
 	ContentActivity     string                 `json:"content_activity"`
 	Location            string                 `json:"location"`
+	LinkWA              string                 `json:"link_wa"`
 	StartDate           string                 `json:"start_date"`
 	EndDate             string                 `json:"end_date"`
 	TargetVolunteer     int                    `json:"target_volunteer"`
@@ -140,6 +141,7 @@ func ToVolunteerResponse(volunteer entities.Volunteer, application []entities.Ap
 		Title:               volunteer.Title,
 		ContentActivity:     volunteer.ContentActivity,
 		Location:            volunteer.Location,
+		LinkWA:              volunteer.LinkWA,
 		StartDate:           volunteer.StartDate.Format("2006-01-02"),
 		EndDate:             volunteer.EndDate.Format("2006-01-02"),
 		TargetVolunteer:     volunteer.TargetVolunteer,

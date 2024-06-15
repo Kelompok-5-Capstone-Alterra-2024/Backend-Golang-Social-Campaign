@@ -48,12 +48,12 @@ func (r *testimoniVolunteerRepository) Delete(id uint) error {
 
 func (r *testimoniVolunteerRepository) CustomerJoinedVolunteer(customerID, volunteerID uint) (bool, error) {
 	var count int64
-	err := r.db.Model(&entities.Application{}).Where("customer_id = ? AND vacancy_id = ?", customerID, volunteerID).Count(&count).Error
+	err := r.db.Model(&entities.Application{}).Where("user_id = ? AND vacancy_id = ?", customerID, volunteerID).Count(&count).Error
 	return count > 0, err
 }
 
 func (r *testimoniVolunteerRepository) HasCustomerGivenTestimony(customerID, volunteerID uint) (bool, error) {
 	var count int64
-	err := r.db.Model(&entities.TestimoniVolunteer{}).Where("customer_id = ? AND volunteer_id = ?", customerID, volunteerID).Count(&count).Error
+	err := r.db.Model(&entities.TestimoniVolunteer{}).Where("user_id = ? AND vacancy_id = ?", customerID, volunteerID).Count(&count).Error
 	return count > 0, err
 }
