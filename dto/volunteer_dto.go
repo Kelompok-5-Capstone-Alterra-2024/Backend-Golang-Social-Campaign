@@ -67,7 +67,7 @@ func (r *VolunteerRequest) ToEntity(imgUrl string) (entities.Volunteer, error) {
 		TargetVolunteer:      r.TargetVolunteer,
 		RegistrationDeadline: registrationDeadline,
 		ImageURL:             imgUrl,
-		Status:               "aktif",
+		Status:               "active",
 	}, nil
 }
 

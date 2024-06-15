@@ -46,7 +46,7 @@ func (r *donationManualRepository) SaveComment(donationComment entities.Donation
 
 func (r *donationManualRepository) GetCommentsByDonationID(id int) ([]entities.DonationManualComment, error) {
 	var donationComments []entities.DonationManualComment
-	if err := r.db.Preload("DonationManual.User").Preload("DonationManual.Fundraising").Joins("JOIN donation_manuals ON donation_manuals.id = donation_manual_comments.donation_manual_id").Where("donation_manuals.fundraising_id = ? = ?", id).Find(&donationComments).Error; err != nil {
+	if err := r.db.Preload("DonationManual.User").Preload("DonationManual.Fundraising").Joins("JOIN donation_manuals ON donation_manuals.id = donation_manual_comments.donation_manual_id").Where("donation_manuals.fundraising_id = ?", id).Find(&donationComments).Error; err != nil {
 		return donationComments, err
 	}
 

@@ -11,7 +11,7 @@ type TestimoniVolunteerRepository interface {
 	FindByID(id uint) (entities.TestimoniVolunteer, error)
 	FindAll(page, limit int) ([]entities.TestimoniVolunteer, int, error)
 	Delete(id uint) error
-	FindAllByVacancyID(volunteerID uint, limit, offest int) ([]entities.TestimoniVolunteer, error)
+	FindAllByVacancyID(volunteerID uint) ([]entities.TestimoniVolunteer, error)
 	CustomerJoinedVolunteer(customerID, volunteerID uint) (bool, error)
 	HasCustomerGivenTestimony(customerID, volunteerID uint) (bool, error)
 }
@@ -47,10 +47,10 @@ func (r *testimoniVolunteerRepository) Delete(id uint) error {
 	return err
 }
 
-func (r *testimoniVolunteerRepository) FindAllByVacancyID(volunteerID uint, limit, offest int) ([]entities.TestimoniVolunteer, error) {
+func (r *testimoniVolunteerRepository) FindAllByVacancyID(volunteerID uint) ([]entities.TestimoniVolunteer, error) {
 	var testimoniVolunteers []entities.TestimoniVolunteer
 
-	err := r.db.Preload("User").Preload("Volunteer").Order("created_at desc").Offset(offest).Limit(limit).Where("vacancy_id = ?", volunteerID).Find(&testimoniVolunteers).Error
+	err := r.db.Preload("User").Preload("Volunteer").Order("created_at desc").Where("vacancy_id = ?", volunteerID).Find(&testimoniVolunteers).Error
 
 	return testimoniVolunteers, err
 }
