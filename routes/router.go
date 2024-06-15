@@ -214,7 +214,10 @@ func NewRouter(router *echo.Echo) {
 	admin.POST("/articles", articleHandler.CreateArticle)
 	admin.PUT("/articles/:id", articleHandler.UpdateArticle)
 	admin.DELETE("/articles/:id", articleHandler.DeleteArticle)
-
 	admin.GET("/articles/:id/comments", commentHandler.GetCommentsByArticleID)
-	// test
+
+	admin.GET("/data-total-content", adminHandler.GetDataTotalContent)
+	admin.GET("/transactions-daily", adminHandler.GetDailyDonationSummary)
+	admin.GET("/articles-top", adminHandler.GetArticlesOrderedByBookmarks)
+	admin.GET("/volunteers-top", volunteerHandler.GetTopVolunteer)
 }
