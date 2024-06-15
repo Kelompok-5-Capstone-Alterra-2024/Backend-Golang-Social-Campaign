@@ -7,7 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func UserMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+func AdminMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		authorization := c.Request().Header.Get("Authorization")
 		if authorization == "" {
@@ -26,7 +26,7 @@ func UserMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 
 		role, ok := payload["role"].(string)
-		if !ok || role != "user" {
+		if !ok || role != "admin" {
 			return c.JSON(http.StatusUnauthorized, map[string]interface{}{
 				"message": "Unauthorized",
 			})
@@ -36,7 +36,7 @@ func UserMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-// func UserMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+// func AdminMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 // 	return func(c echo.Context) error {
 // 		authorization := c.Request().Header.Get("Authorization")
 // 		if authorization == "" {
@@ -82,7 +82,7 @@ func UserMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 // 				})
 // 			}
 
-// 			if claims.Role != "user" {
+// 			if claims.Role != "admin" {
 // 				return c.JSON(http.StatusUnauthorized, map[string]interface{}{
 // 					"message": "Unauthorized",
 // 				})
@@ -94,27 +94,4 @@ func UserMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 
 // 		return next(c)
 // 	}
-// }
-
-// func RefreshToken(refreshToken string) (string, string, error) {
-// 	// Decode the refresh token
-// 	token, err := jwt.ParseWithClaims(refreshToken, &jwtCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-// 		return []byte(os.Getenv("REFRESH_SECRET_KEY")), nil
-// 	})
-// 	if err != nil {
-// 		return "", "", err
-// 	}
-
-// 	claims, ok := token.Claims.(*jwtCustomClaims)
-// 	if !ok || !token.Valid {
-// 		return "", "", fmt.Errorf("invalid refresh token")
-// 	}
-
-// 	// Generate new access token
-// 	newAccessToken, newRefreshToken, err := GenerateToken(claims.ID, claims.Username, claims.Role)
-// 	if err != nil {
-// 		return "", "", err
-// 	}
-
-// 	return newAccessToken, newRefreshToken, nil
 // }

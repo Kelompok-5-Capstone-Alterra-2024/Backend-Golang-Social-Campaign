@@ -1,40 +1,48 @@
 package helper
 
 import (
-	"crypto/rand"
+	"capstone/entities"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
+	"math/rand"
+
+	"mime/multipart"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/cloudinary/cloudinary-go/v2"
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
+	"github.com/labstack/echo/v4"
+	"github.com/veritrans/go-midtrans"
 	"gopkg.in/gomail.v2"
 )
 
 type generalResponse struct {
-	Status  string `json:"status"`
+	Success bool   `json:"success"`
 	Message string `json:"message"`
 }
 
-func GeneralResponse(status, message string) generalResponse {
+func GeneralResponse(success bool, message string) generalResponse {
 	messageRes := generalResponse{
-		Status:  status,
+		Success: success,
 		Message: message,
 	}
 	return messageRes
 }
 
 type responseWithData struct {
-	Status  string      `json:"status"`
+	Success bool        `json:"success"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 }
 
-func ResponseWithData(status, message string, data interface{}) responseWithData {
+func ResponseWithData(success bool, message string, data interface{}) responseWithData {
 	messageRes := responseWithData{
-		Status:  status,
+		Success: success,
 		Message: message,
 		Data:    data,
 	}
@@ -43,19 +51,64 @@ func ResponseWithData(status, message string, data interface{}) responseWithData
 }
 
 type errorResponse struct {
-	Status  string `json:"status"`
+	Success bool   `json:"success"`
 	Message string `json:"message"`
 	Error   any    `json:"error"`
 }
 
-func ErrorResponse(status, message string, err any) errorResponse {
+func ErrorResponse(success bool, message string, err any) errorResponse {
 	messageRes := errorResponse{
-		Status:  status,
+		Success: success,
 		Message: message,
 		Error:   err,
 	}
 
 	return messageRes
+}
+
+type DataResponse struct {
+	Status  string      `json:"status"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
+}
+
+func NewDataResponse(status string, data interface{}) *DataResponse {
+	return &DataResponse{
+		Status:  status,
+		Message: "success",
+		Data:    data,
+	}
+}
+
+type PaginationResponse struct {
+	Status       string      `json:"status"`
+	Message      string      `json:"message"`
+	Data         interface{} `json:"data"`
+	TotalRecords int64       `json:"total_records"`
+	TotalPages   int         `json:"total_pages"`
+	CurrentPage  int         `json:"current_page"`
+	PageSize     int         `json:"page_size"`
+}
+
+func ResponseWithPagination(status, message string, data interface{}, page, limit int, totalRecords int64) PaginationResponse {
+	totalPages := int((totalRecords + int64(limit) - 1) / int64(limit))
+	return PaginationResponse{
+		Status:       status,
+		Message:      message,
+		Data:         data,
+		TotalRecords: totalRecords,
+		TotalPages:   totalPages,
+		CurrentPage:  page,
+		PageSize:     limit,
+	}
+}
+
+func StringToUint(s string) (uint, error) {
+	id, err := strconv.ParseUint(strings.TrimSpace(s), 10, 32)
+	if err != nil {
+		return 0, err
+	}
+	return uint(id), nil
 }
 
 func GetToken(auth string) string {
@@ -64,7 +117,6 @@ func GetToken(auth string) string {
 }
 
 func DecodePayload(token string) (map[string]interface{}, error) {
-
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {
 		return nil, errors.New("invalid JWT token format")
@@ -85,26 +137,60 @@ func DecodePayload(token string) (map[string]interface{}, error) {
 	return payloadMap, nil
 }
 
-func SendTokenRestPassword(email string, token string) error {
-	port, err := strconv.Atoi(os.Getenv("SMTP_PORT"))
-	if err != nil {
-		return err
+func GetUserIDFromJWT(c echo.Context) (int, error) {
+	authorization := c.Request().Header.Get("Authorization")
+	if authorization == "" {
+		return 0, errors.New("unauthorized")
 	}
 
+	jwtToken := GetToken(authorization)
+
+	jwt_payload, err := DecodePayload(jwtToken)
+	if err != nil {
+		return 0, err
+	}
+
+	// Get user id from jwt payload
+	user_id, ok := jwt_payload["id"].(float64)
+	if !ok {
+		return 0, errors.New("unauthorized")
+	}
+
+	return int(user_id), nil
+}
+
+func SendTokenRestPassword(email string, token string) error {
 	dialer := gomail.NewDialer(
-		os.Getenv("SMTP_HOST"),
-		port,
-		os.Getenv("SMTP_USER"),
-		os.Getenv("SMTP_PASS"),
+		"smtp.gmail.com",
+		587,
+		"hanggoroseto8@gmail.com",
+		"pcxf rviq wvfz nfyy",
 	)
 
-	resetURL := fmt.Sprintf("%s/reset-password?token=%s", "http://localhost:8080", token)
+	resetURL := fmt.Sprintf("%s/reset-password?token=%s", "https://capstone-alterra-424313.as.r.appspot.com/api/v1", token)
 
 	m := gomail.NewMessage()
-	m.SetHeader("From", os.Getenv("SMTP_USER"))
+	m.SetHeader("From", "hanggoroseto8@gmail.com")
 	m.SetHeader("To", email)
 	m.SetHeader("Subject", "Password Reset Request")
 	m.SetBody("text/plain", "Click the link to reset your password: "+resetURL)
+
+	return dialer.DialAndSend(m)
+}
+
+func SendOtpResetPassword(email string, otp string) error {
+	dialer := gomail.NewDialer(
+		"smtp.gmail.com",
+		587,
+		"hanggoroseto8@gmail.com",
+		"pcxf rviq wvfz nfyy",
+	)
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", "hanggoroseto8@gmail.com")
+	m.SetHeader("To", email)
+	m.SetHeader("Subject", "Password Reset Request")
+	m.SetBody("text/plain", "Your OTP is: "+otp)
 
 	return dialer.DialAndSend(m)
 }
@@ -113,4 +199,65 @@ func GenerateToken() string {
 	b := make([]byte, 32)
 	rand.Read(b)
 	return base64.URLEncoding.EncodeToString(b)
+}
+
+func GenerateRandomOTP(otpLent int) string {
+	src := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(src)
+
+	const n = "0123456789"
+
+	otp := make([]byte, otpLent)
+	for i := range otp {
+		otp[i] = n[r.Intn(len(n))]
+	}
+
+	return string(otp)
+}
+func GetPaymentUrl(donation entities.PaymentTransaction, user entities.User) (string, error) {
+	midClient := midtrans.NewClient()
+	server := "SB-Mid-server-x_R3_BBoJmSU_bRRxcBWV9pg"
+	client := "SB-Mid-client-YStDTAnO_VeyBKdH"
+	midClient.ServerKey = server
+	midClient.ClientKey = client
+	midClient.APIEnvType = midtrans.Sandbox
+	orderID := donation.ID
+	snapGateway := midtrans.SnapGateway{
+		Client: midClient,
+	}
+
+	snapReq := &midtrans.SnapReq{
+		CustomerDetail: &midtrans.CustDetail{
+			Email: user.Email,
+			FName: user.Fullname,
+		},
+		TransactionDetails: midtrans.TransactionDetails{
+			OrderID:  strconv.Itoa(orderID),
+			GrossAmt: int64(donation.Amount),
+		},
+		Items: &[]midtrans.ItemDetail{
+			{
+				Name:  donation.FundraisingName,
+				Qty:   1,
+				Price: int64(donation.Amount),
+			},
+		},
+	}
+
+	snapTokenResp, err := snapGateway.GetToken(snapReq)
+	if err != nil {
+		return "", err
+	}
+	return snapTokenResp.RedirectURL, nil
+
+}
+
+func UploadToCloudinary(file *multipart.FileHeader) (string, error) {
+	cld, _ := cloudinary.NewFromURL("cloudinary://633714464826515:u1W6hqq-Gb8y-SMpXe7tzs4mH44@dvrhf8d9t")
+
+	f, _ := file.Open()
+	ctx := context.Background()
+	uploadResult, _ := cld.Upload.Upload(ctx, f, uploader.UploadParams{})
+
+	return uploadResult.SecureURL, nil
 }
