@@ -13,7 +13,7 @@ type AdminRepository interface {
 	DeleteFundraising(id uint) error
 	UpdateFundraisingByID(id uint, fundraising entities.Fundraising) (entities.Fundraising, error)
 	FindFundraisingByID(id int) (entities.Fundraising, error)
-	FindDonationsByFundraisingID(id int, limit int, offset int) ([]entities.Donation, error)
+	FindDonationsByFundraisingID(id int, limit int, offset int) ([]entities.DonationManual, error)
 
 	FindOrganizations(limit int, offset int) ([]entities.Organization, error)
 	FindOrganizationByID(id int) (entities.Organization, error)
@@ -87,10 +87,10 @@ func (r *adminRepository) FindFundraisingByID(id int) (entities.Fundraising, err
 	return fundraising, nil
 }
 
-func (r *adminRepository) FindDonationsByFundraisingID(id int, limit int, offset int) ([]entities.Donation, error) {
-	var donations []entities.Donation
+func (r *adminRepository) FindDonationsByFundraisingID(id int, limit int, offset int) ([]entities.DonationManual, error) {
+	var donations []entities.DonationManual
 	if err := r.db.Preload("User").Preload("Fundraising").Where("fundraising_id = ?", id).Limit(limit).Offset(offset).Find(&donations).Error; err != nil {
-		return []entities.Donation{}, err
+		return []entities.DonationManual{}, err
 	}
 	return donations, nil
 }

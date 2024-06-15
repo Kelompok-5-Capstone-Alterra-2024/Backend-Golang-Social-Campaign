@@ -69,20 +69,20 @@ type AdminFundraisingDonationResponse struct {
 	FundraisingDescription string `json:"fundraising_description"`
 }
 
-func ToAdminFundraisingDonationResponse(donation entities.Donation) AdminFundraisingDonationResponse {
+func ToAdminFundraisingDonationResponse(donation entities.DonationManual) AdminFundraisingDonationResponse {
 	return AdminFundraisingDonationResponse{
 		ID:                     donation.ID,
 		FundraisingID:          donation.FundraisingID,
 		UserID:                 donation.UserID,
 		UserName:               donation.User.Fullname,
 		CurrentAmount:          donation.Fundraising.CurrentProgress,
-		PaymentMethod:          donation.PaymentMethod,
+		PaymentMethod:          "Transfer Bank",
 		DonatedDate:            donation.CreatedAt.Format("2006-01-02"),
 		FundraisingDescription: donation.Fundraising.Description,
 	}
 }
 
-func ToAdminAllFundraisingDonationResponse(donations []entities.Donation) []AdminFundraisingDonationResponse {
+func ToAdminAllFundraisingDonationResponse(donations []entities.DonationManual) []AdminFundraisingDonationResponse {
 	var result []AdminFundraisingDonationResponse
 	for _, donation := range donations {
 		result = append(result, ToAdminFundraisingDonationResponse(donation))

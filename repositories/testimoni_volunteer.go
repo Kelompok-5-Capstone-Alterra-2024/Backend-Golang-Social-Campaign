@@ -50,7 +50,7 @@ func (r *testimoniVolunteerRepository) Delete(id uint) error {
 func (r *testimoniVolunteerRepository) FindAllByVacancyID(volunteerID uint, limit, offest int) ([]entities.TestimoniVolunteer, error) {
 	var testimoniVolunteers []entities.TestimoniVolunteer
 
-	err := r.db.Preload("User").Preload("Vacancy").Order("created_at desc").Offset(offest).Limit(limit).Where("vacancy_id = ?", volunteerID).Find(&testimoniVolunteers).Error
+	err := r.db.Preload("User").Preload("Volunteer").Order("created_at desc").Offset(offest).Limit(limit).Where("vacancy_id = ?", volunteerID).Find(&testimoniVolunteers).Error
 
 	return testimoniVolunteers, err
 }

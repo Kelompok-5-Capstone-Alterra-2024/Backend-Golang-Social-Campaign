@@ -67,8 +67,8 @@ type FundraisingOrg struct {
 }
 
 type UserDonatedResponse struct {
-	UserAvatarDonatedResponse UserAvatarDonatedResponse `json:"user_avatar_donated"`
-	TotalUserDonated          int                       `json:"total_user_donated"`
+	UserAvatarDonatedResponse []UserAvatarDonatedResponse `json:"user_avatar_donated"`
+	TotalUserDonated          int                         `json:"total_user_donated"`
 }
 
 type UserAvatarDonatedResponse struct {
@@ -95,14 +95,16 @@ func ToFundraisingResponse(fundraising entities.Fundraising, comments []entities
 		uniqueUserAvatars[donation.UserID] = donation.User.Avatar
 	}
 
-	// Get the avatar of the first unique user who donated
-	var userAvatarDonatedResponse UserAvatarDonatedResponse
+	// Get the avatar of the first four unique user who donated
+	userAvatarDonatedResponse := []UserAvatarDonatedResponse{}
 	for userID, avatar := range uniqueUserAvatars {
-		userAvatarDonatedResponse = UserAvatarDonatedResponse{
+		if len(userAvatarDonatedResponse) == 4 {
+			break
+		}
+		userAvatarDonatedResponse = append(userAvatarDonatedResponse, UserAvatarDonatedResponse{
 			UserID: userID,
 			Avatar: avatar,
-		}
-		break
+		})
 	}
 
 	userDonatedResponse := UserDonatedResponse{

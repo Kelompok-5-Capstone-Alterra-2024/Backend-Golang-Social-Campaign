@@ -18,7 +18,7 @@ type AdminService interface {
 	DeleteFundraising(id uint) error
 	UpdateFundraising(id uint, fundraising entities.Fundraising) (entities.Fundraising, error)
 	GetFundraisingByID(id int) (entities.Fundraising, error)
-	GetDonationByFundraisingID(id int, limit int, offset int) ([]entities.Donation, error)
+	GetDonationByFundraisingID(id int, limit int, offset int) ([]entities.DonationManual, error)
 
 	GetOrganizations(limit int, offset int) ([]entities.Organization, error)
 	GetOrganizationByID(id int) (entities.Organization, error)
@@ -121,7 +121,7 @@ func (s *adminService) GetFundraisingByID(id int) (entities.Fundraising, error) 
 	return s.adminRepository.FindFundraisingByID(id)
 }
 
-func (s *adminService) GetDonationByFundraisingID(id int, limit int, offset int) ([]entities.Donation, error) {
+func (s *adminService) GetDonationByFundraisingID(id int, limit int, offset int) ([]entities.DonationManual, error) {
 	return s.adminRepository.FindDonationsByFundraisingID(id, limit, offset)
 }
 
