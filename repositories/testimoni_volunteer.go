@@ -31,7 +31,7 @@ func (r *testimoniVolunteerRepository) Create(testimoniVolunteer entities.Testim
 
 func (r *testimoniVolunteerRepository) FindByID(id uint) (entities.TestimoniVolunteer, error) {
 	var testimoniVolunteer entities.TestimoniVolunteer
-	err := r.db.First(&testimoniVolunteer, id).Error
+	err := r.db.Preload("User").Preload("Volunteer").First(&testimoniVolunteer, id).Error
 	return testimoniVolunteer, err
 }
 

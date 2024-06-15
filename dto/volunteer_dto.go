@@ -110,7 +110,7 @@ func ToVolunteerTestimoniResponse(testimoni entities.TestimoniVolunteer) Volunte
 		UserTestimoni: ToUserCommentResponse(testimoni.User),
 		Body:          testimoni.Testimoni,
 		Rating:        testimoni.Rating,
-		CreatedAt:     testimoni.CreatedAt.String(),
+		CreatedAt:     testimoni.CreatedAt.Format("2006-01-02"),
 	}
 }
 
