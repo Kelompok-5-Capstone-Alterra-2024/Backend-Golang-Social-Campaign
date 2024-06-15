@@ -37,6 +37,9 @@ type AdminService interface {
 
 	GetAllDonations(page, limit int) ([]entities.DonationManual, int, error)
 	AddAmountToUserDonation(id uint, amount int) (entities.DonationManual, error)
+
+	GetDailyDonationSummary() (map[string]float64, error)
+	GetDataTotalContent() (map[string]interface{}, error)
 }
 
 type adminService struct {
@@ -218,5 +221,52 @@ func (s *adminService) AddAmountToUserDonation(id uint, amount int) (entities.Do
 	}
 
 	return entities.DonationManual{}, nil
+
+}
+
+func (s *adminService) GetDailyDonationSummary() (map[string]float64, error) {
+	donation, err := s.adminRepository.FindDonationsLastSevenDays()
+
+	if err != nil {
+		return nil, err
+	}
+
+	dailySummary := make(map[string]float64)
+	for _, d := range donation {
+		date := d.CreatedAt.Format("2006-01-02")
+		dailySummary[date] += float64(d.Amount)
+	}
+
+	return dailySummary, nil
+
+}
+
+func (s *adminService) GetDataTotalContent() (map[string]interface{}, error) {
+	totalTotalAmountDonations, err := s.adminRepository.GetTotalAmountDonations()
+	if err != nil {
+		return nil, err
+	}
+
+	totalUserVolunteers, err := s.adminRepository.GetTotalUserVolunteers()
+	if err != nil {
+		return nil, err
+	}
+
+	totalArticles, err := s.adminRepository.GetTotalArticles()
+	if err != nil {
+		return nil, err
+	}
+
+	totalDonations, err := s.adminRepository.GetTotalDonations()
+	if err != nil {
+		return nil, err
+	}
+
+	return map[string]interface{}{
+		"total_total_amount_donations": totalTotalAmountDonations,
+		"total_user_volunteers":        totalUserVolunteers,
+		"total_articles":               totalArticles,
+		"total_transaction":            totalDonations,
+	}, nil
 
 }

@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"capstone/entities"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -32,6 +33,13 @@ type AdminRepository interface {
 	FindAllDonations(page, limit int) ([]entities.DonationManual, int, error)
 	AddAmountToUserDonation(id uint, amount int) (entities.DonationManual, error)
 	FindFundraisingByDonationID(id int) (entities.Fundraising, error)
+
+	// Dashboard
+	FindDonationsLastSevenDays() ([]entities.DonationManual, error)
+	GetTotalAmountDonations() (int, error)
+	GetTotalUserVolunteers() (int, error)
+	GetTotalArticles() (int, error)
+	GetTotalDonations() (int, error)
 }
 
 type adminRepository struct {
@@ -97,7 +105,7 @@ func (r *adminRepository) FindDonationsByFundraisingID(id int, limit int, offset
 
 func (r *adminRepository) FindOrganizations(limit int, offset int) ([]entities.Organization, error) {
 	var organizations []entities.Organization
-	if err := r.db.Limit(limit).Offset(offset).Find(&organizations).Error; err != nil {
+	if err := r.db.Limit(limit).Offset(offset).Order("created_at desc").Find(&organizations).Error; err != nil {
 		return []entities.Organization{}, err
 	}
 	return organizations, nil
@@ -222,7 +230,7 @@ func (r *adminRepository) FindAllDonations(page int, limit int) ([]entities.Dona
 
 func (r *adminRepository) AddAmountToUserDonation(id uint, amount int) (entities.DonationManual, error) {
 	var donation entities.DonationManual
-	if err := r.db.Model(&donation).Where("id = ?", id).Update("amount", amount).Updates(map[string]interface{}{"status": "success"}).Error; err != nil {
+	if err := r.db.Model(&donation).Where("id = ?", id).Update("amount", amount).Updates(map[string]interface{}{"status": "sukses"}).Error; err != nil {
 		return entities.DonationManual{}, err
 	}
 	return donation, nil
@@ -235,4 +243,44 @@ func (r *adminRepository) FindFundraisingByDonationID(id int) (entities.Fundrais
 		return entities.Fundraising{}, err
 	}
 	return donation.Fundraising, nil
+}
+
+func (r *adminRepository) FindDonationsLastSevenDays() ([]entities.DonationManual, error) {
+	var donations []entities.DonationManual
+	if err := r.db.Where("created_at > ?", time.Now().AddDate(0, 0, -7)).Where("status = ?", "sukses").Find(&donations).Error; err != nil {
+		return []entities.DonationManual{}, err
+	}
+	return donations, nil
+}
+
+func (r *adminRepository) GetTotalAmountDonations() (int, error) {
+	var total int64
+	if err := r.db.Model(&entities.DonationManual{}).Select("SUM(amount)").Scan(&total).Error; err != nil {
+		return 0, err
+	}
+	return int(total), nil
+}
+
+func (r *adminRepository) GetTotalUserVolunteers() (int, error) {
+	var total int64
+	if err := r.db.Model(&entities.Application{}).Select("COUNT(id)").Scan(&total).Error; err != nil {
+		return 0, err
+	}
+	return int(total), nil
+}
+
+func (r *adminRepository) GetTotalArticles() (int, error) {
+	var total int64
+	if err := r.db.Model(&entities.Article{}).Select("COUNT(id)").Scan(&total).Error; err != nil {
+		return 0, err
+	}
+	return int(total), nil
+}
+
+func (r *adminRepository) GetTotalDonations() (int, error) {
+	var total int64
+	if err := r.db.Model(&entities.DonationManual{}).Select("COUNT(id)").Scan(&total).Error; err != nil {
+		return 0, err
+	}
+	return int(total), nil
 }
