@@ -40,6 +40,7 @@ type AdminRepository interface {
 	GetTotalUserVolunteers() (int, error)
 	GetTotalArticles() (int, error)
 	GetTotalDonations() (int, error)
+	GetArticlesOrderedByBookmarks(page, limit int) ([]entities.Article, []int, int, error)
 }
 
 type adminRepository struct {
@@ -283,4 +284,43 @@ func (r *adminRepository) GetTotalDonations() (int, error) {
 		return 0, err
 	}
 	return int(total), nil
+}
+
+func (r *adminRepository) GetArticlesOrderedByBookmarks(page, limit int) ([]entities.Article, []int, int, error) {
+
+	var articles []entities.Article
+	var bookmarkCounts []int
+	var total int64
+
+	offset := (page - 1) * limit
+
+	rows, err := r.db.Table("articles").
+		Select("articles.*, COUNT(user_bookmark_articles.id) as bookmark_count").
+		Joins("LEFT JOIN user_bookmark_articles ON user_bookmark_articles.article_id = articles.id").
+		Group("articles.id").
+		Order("bookmark_count DESC").
+		Offset(offset).
+		Limit(limit).
+		Rows()
+	if err != nil {
+		return nil, nil, 0, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var article entities.Article
+		var bookmarkCount int
+		r.db.ScanRows(rows, &article)
+		rows.Scan(&bookmarkCount)
+		articles = append(articles, article)
+		bookmarkCounts = append(bookmarkCounts, bookmarkCount)
+	}
+
+	err = r.db.Model(&entities.Article{}).Count(&total).Error
+	if err != nil {
+		return nil, nil, 0, err
+	}
+
+	return articles, bookmarkCounts, int(total), nil
+
 }

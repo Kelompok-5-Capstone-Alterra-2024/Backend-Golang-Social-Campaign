@@ -40,6 +40,7 @@ type AdminService interface {
 
 	GetDailyDonationSummary() (map[string]float64, error)
 	GetDataTotalContent() (map[string]interface{}, error)
+	GetArticlesOrderedByBookmarks(page, limit int) ([]entities.Article, []int, int, error)
 }
 
 type adminService struct {
@@ -269,4 +270,8 @@ func (s *adminService) GetDataTotalContent() (map[string]interface{}, error) {
 		"total_transaction":            totalDonations,
 	}, nil
 
+}
+
+func (s *adminService) GetArticlesOrderedByBookmarks(page, limit int) ([]entities.Article, []int, int, error) {
+	return s.adminRepository.GetArticlesOrderedByBookmarks(page, limit)
 }
