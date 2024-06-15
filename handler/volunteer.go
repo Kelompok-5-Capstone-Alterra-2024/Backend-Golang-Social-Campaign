@@ -62,7 +62,7 @@ func (h *VolunteerHandler) GetVolunteerByID(c echo.Context) error {
 
 	applications, _, err := h.applicationService.GetApplicationByVacancyID(uint(id), 1, 4)
 
-	testimoni, err := h.testimoniVolunteerService.FindAllByVacancyID(uint(id), 1, 4)
+	testimoni, err := h.testimoniVolunteerService.FindAllByVacancyID(uint(id), 0, 0)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, helper.ErrorResponse(false, "volunteer not found", err.Error()))
 	}
