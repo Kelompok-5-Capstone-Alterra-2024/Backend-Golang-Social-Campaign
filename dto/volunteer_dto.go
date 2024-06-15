@@ -11,6 +11,7 @@ type VolunteerRequest struct {
 	Title                string `json:"title" form:"title"`
 	ContentActivity      string `json:"content_activity" form:"content_activity"`
 	Location             string `json:"location" form:"location"`
+	LinkWA               string `json:"link_wa" form:"link_wa"`
 	StarDate             string `json:"start_date" form:"start_date"`
 	EndDate              string `json:"end_date" form:"end_date"`
 	TargetVolunteer      int    `json:"target_volunteer" form:"target_volunteer"`
@@ -60,12 +61,13 @@ func (r *VolunteerRequest) ToEntity(imgUrl string) (entities.Volunteer, error) {
 		Title:                r.Title,
 		ContentActivity:      r.ContentActivity,
 		Location:             r.Location,
+		LinkWA:               r.LinkWA,
 		StartDate:            startDate,
 		EndDate:              endDate,
 		TargetVolunteer:      r.TargetVolunteer,
 		RegistrationDeadline: registrationDeadline,
 		ImageURL:             imgUrl,
-		Status:               "active",
+		Status:               "aktif",
 	}, nil
 }
 
