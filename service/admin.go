@@ -243,7 +243,7 @@ func (s *adminService) GetDailyDonationSummary() (map[string]float64, error) {
 }
 
 func (s *adminService) GetDataTotalContent() (map[string]interface{}, error) {
-	totalTotalAmountDonations, err := s.adminRepository.GetTotalAmountDonations()
+	totalAmountDonations, err := s.adminRepository.GetTotalAmountDonations()
 	if err != nil {
 		return nil, err
 	}
@@ -263,15 +263,53 @@ func (s *adminService) GetDataTotalContent() (map[string]interface{}, error) {
 		return nil, err
 	}
 
-	return map[string]interface{}{
-		"total_total_amount_donations": totalTotalAmountDonations,
-		"total_user_volunteers":        totalUserVolunteers,
-		"total_articles":               totalArticles,
-		"total_transaction":            totalDonations,
-	}, nil
+	previousDonationsAmount, err := s.adminRepository.GetDonationsAmountForPreviousDay()
+	if err != nil {
+		return nil, err
+	}
+
+	previousVolunteers, err := s.adminRepository.GetVolunteersForPreviousDay()
+	if err != nil {
+		return nil, err
+	}
+
+	previousArticles, err := s.adminRepository.GetArticlesForPreviousDay()
+	if err != nil {
+		return nil, err
+	}
+
+	previousDonations, err := s.adminRepository.GetDonationsForPreviousDay()
+	if err != nil {
+		return nil, err
+	}
+
+	donationAmountChange := calculatePercentageChange(float64(totalAmountDonations), previousDonationsAmount)
+	donationChange := calculatePercentageChange(float64(totalDonations), float64(previousDonations))
+	volunteerChange := calculatePercentageChange(float64(totalUserVolunteers), float64(previousVolunteers))
+	articleChange := calculatePercentageChange(float64(totalArticles), float64(previousArticles))
+
+	data := map[string]interface{}{
+		"total_donations_amount": totalAmountDonations,
+		"donation_amount_change": fmt.Sprintf("%.2f%%", donationAmountChange),
+		"total_user_volunteers":  totalUserVolunteers,
+		"volunteer_user_change":  fmt.Sprintf("%.2f%%", volunteerChange),
+		"total_articles":         totalArticles,
+		"article_change":         fmt.Sprintf("%.2f%%", articleChange),
+		"total_donations":        totalDonations,
+		"donation_change":        fmt.Sprintf("%.2f%%", donationChange),
+	}
+
+	return data, nil
 
 }
 
 func (s *adminService) GetArticlesOrderedByBookmarks(page, limit int) ([]entities.Article, []int, int, error) {
 	return s.adminRepository.GetArticlesOrderedByBookmarks(page, limit)
+}
+
+func calculatePercentageChange(current, previous float64) float64 {
+	if previous == 0 {
+		return 0
+	}
+	return ((current - previous) / previous) * 100
 }
