@@ -672,3 +672,11 @@ func (h *AdminHandler) GetArticlesOrderedByBookmarks(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "articles retrieved successfully", response))
 
 }
+
+func (h *AdminHandler) GetCategoriesWithCount(c echo.Context) error {
+	categories, err := h.adminService.GetCategoriesWithCount()
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get categories", err.Error()))
+	}
+	return c.JSON(http.StatusOK, categories)
+}

@@ -42,6 +42,7 @@ type AdminService interface {
 	GetDailyTransactionStats() ([]map[string]interface{}, error)
 	GetDataTotalContent() (map[string]interface{}, error)
 	GetArticlesOrderedByBookmarks(limit int) ([]entities.ArticleWithBookmarkCount, error)
+	GetCategoriesWithCount() ([]entities.FundraisingCategoryWithCount, error)
 }
 
 type adminService struct {
@@ -323,4 +324,8 @@ func calculatePercentageChange(current, previous float64) float64 {
 		return 100
 	}
 	return ((current - previous) / previous) * 100
+}
+
+func (s *adminService) GetCategoriesWithCount() ([]entities.FundraisingCategoryWithCount, error) {
+	return s.adminRepository.GetCategoriesWithCount()
 }

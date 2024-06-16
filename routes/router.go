@@ -222,4 +222,5 @@ func NewRouter(router *echo.Echo) {
 	admin.GET("/transactions-daily", adminHandler.GetDailyDonationSummary)
 	admin.GET("/articles-top", adminHandler.GetArticlesOrderedByBookmarks)
 	admin.GET("/volunteers-top", volunteerHandler.GetTopVolunteer)
+	admin.GET("/categories-top", adminHandler.GetCategoriesWithCount)
 }

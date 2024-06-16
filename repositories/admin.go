@@ -46,6 +46,7 @@ type AdminRepository interface {
 	GetVolunteersForPreviousDay() (int64, error)
 	GetArticlesForPreviousDay() (int64, error)
 	GetDonationsForPreviousDay() (int64, error)
+	GetCategoriesWithCount() ([]entities.FundraisingCategoryWithCount, error)
 }
 
 type adminRepository struct {
@@ -395,4 +396,16 @@ func (r *adminRepository) GetArticlesOrderedByBookmarks(limit int) ([]entities.A
 
 	return topArticles, nil
 
+}
+
+func (r *adminRepository) GetCategoriesWithCount() ([]entities.FundraisingCategoryWithCount, error) {
+	var results []entities.FundraisingCategoryWithCount
+	err := r.db.Raw(`
+		SELECT fundraising_categories.id, fundraising_categories.name, COUNT(fundraisings.id) as count
+		FROM fundraising_categories
+		LEFT JOIN fundraisings ON fundraisings.fundraising_category_id = fundraising_categories.id
+		GROUP BY fundraising_categories.id
+		ORDER BY count DESC
+	`).Scan(&results).Error
+	return results, err
 }

@@ -26,3 +26,8 @@ type FundraisingCategory struct {
 	gorm.Model
 	Name string `json:"name" gorm:"type:varchar(255)"`
 }
+
+type FundraisingCategoryWithCount struct {
+	Category FundraisingCategory
+	Count    int
+}
