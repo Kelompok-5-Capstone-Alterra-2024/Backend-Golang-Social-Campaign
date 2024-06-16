@@ -657,6 +657,18 @@ func (h *AdminHandler) GetArticlesOrderedByBookmarks(c echo.Context) error {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to get articles", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "articles retrieved successfully", articles))
+	response := make([]map[string]interface{}, 0)
+	for _, article := range articles {
+		articleData := map[string]interface{}{
+			"id":             article.ID,
+			"title":          article.Title,
+			"content":        article.Content,
+			"image_url":      article.ImageURL,
+			"bookmark_count": article.BookmarkCount,
+		}
+		response = append(response, articleData)
+	}
+
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "articles retrieved successfully", response))
 
 }
