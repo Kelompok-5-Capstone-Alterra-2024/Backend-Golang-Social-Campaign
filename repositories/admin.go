@@ -41,7 +41,7 @@ type AdminRepository interface {
 	GetTotalUserVolunteers() (int, error)
 	GetTotalArticles() (int, error)
 	GetTotalDonations() (int, error)
-	GetArticlesOrderedByBookmarks(page, limit int) ([]entities.Article, []int, int, error)
+	GetArticlesOrderedByBookmarks(limit int) ([]entities.Article, error)
 	GetDonationsAmountForPreviousDay() (float64, error)
 	GetVolunteersForPreviousDay() (int64, error)
 	GetArticlesForPreviousDay() (int64, error)
@@ -376,41 +376,23 @@ func (r *adminRepository) GetArticlesForPreviousDay() (int64, error) {
 	return total, nil
 }
 
-func (r *adminRepository) GetArticlesOrderedByBookmarks(page, limit int) ([]entities.Article, []int, int, error) {
+func (r *adminRepository) GetArticlesOrderedByBookmarks(limit int) ([]entities.Article, error) {
 
-	var articles []entities.Article
-	var bookmarkCounts []int
-	var total int64
+	var topArticles []entities.Article
 
-	offset := (page - 1) * limit
-
-	rows, err := r.db.Table("articles").
-		Select("articles.*, COUNT(user_bookmark_articles.id) as bookmark_count").
-		Joins("LEFT JOIN user_bookmark_articles ON user_bookmark_articles.article_id = articles.id").
+	// Query untuk mengambil artikel beserta jumlah bookmarknya
+	result := r.db.Table("articles").
+		Select("articles.*, COUNT(user_bookmark_articles.article_id) AS bookmark_count").
+		Joins("LEFT JOIN user_bookmark_articles ON articles.id = user_bookmark_articles.article_id").
 		Group("articles.id").
 		Order("bookmark_count DESC").
-		Offset(offset).
 		Limit(limit).
-		Rows()
-	if err != nil {
-		return nil, nil, 0, err
-	}
-	defer rows.Close()
+		Scan(&topArticles)
 
-	for rows.Next() {
-		var article entities.Article
-		var bookmarkCount int
-		r.db.ScanRows(rows, &article)
-		rows.Scan(&bookmarkCount)
-		articles = append(articles, article)
-		bookmarkCounts = append(bookmarkCounts, bookmarkCount)
+	if result.Error != nil {
+		return nil, result.Error
 	}
 
-	err = r.db.Model(&entities.Article{}).Count(&total).Error
-	if err != nil {
-		return nil, nil, 0, err
-	}
-
-	return articles, bookmarkCounts, int(total), nil
+	return topArticles, nil
 
 }

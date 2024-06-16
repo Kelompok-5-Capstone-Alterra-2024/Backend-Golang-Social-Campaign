@@ -41,7 +41,7 @@ type AdminService interface {
 	GetDailyDonationSummary() (map[string]float64, error)
 	GetDailyTransactionStats() ([]map[string]interface{}, error)
 	GetDataTotalContent() (map[string]interface{}, error)
-	GetArticlesOrderedByBookmarks(page, limit int) ([]entities.Article, []int, int, error)
+	GetArticlesOrderedByBookmarks(limit int) ([]entities.Article, error)
 }
 
 type adminService struct {
@@ -310,8 +310,9 @@ func (s *adminService) GetDataTotalContent() (map[string]interface{}, error) {
 
 }
 
-func (s *adminService) GetArticlesOrderedByBookmarks(page, limit int) ([]entities.Article, []int, int, error) {
-	return s.adminRepository.GetArticlesOrderedByBookmarks(page, limit)
+func (s *adminService) GetArticlesOrderedByBookmarks(limit int) ([]entities.Article, error) {
+
+	return s.adminRepository.GetArticlesOrderedByBookmarks(limit)
 }
 
 func calculatePercentageChange(current, previous float64) float64 {
