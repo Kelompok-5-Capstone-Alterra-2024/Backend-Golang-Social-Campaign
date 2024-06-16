@@ -39,6 +39,7 @@ type AdminService interface {
 	AddAmountToUserDonation(id uint, amount int) (entities.DonationManual, error)
 
 	GetDailyDonationSummary() (map[string]float64, error)
+	GetDailyTransactionStats() ([]map[string]interface{}, error)
 	GetDataTotalContent() (map[string]interface{}, error)
 	GetArticlesOrderedByBookmarks(page, limit int) ([]entities.Article, []int, int, error)
 }
@@ -232,6 +233,7 @@ func (s *adminService) GetDailyDonationSummary() (map[string]float64, error) {
 		return nil, err
 	}
 
+	// data per hari dalam rentang 7 hari terakhir
 	dailySummary := make(map[string]float64)
 	for _, d := range donation {
 		date := d.CreatedAt.Format("2006-01-02")
@@ -240,6 +242,11 @@ func (s *adminService) GetDailyDonationSummary() (map[string]float64, error) {
 
 	return dailySummary, nil
 
+}
+
+func (s *adminService) GetDailyTransactionStats() ([]map[string]interface{}, error) {
+
+	return s.adminRepository.GetDailyTransactionStats()
 }
 
 func (s *adminService) GetDataTotalContent() (map[string]interface{}, error) {
@@ -309,7 +316,10 @@ func (s *adminService) GetArticlesOrderedByBookmarks(page, limit int) ([]entitie
 
 func calculatePercentageChange(current, previous float64) float64 {
 	if previous == 0 {
-		return 0
+		if current == 0 {
+			return 0
+		}
+		return 100
 	}
 	return ((current - previous) / previous) * 100
 }

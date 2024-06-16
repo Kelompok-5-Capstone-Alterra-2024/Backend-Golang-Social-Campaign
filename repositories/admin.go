@@ -36,6 +36,7 @@ type AdminRepository interface {
 
 	// Dashboard
 	FindDonationsLastSevenDays() ([]entities.DonationManual, error)
+	GetDailyTransactionStats() ([]map[string]interface{}, error)
 	GetTotalAmountDonations() (int, error)
 	GetTotalUserVolunteers() (int, error)
 	GetTotalArticles() (int, error)
@@ -258,6 +259,39 @@ func (r *adminRepository) FindDonationsLastSevenDays() ([]entities.DonationManua
 	return donations, nil
 }
 
+func (r *adminRepository) GetDailyTransactionStats() ([]map[string]interface{}, error) {
+	var results []map[string]interface{}
+
+	// Query to get total transactions per day for the last 7 days
+	query := `
+        SELECT DATE(created_at) as date, SUM(amount) as total_amount
+        FROM donation_manuals
+        WHERE created_at >= ? AND status = 'sukses'
+        GROUP BY DATE(created_at)
+        ORDER BY DATE(created_at) ASC
+    `
+
+	rows, err := r.db.Raw(query, time.Now().AddDate(0, 0, -7)).Rows()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var date time.Time
+		var totalAmount float64
+		if err := rows.Scan(&date, &totalAmount); err != nil {
+			return nil, err
+		}
+		results = append(results, map[string]interface{}{
+			"date":         date,
+			"total_amount": totalAmount,
+		})
+	}
+
+	return results, nil
+}
+
 func (r *adminRepository) GetTotalAmountDonations() (int, error) {
 	var total int64
 	if err := r.db.Model(&entities.DonationManual{}).Select("SUM(amount)").Scan(&total).Error; err != nil {
@@ -292,25 +326,11 @@ func (r *adminRepository) GetTotalDonations() (int, error) {
 
 func (r *adminRepository) GetDonationsAmountForPreviousDay() (float64, error) {
 	var total float64
-	err := r.db.Raw(`SELECT SUM(amount) FROM donation_manuals WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 1 DAY) AND created_at < CURDATE()`).Scan(&total).Error
-	if err != nil {
-		return 0, err
-	}
-	return total, nil
-}
-
-func (r *adminRepository) GetVolunteersForPreviousDay() (int64, error) {
-	var total int64
-	err := r.db.Raw(`SELECT COUNT(*) FROM applications WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 1 DAY) AND created_at < CURDATE()`).Scan(&total).Error
-	if err != nil {
-		return 0, err
-	}
-	return total, nil
-}
-
-func (r *adminRepository) GetArticlesForPreviousDay() (int64, error) {
-	var total int64
-	err := r.db.Raw(`SELECT COUNT(*) FROM articles WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 1 DAY) AND created_at < CURDATE()`).Scan(&total).Error
+	err := r.db.Raw(`
+        SELECT IFNULL(SUM(amount), 0)
+        FROM donations 
+        WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+    `).Scan(&total).Error
 	if err != nil {
 		return 0, err
 	}
@@ -319,7 +339,37 @@ func (r *adminRepository) GetArticlesForPreviousDay() (int64, error) {
 
 func (r *adminRepository) GetDonationsForPreviousDay() (int64, error) {
 	var total int64
-	err := r.db.Raw(`SELECT COUNT(*) FROM donation_manuals WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 1 DAY) AND created_at < CURDATE()`).Scan(&total).Error
+	err := r.db.Raw(`
+        SELECT IFNULL(COUNT(*), 0) 
+        FROM donations 
+        WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+    `).Scan(&total).Error
+	if err != nil {
+		return 0, err
+	}
+	return total, nil
+}
+
+func (r *adminRepository) GetVolunteersForPreviousDay() (int64, error) {
+	var total int64
+	err := r.db.Raw(`
+        SELECT IFNULL(COUNT(*), 0)
+        FROM volunteers 
+        WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+    `).Scan(&total).Error
+	if err != nil {
+		return 0, err
+	}
+	return total, nil
+}
+
+func (r *adminRepository) GetArticlesForPreviousDay() (int64, error) {
+	var total int64
+	err := r.db.Raw(`
+        SELECT IFNULL(COUNT(*), 0) 
+        FROM articles 
+        WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+    `).Scan(&total).Error
 	if err != nil {
 		return 0, err
 	}
