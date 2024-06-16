@@ -651,28 +651,12 @@ func (h *AdminHandler) GetDataTotalContent(c echo.Context) error {
 }
 
 func (h *AdminHandler) GetArticlesOrderedByBookmarks(c echo.Context) error {
-	page := c.QueryParam("page")
-	limit := c.QueryParam("limit")
 
-	pageInt, _ := strconv.Atoi(page)
-	limitInt, _ := strconv.Atoi(limit)
-
-	articles, bookmarkCounts, _, err := h.adminService.GetArticlesOrderedByBookmarks(pageInt, limitInt)
+	articles, err := h.adminService.GetArticlesOrderedByBookmarks(3)
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to get articles", err.Error()))
 	}
 
-	// Create a custom response format
-	response := make([]map[string]interface{}, len(articles))
-	for i, article := range articles {
-		response[i] = map[string]interface{}{
-			"image":          article.ImageURL,
-			"title":          article.Title,
-			"content":        article.Content,
-			"bookmark_count": bookmarkCounts[i],
-		}
-	}
-
-	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "articles retrieved successfully", response))
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "articles retrieved successfully", articles))
 
 }
