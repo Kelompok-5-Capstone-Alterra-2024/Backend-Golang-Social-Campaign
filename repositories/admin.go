@@ -41,7 +41,7 @@ type AdminRepository interface {
 	GetTotalUserVolunteers() (int, error)
 	GetTotalArticles() (int, error)
 	GetTotalDonations() (int, error)
-	GetArticlesOrderedByBookmarks(limit int) ([]entities.Article, error)
+	GetArticlesOrderedByBookmarks(limit int) ([]entities.ArticleWithBookmarkCount, error)
 	GetDonationsAmountForPreviousDay() (float64, error)
 	GetVolunteersForPreviousDay() (int64, error)
 	GetArticlesForPreviousDay() (int64, error)
@@ -376,9 +376,9 @@ func (r *adminRepository) GetArticlesForPreviousDay() (int64, error) {
 	return total, nil
 }
 
-func (r *adminRepository) GetArticlesOrderedByBookmarks(limit int) ([]entities.Article, error) {
+func (r *adminRepository) GetArticlesOrderedByBookmarks(limit int) ([]entities.ArticleWithBookmarkCount, error) {
 
-	var topArticles []entities.Article
+	var topArticles []entities.ArticleWithBookmarkCount
 
 	// Query untuk mengambil artikel beserta jumlah bookmarknya
 	result := r.db.Table("articles").

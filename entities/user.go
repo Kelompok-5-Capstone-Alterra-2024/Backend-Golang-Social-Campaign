@@ -41,6 +41,11 @@ type UserBookmarkArticle struct {
 	Article   Article `json:"article" gorm:"foreignKey:ArticleID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
 }
 
+type ArticleWithBookmarkCount struct {
+	Article
+	BookmarkCount int `json:"bookmark_count"`
+}
+
 // type OTP struct {
 // 	gorm.Model
 // 	UserID     int    `json:"user_id" gorm:"index;unique"`

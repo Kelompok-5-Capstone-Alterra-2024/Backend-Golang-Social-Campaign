@@ -41,7 +41,7 @@ type AdminService interface {
 	GetDailyDonationSummary() (map[string]float64, error)
 	GetDailyTransactionStats() ([]map[string]interface{}, error)
 	GetDataTotalContent() (map[string]interface{}, error)
-	GetArticlesOrderedByBookmarks(limit int) ([]entities.Article, error)
+	GetArticlesOrderedByBookmarks(limit int) ([]entities.ArticleWithBookmarkCount, error)
 }
 
 type adminService struct {
@@ -310,7 +310,7 @@ func (s *adminService) GetDataTotalContent() (map[string]interface{}, error) {
 
 }
 
-func (s *adminService) GetArticlesOrderedByBookmarks(limit int) ([]entities.Article, error) {
+func (s *adminService) GetArticlesOrderedByBookmarks(limit int) ([]entities.ArticleWithBookmarkCount, error) {
 
 	return s.adminRepository.GetArticlesOrderedByBookmarks(limit)
 }
