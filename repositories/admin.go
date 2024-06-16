@@ -328,7 +328,7 @@ func (r *adminRepository) GetDonationsAmountForPreviousDay() (float64, error) {
 	var total float64
 	err := r.db.Raw(`
         SELECT IFNULL(SUM(amount), 0)
-        FROM donations 
+        FROM donation_manuals 
         WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
     `).Scan(&total).Error
 	if err != nil {
@@ -341,7 +341,7 @@ func (r *adminRepository) GetDonationsForPreviousDay() (int64, error) {
 	var total int64
 	err := r.db.Raw(`
         SELECT IFNULL(COUNT(*), 0) 
-        FROM donations 
+        FROM donation_manuals
         WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
     `).Scan(&total).Error
 	if err != nil {
@@ -354,7 +354,7 @@ func (r *adminRepository) GetVolunteersForPreviousDay() (int64, error) {
 	var total int64
 	err := r.db.Raw(`
         SELECT IFNULL(COUNT(*), 0)
-        FROM volunteers 
+        FROM applications 
         WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
     `).Scan(&total).Error
 	if err != nil {
