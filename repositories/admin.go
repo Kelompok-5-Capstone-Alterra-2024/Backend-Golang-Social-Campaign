@@ -41,6 +41,10 @@ type AdminRepository interface {
 	GetTotalArticles() (int, error)
 	GetTotalDonations() (int, error)
 	GetArticlesOrderedByBookmarks(page, limit int) ([]entities.Article, []int, int, error)
+	GetDonationsAmountForPreviousDay() (float64, error)
+	GetVolunteersForPreviousDay() (int64, error)
+	GetArticlesForPreviousDay() (int64, error)
+	GetDonationsForPreviousDay() (int64, error)
 }
 
 type adminRepository struct {
@@ -284,6 +288,42 @@ func (r *adminRepository) GetTotalDonations() (int, error) {
 		return 0, err
 	}
 	return int(total), nil
+}
+
+func (r *adminRepository) GetDonationsAmountForPreviousDay() (float64, error) {
+	var total float64
+	err := r.db.Raw(`SELECT SUM(amount) FROM donation_manuals WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 1 DAY) AND created_at < CURDATE()`).Scan(&total).Error
+	if err != nil {
+		return 0, err
+	}
+	return total, nil
+}
+
+func (r *adminRepository) GetVolunteersForPreviousDay() (int64, error) {
+	var total int64
+	err := r.db.Raw(`SELECT COUNT(*) FROM applications WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 1 DAY) AND created_at < CURDATE()`).Scan(&total).Error
+	if err != nil {
+		return 0, err
+	}
+	return total, nil
+}
+
+func (r *adminRepository) GetArticlesForPreviousDay() (int64, error) {
+	var total int64
+	err := r.db.Raw(`SELECT COUNT(*) FROM articles WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 1 DAY) AND created_at < CURDATE()`).Scan(&total).Error
+	if err != nil {
+		return 0, err
+	}
+	return total, nil
+}
+
+func (r *adminRepository) GetDonationsForPreviousDay() (int64, error) {
+	var total int64
+	err := r.db.Raw(`SELECT COUNT(*) FROM donation_manuals WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 1 DAY) AND created_at < CURDATE()`).Scan(&total).Error
+	if err != nil {
+		return 0, err
+	}
+	return total, nil
 }
 
 func (r *adminRepository) GetArticlesOrderedByBookmarks(page, limit int) ([]entities.Article, []int, int, error) {
