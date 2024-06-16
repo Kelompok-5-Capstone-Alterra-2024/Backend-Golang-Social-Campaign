@@ -36,6 +36,8 @@ type UserRepository interface {
 	AddUserVolunteerBookmark(user entities.UserBookmarkVolunteerVacancy) error
 	DeleteUserVolunteerBookmark(id uint, userid uint) error
 	IsVolunteerBookmark(id uint, userid uint) (bool, error)
+
+	GetNotificationFundraising() ([]entities.Fundraising, error)
 }
 
 type userRepository struct {
@@ -242,4 +244,14 @@ func (r *userRepository) IsVolunteerBookmark(id uint, userid uint) (bool, error)
 	}
 
 	return count > 0, nil
+}
+
+func (r *userRepository) GetNotificationFundraising() ([]entities.Fundraising, error) {
+	var donation []entities.Fundraising
+	if err := r.db.Preload("Organization").Order("created_at desc").Limit(10).Find(&donation).Error; err != nil {
+		return donation, err
+	}
+
+	return donation, nil
+
 }

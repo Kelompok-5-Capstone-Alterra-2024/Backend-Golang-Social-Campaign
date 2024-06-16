@@ -178,3 +178,27 @@ func ToAllUserVolunteerBookmarkResponse(volunteers []entities.UserBookmarkVolunt
 	}
 	return result
 }
+
+type UserNotification struct {
+	FundraisingID uint   `json:"fundraising_id"`
+	Title         string `json:"title"`
+	OrgAvatar     string `json:"org_avatar"`
+	CreatedAt     string `json:"created_at"`
+}
+
+func ToUserNotificationResponse(notification entities.Fundraising) UserNotification {
+	return UserNotification{
+		FundraisingID: notification.ID,
+		Title:         notification.Title,
+		OrgAvatar:     notification.Organization.Avatar,
+		CreatedAt:     notification.CreatedAt.Format("2006-01-02"),
+	}
+}
+
+func ToAllUserNotificationResponse(notifications []entities.Fundraising) []UserNotification {
+	var result []UserNotification
+	for _, notification := range notifications {
+		result = append(result, ToUserNotificationResponse(notification))
+	}
+	return result
+}

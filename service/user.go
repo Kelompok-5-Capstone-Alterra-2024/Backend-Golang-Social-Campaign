@@ -36,6 +36,8 @@ type UserService interface {
 	GetUserVolunteerBookmark(id uint, limit int, offset int) ([]entities.UserBookmarkVolunteerVacancy, error)
 	AddUserVolunteerBookmark(id, userId uint) error
 	DeleteUserVolunteerBookmark(id uint, userid uint) error
+
+	GetNotificationFundraising() ([]entities.Fundraising, error)
 }
 
 type userService struct {
@@ -374,4 +376,9 @@ func (s *userService) AddUserVolunteerBookmark(id, userId uint) error {
 func (s *userService) DeleteUserVolunteerBookmark(id uint, userid uint) error {
 
 	return s.userRepository.DeleteUserVolunteerBookmark(id, userid)
+}
+
+func (s *userService) GetNotificationFundraising() ([]entities.Fundraising, error) {
+
+	return s.userRepository.GetNotificationFundraising()
 }

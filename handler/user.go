@@ -446,6 +446,18 @@ func (h *UserHandler) DeleteBookmarkVolunteer(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "bookmark deleted successfully"))
 }
 
+func (h *UserHandler) GetNotificationFundraising(c echo.Context) error {
+	notifications, err := h.userService.GetNotificationFundraising()
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to get notifications", err.Error()))
+	}
+
+	response := dto.ToAllUserNotificationResponse(notifications)
+
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "success get notifications", response))
+}
+
 // func (h *UserHandler) RefreshToken(c echo.Context) error {
 // 	refreshToken := c.Request().Header.Get("Refresh-Token")
 // 	if refreshToken == "" {

@@ -83,6 +83,8 @@ func NewRouter(router *echo.Echo) {
 
 	api.Use(jwt, routeMiddleware.UserMiddleware)
 
+	api.GET("notifications", userHandler.GetNotificationFundraising)
+
 	api.GET("/profile", userHandler.GetUserProfile)
 	api.PUT("/profile/edit", userHandler.EditProfile)
 	api.PUT("/profile/change-password", userHandler.ChangePassword)
