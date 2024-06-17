@@ -2,6 +2,15 @@ package dto
 
 import "capstone/entities"
 
+type DistributeFundFundraisingRequest struct {
+	FundraisingID uint   `json:"fundraising_id"`
+	Amount        int    `json:"amount"`
+	BankName      string `json:"bank_name"`
+	NoRekening    string `json:"no_rekening"`
+	Name          string `json:"name"`
+	ImagePayment  string `json:"image_payment"`
+}
+
 type AdminFundraisingsResponse struct {
 	ID               uint   `json:"id"`
 	Title            string `json:"title"`

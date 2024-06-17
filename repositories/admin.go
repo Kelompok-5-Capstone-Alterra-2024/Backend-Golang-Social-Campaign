@@ -15,6 +15,7 @@ type AdminRepository interface {
 	UpdateFundraisingByID(id uint, fundraising entities.Fundraising) (entities.Fundraising, error)
 	FindFundraisingByID(id int) (entities.Fundraising, error)
 	FindDonationsByFundraisingID(id int, limit int, offset int) ([]entities.DonationManual, error)
+	DistributeFundFundraising(id uint, amount int) (entities.Fundraising, error)
 
 	FindOrganizations(limit int, offset int) ([]entities.Organization, error)
 	FindOrganizationByID(id int) (entities.Organization, error)
@@ -108,6 +109,14 @@ func (r *adminRepository) FindDonationsByFundraisingID(id int, limit int, offset
 		return []entities.DonationManual{}, err
 	}
 	return donations, nil
+}
+
+func (r *adminRepository) DistributeFundFundraising(id uint, amount int) (entities.Fundraising, error) {
+	var fundraising entities.Fundraising
+	if err := r.db.Model(&fundraising).Where("id = ?", id).Update("current_progress", amount).Error; err != nil {
+		return entities.Fundraising{}, err
+	}
+	return fundraising, nil
 }
 
 func (r *adminRepository) FindOrganizations(limit int, offset int) ([]entities.Organization, error) {

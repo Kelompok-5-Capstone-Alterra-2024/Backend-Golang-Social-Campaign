@@ -19,6 +19,7 @@ type AdminService interface {
 	UpdateFundraising(id uint, fundraising entities.Fundraising) (entities.Fundraising, error)
 	GetFundraisingByID(id int) (entities.Fundraising, error)
 	GetDonationByFundraisingID(id int, limit int, offset int) ([]entities.DonationManual, error)
+	DistributeFundFundraising(id uint, amount int) (entities.Fundraising, error)
 
 	GetOrganizations(limit int, offset int) ([]entities.Organization, error)
 	GetOrganizationByID(id int) (entities.Organization, error)
@@ -53,24 +54,6 @@ type adminService struct {
 func NewAdminService(adminRepository repositories.AdminRepository, userRepository repositories.UserRepository) *adminService {
 	return &adminService{adminRepository, userRepository}
 }
-
-// func (s *adminService) Login(request dto.LoginRequest) (entities.Admin, error) {
-// 	username := request.Username
-// 	password := request.Password
-
-// 	admin, err := s.adminRepository.FindByUsername(username)
-// 	if err != nil {
-// 		return admin, err
-// 	}
-
-// 	if admin.Password != password {
-// 		return admin, errors.New("wrong password")
-// 	}
-
-// 	admin.Token = middleware.GenerateToken(admin.ID, admin.Username, "admin")
-
-// 	return admin, nil
-// }
 
 func (s *adminService) Login(request dto.LoginRequest) (entities.Admin, string, string, error) {
 	username := request.Username
@@ -129,6 +112,28 @@ func (s *adminService) GetFundraisingByID(id int) (entities.Fundraising, error) 
 
 func (s *adminService) GetDonationByFundraisingID(id int, limit int, offset int) ([]entities.DonationManual, error) {
 	return s.adminRepository.FindDonationsByFundraisingID(id, limit, offset)
+}
+
+func (s *adminService) DistributeFundFundraising(id uint, amount int) (entities.Fundraising, error) {
+	fund, err := s.adminRepository.FindFundraisingByID(int(id))
+
+	if err != nil {
+		return fund, err
+	}
+
+	donation, err := s.adminRepository.DistributeFundFundraising(id, amount)
+
+	if err != nil {
+		return donation, err
+	}
+
+	fund.CurrentProgress -= amount
+	updatedFund, err := s.adminRepository.UpdateFundraisingByID(id, fund)
+
+	if err != nil {
+		return updatedFund, err
+	}
+	return updatedFund, nil
 }
 
 func (s *adminService) GetOrganizations(limit int, offset int) ([]entities.Organization, error) {

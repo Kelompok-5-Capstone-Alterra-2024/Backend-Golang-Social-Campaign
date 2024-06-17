@@ -44,6 +44,7 @@ func NewRouter(router *echo.Echo) {
 	donationRepo := repositories.NewDonationRepository(database.DB)
 	donationManualRepo := repositories.NewDonationManualRepository(database.DB)
 	organizationRepo := repositories.NewOrganizationRepository(database.DB)
+	transactionRepo := repositories.NewTransactionRepository(database.DB)
 
 	userService := service.NewUserService(userRepo)
 	adminService := service.NewAdminService(adminRepo, userRepo)
@@ -58,6 +59,7 @@ func NewRouter(router *echo.Echo) {
 	donationService := service.NewDonationService(donationRepo, fundraisingRepo)
 	donationManualService := service.NewDonationManualService(donationManualRepo, fundraisingRepo)
 	organizationService := service.NewOrganizationService(organizationRepo)
+	transactionService := service.NewTransactionService(transactionRepo, adminRepo)
 
 	userHandler := handler.NewUserHandler(userService, fundraisingService)
 	adminHandler := handler.NewAdminHandler(adminService, volunteerService, articleService, commentService)
@@ -71,6 +73,7 @@ func NewRouter(router *echo.Echo) {
 	donationHandler := handler.NewDonationHandler(donationService, userService)
 	donationManualHandler := handler.NewDonationManualHandler(donationManualService, userService, fundraisingService)
 	organizatonHandler := handler.NewOrganizationHandler(organizationService)
+	transactionHandler := handler.NewTransactionHandler(transactionService)
 
 	api := router.Group("/api/v1")
 
@@ -194,6 +197,10 @@ func NewRouter(router *echo.Echo) {
 
 	admin.GET("/donations", adminHandler.GetAllDonationManual)
 	admin.POST("/donations/:id", adminHandler.InputAmountDonationManual)
+
+	admin.POST("/distributions", transactionHandler.CreateTransaction)
+	admin.GET("/transactions-history", transactionHandler.GetTransactions)
+	admin.GET("/transactions/:id", transactionHandler.GetTransactionByID)
 
 	admin.POST("/organizations", organizatonHandler.CreateOrganization)
 	admin.GET("/organizations", adminHandler.GetAllOrganizations)

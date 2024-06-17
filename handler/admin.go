@@ -27,16 +27,6 @@ func NewAdminHandler(adminService service.AdminService, volunteerService service
 	return &AdminHandler{adminService, volunteerService, articleService, commentService}
 }
 
-// func (h *AdminHandler) Login(c echo.Context) error {
-// 	var request dto.LoginRequest
-// 	c.Bind(&request)
-// 	admin, err := h.adminService.Login(request)
-// 	if err != nil {
-// 		return c.JSON(500, helper.ErrorResponse(false, "validation failed", "invalid username or password"))
-// 	}
-// 	return c.JSON(200, helper.ResponseWithData(true, "Admin logged in successfully", admin.Token))
-// }
-
 func (h *AdminHandler) Login(c echo.Context) error {
 	var request dto.LoginRequest
 	c.Bind(&request)
@@ -243,6 +233,26 @@ func (h *AdminHandler) GetDonationsByFundraisingID(c echo.Context) error {
 
 	response := dto.ToAdminAllFundraisingDonationResponse(donations)
 	return c.JSON(200, helper.ResponseWithData(true, "donation retrieved successfully", response))
+}
+
+func (h *AdminHandler) DistributeFundFundraising(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid ID format", err.Error()))
+	}
+
+	var req dto.DistributeFundFundraisingRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(400, helper.ErrorResponse(false, "invalid request", err.Error()))
+	}
+
+	_, err = h.adminService.DistributeFundFundraising(uint(id), req.Amount)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to distribute fund", err.Error()))
+	}
+
+	return c.JSON(200, helper.GeneralResponse(true, "fund distributed successfully"))
+
 }
 
 func (h *AdminHandler) GetAllOrganizations(c echo.Context) error {
