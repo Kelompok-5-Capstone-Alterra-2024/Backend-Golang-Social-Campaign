@@ -13,11 +13,12 @@ import (
 )
 
 type UserHandler struct {
-	userService service.UserService
+	userService        service.UserService
+	fundraisingService service.FundraisingService
 }
 
-func NewUserHandler(userService service.UserService) *UserHandler {
-	return &UserHandler{userService}
+func NewUserHandler(userService service.UserService, fundraisingService service.FundraisingService) *UserHandler {
+	return &UserHandler{userService, fundraisingService}
 }
 
 func (h *UserHandler) Register(c echo.Context) error {
@@ -243,6 +244,11 @@ func (h *UserHandler) CreateBookmarkFundraising(c echo.Context) error {
 	fundraisingID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid ID format", err.Error()))
+	}
+
+	_, err = h.fundraisingService.FindFundraisingByID(fundraisingID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to add bookmark", err.Error()))
 	}
 
 	userID, err := helper.GetUserIDFromJWT(c)

@@ -28,6 +28,6 @@ type FundraisingCategory struct {
 }
 
 type FundraisingCategoryWithCount struct {
-	Category FundraisingCategory
-	Count    int
+	Category FundraisingCategory `json:"category"`
+	Count    int                 `json:"count"`
 }

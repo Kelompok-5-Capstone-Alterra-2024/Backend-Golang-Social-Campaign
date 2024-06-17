@@ -59,7 +59,7 @@ func NewRouter(router *echo.Echo) {
 	donationManualService := service.NewDonationManualService(donationManualRepo, fundraisingRepo)
 	organizationService := service.NewOrganizationService(organizationRepo)
 
-	userHandler := handler.NewUserHandler(userService)
+	userHandler := handler.NewUserHandler(userService, fundraisingService)
 	adminHandler := handler.NewAdminHandler(adminService, volunteerService, articleService, commentService)
 	volunteerHandler := handler.NewVolunteerHandler(volunteerService, applicationService, testimoniVolunteerService)
 	applicationHandler := handler.NewApplicationHandler(applicationService)

@@ -399,7 +399,13 @@ func (r *adminRepository) GetArticlesOrderedByBookmarks(limit int) ([]entities.A
 }
 
 func (r *adminRepository) GetCategoriesWithCount() ([]entities.FundraisingCategoryWithCount, error) {
-	var results []entities.FundraisingCategoryWithCount
+	type Result struct {
+		ID    uint
+		Name  string
+		Count int
+	}
+
+	var results []Result
 	err := r.db.Raw(`
 		SELECT fundraising_categories.id, fundraising_categories.name, COUNT(fundraisings.id) as count
 		FROM fundraising_categories
@@ -407,5 +413,21 @@ func (r *adminRepository) GetCategoriesWithCount() ([]entities.FundraisingCatego
 		GROUP BY fundraising_categories.id
 		ORDER BY count DESC
 	`).Scan(&results).Error
-	return results, err
+
+	if err != nil {
+		return nil, err
+	}
+
+	var categoriesWithCount []entities.FundraisingCategoryWithCount
+	for _, result := range results {
+		category := entities.FundraisingCategory{}
+		category.ID = result.ID
+		category.Name = result.Name
+		categoriesWithCount = append(categoriesWithCount, entities.FundraisingCategoryWithCount{
+			Category: category,
+			Count:    result.Count,
+		})
+	}
+
+	return categoriesWithCount, nil
 }
