@@ -59,7 +59,10 @@ func (h *TransactionHandler) GetTransactionByID(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "failed to get transaction", err.Error()))
 	}
-	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "Transaction found", transaction))
+
+	transactionResponse := dto.ToTransactionDetailRespone(transaction)
+
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "Transaction found", transactionResponse))
 }
 
 func (h *TransactionHandler) GetTransactions(c echo.Context) error {

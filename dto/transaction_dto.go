@@ -29,3 +29,23 @@ func ToTransactionHistoriesRespone(transactions []entities.Transaction) []Transa
 	}
 	return result
 }
+
+type TransactionDetailRespone struct {
+	ID            uint   `json:"id" `
+	Amount        int    `json:"amount"`
+	PaymentMethod string `json:"payment_method"`
+	NoRekening    string `json:"no_rekening"`
+	Name          string `json:"name"`
+	ImagePayment  string `json:"image_payment"`
+}
+
+func ToTransactionDetailRespone(transaction entities.Transaction) TransactionDetailRespone {
+	return TransactionDetailRespone{
+		ID:            transaction.ID,
+		Amount:        transaction.Amount,
+		PaymentMethod: transaction.BankName,
+		NoRekening:    transaction.NoRekening,
+		Name:          transaction.Name,
+		ImagePayment:  transaction.ImagePayment,
+	}
+}
