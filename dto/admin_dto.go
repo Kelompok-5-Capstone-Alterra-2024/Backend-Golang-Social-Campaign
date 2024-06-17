@@ -3,12 +3,12 @@ package dto
 import "capstone/entities"
 
 type DistributeFundFundraisingRequest struct {
-	FundraisingID uint   `json:"fundraising_id"`
-	Amount        int    `json:"amount"`
-	BankName      string `json:"bank_name"`
-	NoRekening    string `json:"no_rekening"`
-	Name          string `json:"name"`
-	ImagePayment  string `json:"image_payment"`
+	FundraisingID uint   `json:"fundraising_id" form:"fundraising_id"`
+	Amount        int    `json:"amount" form:"amount"`
+	BankName      string `json:"bank_name" form:"bank_name"`
+	NoRekening    string `json:"no_rekening" form:"no_rekening"`
+	Name          string `json:"name" form:"name"`
+	ImagePayment  string `json:"image_payment" form:"image_payment"`
 }
 
 type AdminFundraisingsResponse struct {

@@ -1,14 +1,13 @@
 package service
 
 import (
-	"capstone/dto"
 	"capstone/entities"
 	"capstone/repositories"
 	"fmt"
 )
 
 type TransactionService interface {
-	CreateTransaction(transaction dto.DistributeFundFundraisingRequest) (entities.Transaction, error)
+	CreateTransaction(transaction entities.Transaction) (entities.Transaction, error)
 	GetTransactionByID(id uint) (entities.Transaction, error)
 	GetTransactions(limit int, offset int) ([]entities.Transaction, error)
 }
@@ -22,31 +21,23 @@ func NewTransactionService(transactionRepository repositories.TransactionReposit
 	return &transactionService{transactionRepository, adminRepo}
 }
 
-func (s *transactionService) CreateTransaction(transaction dto.DistributeFundFundraisingRequest) (entities.Transaction, error) {
-	transactionEntity := entities.Transaction{
-		Amount:        transaction.Amount,
-		BankName:      transaction.BankName,
-		NoRekening:    transaction.NoRekening,
-		Name:          transaction.Name,
-		FundraisingID: transaction.FundraisingID,
-		ImagePayment:  transaction.ImagePayment,
-	}
+func (s *transactionService) CreateTransaction(transaction entities.Transaction) (entities.Transaction, error) {
 
 	fundraising, err := s.adminRepo.FindFundraisingByID(int(transaction.FundraisingID))
 	if err != nil {
-		return transactionEntity, err
+		return transaction, err
 	}
 
 	if transaction.Amount > fundraising.CurrentProgress {
-		return transactionEntity, fmt.Errorf("the Amount Fundraising not enough")
+		return transaction, fmt.Errorf("amount is greater than current progress")
 	}
 
-	newTransaction, err := s.transactionRepository.Save(transactionEntity)
+	newTransaction, err := s.transactionRepository.Save(transaction)
 
 	fundraising.CurrentProgress -= newTransaction.Amount
 	_, err = s.adminRepo.UpdateFundraisingByID(fundraising.ID, fundraising)
 	if err != nil {
-		return transactionEntity, err
+		return newTransaction, err
 	}
 
 	return newTransaction, err

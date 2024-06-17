@@ -3,7 +3,7 @@ package dto
 import "capstone/entities"
 
 type TransactionHistoryRespone struct {
-	ID               uint   `json:"id"`
+	ID               uint   `json:"id" `
 	OrganizationName string `json:"organization_name"`
 	Amount           int    `json:"amount"`
 	PaymentMethod    string `json:"payment_method"`

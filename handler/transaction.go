@@ -2,6 +2,7 @@ package handler
 
 import (
 	"capstone/dto"
+	"capstone/entities"
 	"capstone/helper"
 	"capstone/service"
 	"net/http"
@@ -35,14 +36,20 @@ func (h *TransactionHandler) CreateTransaction(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to upload image", err.Error()))
 	}
 
-	request.FundraisingID = uint(fundraisingID)
-	request.ImagePayment = imageUrl
+	transaction := entities.Transaction{
+		Amount:        request.Amount,
+		BankName:      request.BankName,
+		NoRekening:    request.NoRekening,
+		Name:          request.Name,
+		FundraisingID: uint(fundraisingID),
+		ImagePayment:  imageUrl,
+	}
 
-	transaction, err := h.transactionService.CreateTransaction(request)
+	_, err = h.transactionService.CreateTransaction(transaction)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "failed to create transaction", err.Error()))
 	}
-	return c.JSON(http.StatusCreated, helper.ResponseWithData(true, "Transaction created", transaction))
+	return c.JSON(http.StatusCreated, helper.GeneralResponse(true, "transaction created successfully"))
 }
 
 func (h *TransactionHandler) GetTransactionByID(c echo.Context) error {
