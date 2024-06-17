@@ -678,5 +678,5 @@ func (h *AdminHandler) GetCategoriesWithCount(c echo.Context) error {
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to get categories", err.Error()))
 	}
-	return c.JSON(http.StatusOK, categories)
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "categories retrieved successfully", categories))
 }
