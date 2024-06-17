@@ -16,7 +16,7 @@ func ToTransactionHistoryRespone(transaction entities.Transaction) TransactionHi
 		ID:               transaction.ID,
 		OrganizationName: transaction.Fundraising.Organization.Name,
 		Amount:           transaction.Amount,
-		PaymentMethod:    transaction.BankName,
+		PaymentMethod:    "Transfer Bank",
 		NoRekening:       transaction.NoRekening,
 		CreatedAt:        transaction.CreatedAt.Format("2006-01-02"),
 	}
