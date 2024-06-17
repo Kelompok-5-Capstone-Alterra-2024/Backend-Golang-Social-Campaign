@@ -4,6 +4,7 @@ import (
 	"capstone/dto"
 	"capstone/entities"
 	"capstone/repositories"
+	"fmt"
 )
 
 type TransactionService interface {
@@ -34,6 +35,10 @@ func (s *transactionService) CreateTransaction(transaction dto.DistributeFundFun
 	fundraising, err := s.adminRepo.FindFundraisingByID(int(transaction.FundraisingID))
 	if err != nil {
 		return transactionEntity, err
+	}
+
+	if transaction.Amount > fundraising.CurrentProgress {
+		return transactionEntity, fmt.Errorf("the Amount Fundraising not enough")
 	}
 
 	newTransaction, err := s.transactionRepository.Save(transactionEntity)

@@ -198,7 +198,7 @@ func NewRouter(router *echo.Echo) {
 	admin.GET("/donations", adminHandler.GetAllDonationManual)
 	admin.POST("/donations/:id", adminHandler.InputAmountDonationManual)
 
-	admin.POST("/distributions", transactionHandler.CreateTransaction)
+	admin.POST("/fundraising/:id/distributions", transactionHandler.CreateTransaction)
 	admin.GET("/transactions-history", transactionHandler.GetTransactions)
 	admin.GET("/transactions/:id", transactionHandler.GetTransactionByID)
 
