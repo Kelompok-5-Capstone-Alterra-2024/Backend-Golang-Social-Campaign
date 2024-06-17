@@ -82,7 +82,7 @@ func (r *adminRepository) Create(fundraising entities.Fundraising) (entities.Fun
 }
 
 func (r *adminRepository) UpdateFundraisingByID(id uint, fundraising entities.Fundraising) (entities.Fundraising, error) {
-	if err := r.db.Model(&fundraising).Omit("start_date", "end_date").Where("id = ?", id).Updates(map[string]interface{}{"start_date": nil}).Error; err != nil {
+	if err := r.db.Model(&fundraising).Where("id = ?", id).Updates(&fundraising).Error; err != nil {
 		return entities.Fundraising{}, err
 	}
 	return fundraising, nil
