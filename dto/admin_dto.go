@@ -187,6 +187,7 @@ type AdminOrganizationsResponse struct {
 	Instagram  string `json:"instagram"`
 	NoRekening string `json:"no_rek"`
 	IsVerified bool   `json:"is_verified"`
+	Avatar     string `json:"avatar"`
 }
 
 func ToAdminOrganizationsResponse(organization entities.Organization) AdminOrganizationsResponse {
@@ -198,6 +199,7 @@ func ToAdminOrganizationsResponse(organization entities.Organization) AdminOrgan
 		Instagram:  organization.Instagram,
 		NoRekening: organization.NoRekening,
 		IsVerified: organization.IsVerified,
+		Avatar:     organization.Avatar,
 	}
 }
 
