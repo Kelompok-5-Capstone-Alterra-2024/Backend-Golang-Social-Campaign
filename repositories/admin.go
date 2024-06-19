@@ -418,7 +418,7 @@ func (r *adminRepository) GetArticlesOrderedByBookmarks(limit int) ([]entities.A
 func (r *adminRepository) GetTodayVolunteer() (float64, error) {
 	var todayVolunteers float64
 	err := r.db.Raw(`
-        SELECT COUNT(id) FROM applications AND DATE(created_at) = CURDATE()
+        SELECT COUNT(id) FROM applications WHERE DATE(created_at) = CURDATE()
     `).Scan(&todayVolunteers).Error
 	return todayVolunteers, err
 }
@@ -426,7 +426,7 @@ func (r *adminRepository) GetTodayVolunteer() (float64, error) {
 func (r *adminRepository) GetYesterdayTotalVolunteer() (float64, error) {
 	var yesterdayTotalVolunteers float64
 	err := r.db.Raw(`
-        SELECT COUNT(id) FROM applications AND DATE(created_at) < CURDATE()
+        SELECT COUNT(id) FROM applications WHERE DATE(created_at) < CURDATE()
     `).Scan(&yesterdayTotalVolunteers).Error
 	return yesterdayTotalVolunteers, err
 }
@@ -434,7 +434,7 @@ func (r *adminRepository) GetYesterdayTotalVolunteer() (float64, error) {
 func (r *adminRepository) GetTodayArticle() (float64, error) {
 	var todayVolunteers float64
 	err := r.db.Raw(`
-        SELECT COUNT(id) FROM articles AND DATE(created_at) = CURDATE()
+        SELECT COUNT(id) FROM articles WHERE DATE(created_at) = CURDATE()
     `).Scan(&todayVolunteers).Error
 	return todayVolunteers, err
 }
@@ -442,7 +442,7 @@ func (r *adminRepository) GetTodayArticle() (float64, error) {
 func (r *adminRepository) GetYesterdayTotalArticle() (float64, error) {
 	var yesterdayTotalVolunteers float64
 	err := r.db.Raw(`
-        SELECT COUNT(id) FROM articles AND DATE(created_at) < CURDATE()
+        SELECT COUNT(id) FROM articles WHERE DATE(created_at) < CURDATE()
     `).Scan(&yesterdayTotalVolunteers).Error
 	return yesterdayTotalVolunteers, err
 }
@@ -450,7 +450,7 @@ func (r *adminRepository) GetYesterdayTotalArticle() (float64, error) {
 func (r *adminRepository) GetTodayTransaction() (float64, error) {
 	var todayVolunteers float64
 	err := r.db.Raw(`
-        SELECT COUNT(id) FROM transactions AND DATE(created_at) = CURDATE()
+        SELECT COUNT(id) FROM transactions WHERE DATE(created_at) = CURDATE()
     `).Scan(&todayVolunteers).Error
 	return todayVolunteers, err
 }
@@ -458,7 +458,7 @@ func (r *adminRepository) GetTodayTransaction() (float64, error) {
 func (r *adminRepository) GetYesterdayTotalTransaction() (float64, error) {
 	var yesterdayTotalVolunteers float64
 	err := r.db.Raw(`
-        SELECT COUNT(id) FROM transactions AND DATE(created_at) < CURDATE()
+        SELECT COUNT(id) FROM transactions WHERE DATE(created_at) < CURDATE()
     `).Scan(&yesterdayTotalVolunteers).Error
 	return yesterdayTotalVolunteers, err
 }
@@ -469,7 +469,7 @@ func (r *adminRepository) GetTodayDonations() (int64, error) {
         SELECT COALESCE(SUM(amount), 0) 
         FROM donations 
         WHERE status = 'success' 
-        AND DATE(created_at) = CURDATE()
+        WHERE DATE(created_at) = CURDATE()
     `).Scan(&todayDonations).Error
 	return todayDonations, err
 }
@@ -480,7 +480,7 @@ func (r *adminRepository) GetYesterdayTotalDonations() (int64, error) {
         SELECT COALESCE(SUM(amount), 0) 
         FROM donations 
         WHERE status = 'success' 
-        AND DATE(created_at) < CURDATE()
+        WHERE DATE(created_at) < CURDATE()
     `).Scan(&yesterdayTotalDonations).Error
 	return yesterdayTotalDonations, err
 }
