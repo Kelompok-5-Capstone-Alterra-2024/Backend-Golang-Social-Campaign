@@ -7,6 +7,7 @@ import (
 	"capstone/repositories"
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -272,10 +273,13 @@ func (s *adminService) GetDailyTransactionStats() ([]TransactionData, error) {
 		if i > 0 {
 			percentage = (stat.TotalAmount / totalAmountUntilYesterday) * 100
 		}
+
+		formattedPercentage, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", percentage), 64)
+
 		data = append(data, TransactionData{
 			Date:       stat.Date,
 			Amount:     stat.TotalAmount,
-			Percentage: percentage,
+			Percentage: formattedPercentage,
 			Month:      stat.Date.Month().String(),
 		})
 		totalAmountUntilYesterday += stat.TotalAmount
