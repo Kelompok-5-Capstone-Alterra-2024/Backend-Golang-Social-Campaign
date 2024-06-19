@@ -43,10 +43,18 @@ type AdminRepository interface {
 	GetTotalArticles() (int, error)
 	GetTotalTransactions() (int, error)
 	GetArticlesOrderedByBookmarks(limit int) ([]entities.ArticleWithBookmarkCount, error)
-	GetDonationsAmountForPreviousDay() (float64, error)
-	GetVolunteersForPreviousDay() (int64, error)
-	GetArticlesForPreviousDay() (int64, error)
-	GetDonationsForPreviousDay() (int64, error)
+	// GetDonationsAmountForPreviousDay() (float64, error)
+	// GetVolunteersForPreviousDay() (int64, error)
+	// GetArticlesForPreviousDay() (int64, error)
+	// GetDonationsForPreviousDay() (int64, error)
+	GetTodayDonations() (float64, error)
+	GetYesterdayTotalDonations() (float64, error)
+	GetTodayVolunteer() (float64, error)
+	GetYesterdayTotalVolunteer() (float64, error)
+	GetTodayArticle() (float64, error)
+	GetYesterdayTotalArticle() (float64, error)
+	GetTodayTransaction() (float64, error)
+	GetYesterdayTotalTransaction() (float64, error)
 	GetCategoriesWithCount() ([]entities.FundraisingCategoryWithCount, error)
 }
 
@@ -334,57 +342,57 @@ func (r *adminRepository) GetTotalTransactions() (int, error) {
 	return int(total), nil
 }
 
-func (r *adminRepository) GetDonationsAmountForPreviousDay() (float64, error) {
-	var total float64
-	err := r.db.Raw(`
-        SELECT IFNULL(SUM(amount), 0)
-        FROM donation_manuals 
-        WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
-    `).Scan(&total).Error
-	if err != nil {
-		return 0, err
-	}
-	return total, nil
-}
+// func (r *adminRepository) GetDonationsAmountForPreviousDay() (float64, error) {
+// 	var total float64
+// 	err := r.db.Raw(`
+//         SELECT IFNULL(SUM(amount), 0)
+//         FROM donation_manuals
+//         WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+//     `).Scan(&total).Error
+// 	if err != nil {
+// 		return 0, err
+// 	}
+// 	return total, nil
+// }
 
-func (r *adminRepository) GetDonationsForPreviousDay() (int64, error) {
-	var total int64
-	err := r.db.Raw(`
-        SELECT IFNULL(COUNT(*), 0) 
-        FROM transactions
-        WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
-    `).Scan(&total).Error
-	if err != nil {
-		return 0, err
-	}
-	return total, nil
-}
+// func (r *adminRepository) GetDonationsForPreviousDay() (int64, error) {
+// 	var total int64
+// 	err := r.db.Raw(`
+//         SELECT IFNULL(COUNT(*), 0)
+//         FROM transactions
+//         WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+//     `).Scan(&total).Error
+// 	if err != nil {
+// 		return 0, err
+// 	}
+// 	return total, nil
+// }
 
-func (r *adminRepository) GetVolunteersForPreviousDay() (int64, error) {
-	var total int64
-	err := r.db.Raw(`
-        SELECT IFNULL(COUNT(*), 0)
-        FROM applications 
-        WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
-    `).Scan(&total).Error
-	if err != nil {
-		return 0, err
-	}
-	return total, nil
-}
+// func (r *adminRepository) GetVolunteersForPreviousDay() (int64, error) {
+// 	var total int64
+// 	err := r.db.Raw(`
+//         SELECT IFNULL(COUNT(*), 0)
+//         FROM applications
+//         WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+//     `).Scan(&total).Error
+// 	if err != nil {
+// 		return 0, err
+// 	}
+// 	return total, nil
+// }
 
-func (r *adminRepository) GetArticlesForPreviousDay() (int64, error) {
-	var total int64
-	err := r.db.Raw(`
-        SELECT IFNULL(COUNT(*), 0) 
-        FROM articles 
-        WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
-    `).Scan(&total).Error
-	if err != nil {
-		return 0, err
-	}
-	return total, nil
-}
+// func (r *adminRepository) GetArticlesForPreviousDay() (int64, error) {
+// 	var total int64
+// 	err := r.db.Raw(`
+//         SELECT IFNULL(COUNT(*), 0)
+//         FROM articles
+//         WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+//     `).Scan(&total).Error
+// 	if err != nil {
+// 		return 0, err
+// 	}
+// 	return total, nil
+// }
 
 func (r *adminRepository) GetArticlesOrderedByBookmarks(limit int) ([]entities.ArticleWithBookmarkCount, error) {
 
@@ -405,6 +413,70 @@ func (r *adminRepository) GetArticlesOrderedByBookmarks(limit int) ([]entities.A
 
 	return topArticles, nil
 
+}
+
+func (r *adminRepository) GetTodayVolunteer() (float64, error) {
+	var todayVolunteers float64
+	err := r.db.Raw(`
+        SELECT COUNT(id) FROM applications AND DATE(created_at) = DATE(?)
+    `, time.Now()).Scan(&todayVolunteers).Error
+	return todayVolunteers, err
+}
+
+func (r *adminRepository) GetYesterdayTotalVolunteer() (float64, error) {
+	var yesterdayTotalVolunteers float64
+	err := r.db.Raw(`
+        SELECT COUNT(id) FROM applications AND DATE(created_at) < DATE(?)
+    `, time.Now()).Scan(&yesterdayTotalVolunteers).Error
+	return yesterdayTotalVolunteers, err
+}
+
+func (r *adminRepository) GetTodayArticle() (float64, error) {
+	var todayVolunteers float64
+	err := r.db.Raw(`
+        SELECT COUNT(id) FROM articles AND DATE(created_at) = DATE(?)
+    `, time.Now()).Scan(&todayVolunteers).Error
+	return todayVolunteers, err
+}
+
+func (r *adminRepository) GetYesterdayTotalArticle() (float64, error) {
+	var yesterdayTotalVolunteers float64
+	err := r.db.Raw(`
+        SELECT COUNT(id) FROM articles AND DATE(created_at) < DATE(?)
+    `, time.Now()).Scan(&yesterdayTotalVolunteers).Error
+	return yesterdayTotalVolunteers, err
+}
+
+func (r *adminRepository) GetTodayTransaction() (float64, error) {
+	var todayVolunteers float64
+	err := r.db.Raw(`
+        SELECT COUNT(id) FROM transactions AND DATE(created_at) = DATE(?)
+    `, time.Now()).Scan(&todayVolunteers).Error
+	return todayVolunteers, err
+}
+
+func (r *adminRepository) GetYesterdayTotalTransaction() (float64, error) {
+	var yesterdayTotalVolunteers float64
+	err := r.db.Raw(`
+        SELECT COUNT(id) FROM transactions AND DATE(created_at) < DATE(?)
+    `, time.Now()).Scan(&yesterdayTotalVolunteers).Error
+	return yesterdayTotalVolunteers, err
+}
+
+func (r *adminRepository) GetTodayDonations() (float64, error) {
+	var todayDonations float64
+	err := r.db.Raw(`
+        SELECT SUM(amount) FROM donation_manuals WHERE status = 'success' AND DATE(created_at) = DATE(?)
+    `, time.Now()).Scan(&todayDonations).Error
+	return todayDonations, err
+}
+
+func (r *adminRepository) GetYesterdayTotalDonations() (float64, error) {
+	var yesterdayTotalDonations float64
+	err := r.db.Raw(`
+        SELECT SUM(amount) FROM donation_manuals WHERE status = 'success' AND DATE(created_at) < DATE(?)
+    `, time.Now()).Scan(&yesterdayTotalDonations).Error
+	return yesterdayTotalDonations, err
 }
 
 func (r *adminRepository) GetCategoriesWithCount() ([]entities.FundraisingCategoryWithCount, error) {

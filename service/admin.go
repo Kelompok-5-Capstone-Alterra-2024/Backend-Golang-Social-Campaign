@@ -309,30 +309,50 @@ func (s *adminService) GetDataTotalContent() (map[string]interface{}, error) {
 		return nil, err
 	}
 
-	previousDonationsAmount, err := s.adminRepository.GetDonationsAmountForPreviousDay()
+	todayDonations, err := s.adminRepository.GetTodayDonations()
 	if err != nil {
 		return nil, err
 	}
 
-	previousVolunteers, err := s.adminRepository.GetVolunteersForPreviousDay()
+	yesterdayDonations, err := s.adminRepository.GetYesterdayTotalDonations()
 	if err != nil {
 		return nil, err
 	}
 
-	previousArticles, err := s.adminRepository.GetArticlesForPreviousDay()
+	todayVolunteer, err := s.adminRepository.GetTodayVolunteer()
 	if err != nil {
 		return nil, err
 	}
 
-	previousDonations, err := s.adminRepository.GetDonationsForPreviousDay()
+	yesterdayVolunteer, err := s.adminRepository.GetYesterdayTotalVolunteer()
 	if err != nil {
 		return nil, err
 	}
 
-	percentageDonation := float64(totalAmountDonations) / previousDonationsAmount * 100
-	percentageVolunteer := float64(totalUserVolunteers) / float64(previousVolunteers) * 100
-	percentageArticle := float64(totalArticles) / float64(previousArticles) * 100
-	percentageTransaction := float64(totalDonations) / float64(previousDonations) * 100
+	todayArticle, err := s.adminRepository.GetTodayArticle()
+	if err != nil {
+		return nil, err
+	}
+
+	yesterdayArticle, err := s.adminRepository.GetYesterdayTotalArticle()
+	if err != nil {
+		return nil, err
+	}
+
+	todayTransaction, err := s.adminRepository.GetTodayTransaction()
+	if err != nil {
+		return nil, err
+	}
+
+	yesterdayTransaction, err := s.adminRepository.GetYesterdayTotalTransaction()
+	if err != nil {
+		return nil, err
+	}
+
+	percentageDonation := todayDonations / yesterdayDonations * 100
+	percentageVolunteer := todayVolunteer / yesterdayVolunteer * 100
+	percentageArticle := todayArticle / yesterdayArticle * 100
+	percentageTransaction := todayTransaction / yesterdayTransaction * 100
 
 	data := map[string]interface{}{
 		"total_donations_amount": totalAmountDonations,
