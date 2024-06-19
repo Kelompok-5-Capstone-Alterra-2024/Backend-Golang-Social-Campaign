@@ -264,16 +264,13 @@ func (s *adminService) GetDailyTransactionStats() ([]TransactionData, error) {
 		return nil, err
 	}
 
-	var totalAmount float64
-	for _, stat := range stats {
-		totalAmount += stat.TotalAmount
-	}
-
 	var data []TransactionData
+	var totalAmountUntilYesterday float64
+
 	for i, stat := range stats {
 		percentage := 0.0
-		if i > 0 && stats[i-1].TotalAmount > 0 {
-			percentage = (stat.TotalAmount - stats[i-1].TotalAmount) / stats[i-1].TotalAmount * 100
+		if i > 0 {
+			percentage = (stat.TotalAmount / totalAmountUntilYesterday) * 100
 		}
 		data = append(data, TransactionData{
 			Date:       stat.Date,
@@ -281,6 +278,7 @@ func (s *adminService) GetDailyTransactionStats() ([]TransactionData, error) {
 			Percentage: percentage,
 			Month:      stat.Date.Month().String(),
 		})
+		totalAmountUntilYesterday += stat.TotalAmount
 	}
 
 	return data, nil
