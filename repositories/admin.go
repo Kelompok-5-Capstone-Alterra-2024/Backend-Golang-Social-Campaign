@@ -41,7 +41,7 @@ type AdminRepository interface {
 	GetTotalAmountDonations() (int, error)
 	GetTotalUserVolunteers() (int, error)
 	GetTotalArticles() (int, error)
-	GetTotalDonations() (int, error)
+	GetTotalTransactions() (int, error)
 	GetArticlesOrderedByBookmarks(limit int) ([]entities.ArticleWithBookmarkCount, error)
 	GetDonationsAmountForPreviousDay() (float64, error)
 	GetVolunteersForPreviousDay() (int64, error)
@@ -326,9 +326,9 @@ func (r *adminRepository) GetTotalArticles() (int, error) {
 	return int(total), nil
 }
 
-func (r *adminRepository) GetTotalDonations() (int, error) {
+func (r *adminRepository) GetTotalTransactions() (int, error) {
 	var total int64
-	if err := r.db.Model(&entities.DonationManual{}).Select("COUNT(id)").Scan(&total).Error; err != nil {
+	if err := r.db.Model(&entities.Transaction{}).Select("COUNT(id)").Scan(&total).Error; err != nil {
 		return 0, err
 	}
 	return int(total), nil
@@ -351,7 +351,7 @@ func (r *adminRepository) GetDonationsForPreviousDay() (int64, error) {
 	var total int64
 	err := r.db.Raw(`
         SELECT IFNULL(COUNT(*), 0) 
-        FROM donation_manuals
+        FROM transactions
         WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
     `).Scan(&total).Error
 	if err != nil {

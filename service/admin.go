@@ -304,7 +304,7 @@ func (s *adminService) GetDataTotalContent() (map[string]interface{}, error) {
 		return nil, err
 	}
 
-	totalDonations, err := s.adminRepository.GetTotalDonations()
+	totalDonations, err := s.adminRepository.GetTotalTransactions()
 	if err != nil {
 		return nil, err
 	}
@@ -329,20 +329,20 @@ func (s *adminService) GetDataTotalContent() (map[string]interface{}, error) {
 		return nil, err
 	}
 
-	donationAmountChange := calculatePercentageChange(float64(totalAmountDonations), previousDonationsAmount)
-	donationChange := calculatePercentageChange(float64(totalDonations), float64(previousDonations))
-	volunteerChange := calculatePercentageChange(float64(totalUserVolunteers), float64(previousVolunteers))
-	articleChange := calculatePercentageChange(float64(totalArticles), float64(previousArticles))
+	percentageDonation := float64(totalAmountDonations) / previousDonationsAmount * 100
+	percentageVolunteer := float64(totalUserVolunteers) / float64(previousVolunteers) * 100
+	percentageArticle := float64(totalArticles) / float64(previousArticles) * 100
+	percentageTransaction := float64(totalDonations) / float64(previousDonations) * 100
 
 	data := map[string]interface{}{
 		"total_donations_amount": totalAmountDonations,
-		"donation_amount_change": fmt.Sprintf("%.2f%%", donationAmountChange),
+		"persentage_donation":    fmt.Sprintf("%.2f%%", percentageDonation),
 		"total_user_volunteers":  totalUserVolunteers,
-		"volunteer_user_change":  fmt.Sprintf("%.2f%%", volunteerChange),
+		"persentage_volunteer":   fmt.Sprintf("%.2f%%", percentageVolunteer),
 		"total_articles":         totalArticles,
-		"article_change":         fmt.Sprintf("%.2f%%", articleChange),
-		"total_donations":        totalDonations,
-		"donation_change":        fmt.Sprintf("%.2f%%", donationChange),
+		"persentage_article":     fmt.Sprintf("%.2f%%", percentageArticle),
+		"total_transaction":      totalDonations,
+		"persentage_transaction": fmt.Sprintf("%.2f%%", percentageTransaction),
 	}
 
 	return data, nil
@@ -354,15 +354,15 @@ func (s *adminService) GetArticlesOrderedByBookmarks(limit int) ([]entities.Arti
 	return s.adminRepository.GetArticlesOrderedByBookmarks(limit)
 }
 
-func calculatePercentageChange(current, previous float64) float64 {
-	if previous == 0 {
-		if current == 0 {
-			return 0
-		}
-		return 100
-	}
-	return ((current - previous) / previous) * 100
-}
+// func calculatePercentageChange(current, previous float64) float64 {
+// 	if previous == 0 {
+// 		if current == 0 {
+// 			return 0
+// 		}
+// 		return 100
+// 	}
+// 	return ((current - previous) / previous) * 100
+// }
 
 func (s *adminService) GetCategoriesWithCount() ([]entities.FundraisingCategoryWithCount, error) {
 	return s.adminRepository.GetCategoriesWithCount()
