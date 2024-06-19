@@ -356,7 +356,7 @@ func (s *adminService) GetDataTotalContent() (map[string]interface{}, error) {
 
 	data := map[string]interface{}{
 		"total_donations_amount": totalAmountDonations,
-		"persentage_donation":    fmt.Sprintf("%.2f%%", percentageDonation),
+		"persentage_donation":    fmt.Sprintf("%.2f%%", float64(percentageDonation)),
 		"total_user_volunteers":  totalUserVolunteers,
 		"persentage_volunteer":   fmt.Sprintf("%.2f%%", percentageVolunteer),
 		"total_articles":         totalArticles,
