@@ -47,8 +47,8 @@ type AdminRepository interface {
 	// GetVolunteersForPreviousDay() (int64, error)
 	// GetArticlesForPreviousDay() (int64, error)
 	// GetDonationsForPreviousDay() (int64, error)
-	GetTodayDonations() (int64, error)
-	GetYesterdayTotalDonations() (int64, error)
+	GetTodayDonations() (float64, error)
+	GetYesterdayTotalDonations() (float64, error)
 	GetTodayVolunteer() (float64, error)
 	GetYesterdayTotalVolunteer() (float64, error)
 	GetTodayArticle() (float64, error)
@@ -463,24 +463,24 @@ func (r *adminRepository) GetYesterdayTotalTransaction() (float64, error) {
 	return yesterdayTotalVolunteers, err
 }
 
-func (r *adminRepository) GetTodayDonations() (int64, error) {
-	var todayDonations int64
+func (r *adminRepository) GetTodayDonations() (float64, error) {
+	var todayDonations float64
 	err := r.db.Raw(`
         SELECT COALESCE(SUM(amount), 0) 
         FROM donations 
-        WHERE status = 'success' 
-        WHERE DATE(created_at) = CURDATE()
+        WHERE status = 'success' AND
+        DATE(created_at) = CURDATE()
     `).Scan(&todayDonations).Error
 	return todayDonations, err
 }
 
-func (r *adminRepository) GetYesterdayTotalDonations() (int64, error) {
-	var yesterdayTotalDonations int64
+func (r *adminRepository) GetYesterdayTotalDonations() (float64, error) {
+	var yesterdayTotalDonations float64
 	err := r.db.Raw(`
         SELECT COALESCE(SUM(amount), 0) 
         FROM donations 
-        WHERE status = 'success' 
-        WHERE DATE(created_at) < CURDATE()
+        WHERE status = 'success' AND
+        DATE(created_at) < DATE(NOW())
     `).Scan(&yesterdayTotalDonations).Error
 	return yesterdayTotalDonations, err
 }
