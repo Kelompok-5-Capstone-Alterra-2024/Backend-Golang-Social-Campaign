@@ -467,8 +467,8 @@ func (r *adminRepository) GetTodayDonations() (float64, error) {
 	var todayDonations float64
 	err := r.db.Raw(`
         SELECT COALESCE(SUM(amount), 0) 
-        FROM donations 
-        WHERE status = 'success' AND
+        FROM donation_manuals
+        WHERE status = 'sukses' AND
         DATE(created_at) = CURDATE()
     `).Scan(&todayDonations).Error
 	return todayDonations, err
@@ -478,8 +478,8 @@ func (r *adminRepository) GetYesterdayTotalDonations() (float64, error) {
 	var yesterdayTotalDonations float64
 	err := r.db.Raw(`
         SELECT COALESCE(SUM(amount), 0) 
-        FROM donations 
-        WHERE status = 'success' AND
+        FROM donation_manuals
+        WHERE status = 'sukses' AND
         DATE(created_at) < DATE(NOW())
     `).Scan(&yesterdayTotalDonations).Error
 	return yesterdayTotalDonations, err
