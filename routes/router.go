@@ -49,7 +49,7 @@ func NewRouter(router *echo.Echo) {
 	userService := service.NewUserService(userRepo)
 	adminService := service.NewAdminService(adminRepo, userRepo)
 	volunteerService := service.NewVolunteerService(volunteerRepo)
-	applicationService := service.NewApplicationService(applicationRepo)
+	applicationService := service.NewApplicationService(applicationRepo, volunteerRepo)
 	articleService := service.NewArticleService(articleRepo)
 	commentService := service.NewCommentService(commentRepo)
 	likesCommentService := service.NewLikesCommentService(likesCommentRepo)

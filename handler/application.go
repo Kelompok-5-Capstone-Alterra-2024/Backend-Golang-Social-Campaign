@@ -56,7 +56,7 @@ func (h *ApplicationHandler) RegisterApplication(c echo.Context) error {
 
 	application := request.ToEntity(igURL, ytURL, uint(userID), uint(id))
 
-	createdApplication, err := h.applicationService.RegisterApplication(application)
+	createdApplication, err := h.applicationService.RegisterApplication(uint(id), application)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to create application", err.Error()))
 	}

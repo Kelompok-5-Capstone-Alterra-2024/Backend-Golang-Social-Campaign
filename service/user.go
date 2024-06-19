@@ -173,7 +173,7 @@ func (s *userService) ResetPassword(otp, newPassword string) error {
 	}
 
 	if user.OTP != otp {
-		return errors.New("invalid or expired otp")
+		return errors.New("invalid or expired OTP")
 	}
 
 	user.OTP = ""
