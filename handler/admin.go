@@ -643,7 +643,7 @@ func (h *AdminHandler) InputAmountDonationManual(c echo.Context) error {
 
 func (h *AdminHandler) GetDailyDonationSummary(c echo.Context) error {
 
-	donations, err := h.adminService.GetDailyDonationSummary()
+	donations, err := h.adminService.GetDailyTransactionStats()
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to get donations", err.Error()))
 	}

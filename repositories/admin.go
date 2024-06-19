@@ -37,7 +37,7 @@ type AdminRepository interface {
 
 	// Dashboard
 	FindDonationsLastSevenDays() ([]entities.DonationManual, error)
-	GetDailyTransactionStats() ([]map[string]interface{}, error)
+	GetDailyTransactionStats() ([]TransactionStat, error)
 	GetTotalAmountDonations() (int, error)
 	GetTotalUserVolunteers() (int, error)
 	GetTotalArticles() (int, error)
@@ -269,14 +269,18 @@ func (r *adminRepository) FindDonationsLastSevenDays() ([]entities.DonationManua
 	return donations, nil
 }
 
-func (r *adminRepository) GetDailyTransactionStats() ([]map[string]interface{}, error) {
-	var results []map[string]interface{}
+type TransactionStat struct {
+	Date        time.Time `json:"date"`
+	TotalAmount float64   `json:"total_amount"`
+}
 
-	// Query to get total transactions per day for the last 7 days
+func (r *adminRepository) GetDailyTransactionStats() ([]TransactionStat, error) {
+	var stats []TransactionStat
+
 	query := `
         SELECT DATE(created_at) as date, SUM(amount) as total_amount
-        FROM donation_manuals
-        WHERE created_at >= ? AND status = 'sukses'
+        FROM transactions
+        WHERE created_at >= ?
         GROUP BY DATE(created_at)
         ORDER BY DATE(created_at) ASC
     `
@@ -288,18 +292,14 @@ func (r *adminRepository) GetDailyTransactionStats() ([]map[string]interface{}, 
 	defer rows.Close()
 
 	for rows.Next() {
-		var date time.Time
-		var totalAmount float64
-		if err := rows.Scan(&date, &totalAmount); err != nil {
+		var stat TransactionStat
+		if err := rows.Scan(&stat.Date, &stat.TotalAmount); err != nil {
 			return nil, err
 		}
-		results = append(results, map[string]interface{}{
-			"date":         date,
-			"total_amount": totalAmount,
-		})
+		stats = append(stats, stat)
 	}
 
-	return results, nil
+	return stats, nil
 }
 
 func (r *adminRepository) GetTotalAmountDonations() (int, error) {

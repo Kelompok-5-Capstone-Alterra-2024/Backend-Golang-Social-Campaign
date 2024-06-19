@@ -7,6 +7,7 @@ import (
 	"capstone/repositories"
 	"context"
 	"fmt"
+	"time"
 )
 
 type AdminService interface {
@@ -40,10 +41,17 @@ type AdminService interface {
 	AddAmountToUserDonation(id uint, amount int) (entities.DonationManual, error)
 
 	GetDailyDonationSummary() (map[string]float64, error)
-	GetDailyTransactionStats() ([]map[string]interface{}, error)
+	GetDailyTransactionStats() ([]TransactionData, error)
 	GetDataTotalContent() (map[string]interface{}, error)
 	GetArticlesOrderedByBookmarks(limit int) ([]entities.ArticleWithBookmarkCount, error)
 	GetCategoriesWithCount() ([]entities.FundraisingCategoryWithCount, error)
+}
+
+type TransactionData struct {
+	Date       time.Time `json:"date"`
+	Amount     float64   `json:"amount"`
+	Percentage float64   `json:"percentage"`
+	Month      string    `json:"month"`
 }
 
 type adminService struct {
@@ -250,9 +258,32 @@ func (s *adminService) GetDailyDonationSummary() (map[string]float64, error) {
 
 }
 
-func (s *adminService) GetDailyTransactionStats() ([]map[string]interface{}, error) {
+func (s *adminService) GetDailyTransactionStats() ([]TransactionData, error) {
+	stats, err := s.adminRepository.GetDailyTransactionStats()
+	if err != nil {
+		return nil, err
+	}
 
-	return s.adminRepository.GetDailyTransactionStats()
+	var totalAmount float64
+	for _, stat := range stats {
+		totalAmount += stat.TotalAmount
+	}
+
+	var data []TransactionData
+	for i, stat := range stats {
+		percentage := 0.0
+		if i > 0 && stats[i-1].TotalAmount > 0 {
+			percentage = (stat.TotalAmount - stats[i-1].TotalAmount) / stats[i-1].TotalAmount * 100
+		}
+		data = append(data, TransactionData{
+			Date:       stat.Date,
+			Amount:     stat.TotalAmount,
+			Percentage: percentage,
+			Month:      stat.Date.Month().String(),
+		})
+	}
+
+	return data, nil
 }
 
 func (s *adminService) GetDataTotalContent() (map[string]interface{}, error) {
