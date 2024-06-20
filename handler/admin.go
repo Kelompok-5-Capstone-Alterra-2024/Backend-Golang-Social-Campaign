@@ -655,12 +655,8 @@ func (h *AdminHandler) GetTransactionsSummary(c echo.Context) error {
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to get transactions", err.Error()))
 	}
-	response := map[string]interface{}{
-		"transactions": transactions,
-		"total_amount": totalAmount,
-		"percentage":   percentage,
-		"month":        month,
-	}
+
+	response := dto.ToTransactionSummary(transactions, totalAmount, month, percentage)
 
 	return c.JSON(http.StatusOK, response)
 }

@@ -458,3 +458,33 @@ func ToAdminAllDonationResponses(donations []entities.DonationManual) []AdminDon
 	}
 	return result
 }
+
+type TransactionSummary struct {
+	Transaction []TransactionData `json:"transaction"`
+	TotalAmount float64           `json:"total_amount"`
+	Moth        string            `json:"moth"`
+	Percentage  float64           `json:"percentage"`
+}
+
+type TransactionData struct {
+	Date   string  `json:"date"`
+	Amount float64 `json:"amount"`
+}
+
+func ToTransactionSummary(transactions []entities.Transaction, totalAmount float64, month string, percentage float64) TransactionSummary {
+	var transactionData []TransactionData
+
+	for _, transaction := range transactions {
+		transactionData = append(transactionData, TransactionData{
+			Date:   transaction.CreatedAt.Format("2006-01-02"),
+			Amount: float64(transaction.Amount),
+		})
+	}
+
+	return TransactionSummary{
+		Transaction: transactionData,
+		TotalAmount: totalAmount,
+		Moth:        month,
+		Percentage:  percentage,
+	}
+}
