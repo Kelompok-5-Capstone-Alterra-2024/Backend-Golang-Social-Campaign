@@ -658,7 +658,7 @@ func (h *AdminHandler) GetTransactionsSummary(c echo.Context) error {
 
 	response := dto.ToTransactionSummary(transactions, totalAmount, month, percentage)
 
-	return c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "transactions retrieved successfully", response))
 }
 
 func (h *AdminHandler) GetDataTotalContent(c echo.Context) error {
