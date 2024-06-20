@@ -43,6 +43,7 @@ type AdminService interface {
 
 	GetDailyDonationSummary() (map[string]float64, error)
 	GetDailyTransactionStats() ([]TransactionData, error)
+	GetTransactionsSummary() ([]entities.Transaction, float64, float64, string, error)
 	GetDataTotalContent() (map[string]interface{}, error)
 	GetArticlesOrderedByBookmarks(limit int) ([]entities.ArticleWithBookmarkCount, error)
 	GetCategoriesWithCount() ([]entities.FundraisingCategoryWithCount, error)
@@ -288,6 +289,40 @@ func (s *adminService) GetDailyTransactionStats() ([]TransactionData, error) {
 	return data, nil
 }
 
+func (s *adminService) GetTransactionsSummary() ([]entities.Transaction, float64, float64, string, error) {
+	transactions, err := s.adminRepository.GetTransactionsLast7Days()
+	if err != nil {
+		return nil, 0, 0, "", err
+	}
+
+	var totalAmount float64
+	for _, transaction := range transactions {
+		totalAmount += float64(transaction.Amount)
+	}
+
+	today := time.Now()
+	yesterday := today.AddDate(0, 0, -1)
+
+	totalAmountToday, err := s.adminRepository.GetTotalAmountByDate(today)
+	if err != nil {
+		return nil, 0, 0, "", err
+	}
+
+	totalAmountYesterday, err := s.adminRepository.GetTotalAmountByDate(yesterday)
+	if err != nil {
+		return nil, 0, 0, "", err
+	}
+
+	percentage := 0.0
+	if totalAmountYesterday > 0 {
+		percentage = (totalAmountToday / totalAmountYesterday) * 100
+	}
+
+	month := today.Month().String()
+
+	return transactions, totalAmount, percentage, month, nil
+}
+
 func (s *adminService) GetDataTotalContent() (map[string]interface{}, error) {
 	totalAmountDonations, err := s.adminRepository.GetTotalAmountDonations()
 	if err != nil {
@@ -373,16 +408,6 @@ func (s *adminService) GetArticlesOrderedByBookmarks(limit int) ([]entities.Arti
 
 	return s.adminRepository.GetArticlesOrderedByBookmarks(limit)
 }
-
-// func calculatePercentageChange(current, previous float64) float64 {
-// 	if previous == 0 {
-// 		if current == 0 {
-// 			return 0
-// 		}
-// 		return 100
-// 	}
-// 	return ((current - previous) / previous) * 100
-// }
 
 func (s *adminService) GetCategoriesWithCount() ([]entities.FundraisingCategoryWithCount, error) {
 	return s.adminRepository.GetCategoriesWithCount()

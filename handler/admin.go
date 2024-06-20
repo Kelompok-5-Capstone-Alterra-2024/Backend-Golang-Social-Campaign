@@ -650,6 +650,21 @@ func (h *AdminHandler) GetDailyDonationSummary(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "donations retrieved successfully", donations))
 }
 
+func (h *AdminHandler) GetTransactionsSummary(c echo.Context) error {
+	transactions, totalAmount, percentage, month, err := h.adminService.GetTransactionsSummary()
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get transactions", err.Error()))
+	}
+	response := map[string]interface{}{
+		"transactions": transactions,
+		"total_amount": totalAmount,
+		"percentage":   percentage,
+		"month":        month,
+	}
+
+	return c.JSON(http.StatusOK, response)
+}
+
 func (h *AdminHandler) GetDataTotalContent(c echo.Context) error {
 
 	data, err := h.adminService.GetDataTotalContent()
