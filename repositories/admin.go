@@ -58,6 +58,9 @@ type AdminRepository interface {
 	GetTodayTransaction() (float64, error)
 	GetYesterdayTotalTransaction() (float64, error)
 	GetCategoriesWithCount() ([]entities.FundraisingCategoryWithCount, error)
+
+	FindNotifications() ([]entities.AdminNotification, error)
+	CreateNofication(entities.AdminNotification) error
 }
 
 type adminRepository struct {
@@ -498,4 +501,19 @@ func (r *adminRepository) GetCategoriesWithCount() ([]entities.FundraisingCatego
 	}
 
 	return categoriesWithCount, nil
+}
+
+func (r *adminRepository) FindNotifications() ([]entities.AdminNotification, error) {
+	var notifications []entities.AdminNotification
+	if err := r.db.Order("created_at desc").Find(&notifications).Error; err != nil {
+		return nil, err
+	}
+	return notifications, nil
+}
+
+func (r *adminRepository) CreateNofication(notification entities.AdminNotification) error {
+	if err := r.db.Create(&notification).Error; err != nil {
+		return err
+	}
+	return nil
 }

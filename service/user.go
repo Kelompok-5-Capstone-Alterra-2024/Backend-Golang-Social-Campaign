@@ -42,10 +42,11 @@ type UserService interface {
 
 type userService struct {
 	userRepository repositories.UserRepository
+	adminRepo      repositories.AdminRepository
 }
 
-func NewUserService(userRepository repositories.UserRepository) *userService {
-	return &userService{userRepository}
+func NewUserService(userRepository repositories.UserRepository, adminRepo repositories.AdminRepository) *userService {
+	return &userService{userRepository, adminRepo}
 }
 
 func (s *userService) Register(request dto.RegisterRequest) (entities.User, error) {
@@ -83,26 +84,19 @@ func (s *userService) Register(request dto.RegisterRequest) (entities.User, erro
 		Avatar:   "https://res.cloudinary.com/dvrhf8d9t/image/upload/v1715517059/default-avatar_yt6eua.png",
 	}
 
+	notif := entities.AdminNotification{
+		UserName:  user.Username,
+		AvatarURL: user.Avatar,
+		Message:   fmt.Sprintf("%s Bergabung ke Peduli Pintar", user.Username),
+	}
+
+	err := s.adminRepo.CreateNofication(notif)
+	if err != nil {
+		return user, err
+	}
+
 	return s.userRepository.Save(user)
 }
-
-// func (s *userService) Login(request dto.LoginRequest) (entities.User, error) {
-// 	username := request.Username
-// 	password := request.Password
-
-// 	user, err := s.userRepository.FindByUsername(username)
-// 	if err != nil {
-// 		return user, err
-// 	}
-
-// 	if user.Password != password {
-// 		return user, fmt.Errorf("wrong password")
-// 	}
-
-// 	user.Token = middleware.GenerateToken(user.ID, user.Username, "user")
-
-// 	return user, nil
-// }
 
 func (s *userService) Login(request dto.LoginRequest) (entities.User, string, string, error) {
 	username := request.Username

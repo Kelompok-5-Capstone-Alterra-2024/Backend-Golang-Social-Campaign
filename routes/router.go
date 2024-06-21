@@ -46,7 +46,7 @@ func NewRouter(router *echo.Echo) {
 	organizationRepo := repositories.NewOrganizationRepository(database.DB)
 	transactionRepo := repositories.NewTransactionRepository(database.DB)
 
-	userService := service.NewUserService(userRepo)
+	userService := service.NewUserService(userRepo, adminRepo)
 	adminService := service.NewAdminService(adminRepo, userRepo)
 	volunteerService := service.NewVolunteerService(volunteerRepo)
 	applicationService := service.NewApplicationService(applicationRepo, volunteerRepo)
@@ -57,7 +57,7 @@ func NewRouter(router *echo.Echo) {
 
 	fundraisingService := service.NewFundraisingService(fundraisingRepo)
 	donationService := service.NewDonationService(donationRepo, fundraisingRepo)
-	donationManualService := service.NewDonationManualService(donationManualRepo, fundraisingRepo)
+	donationManualService := service.NewDonationManualService(donationManualRepo, fundraisingRepo, adminRepo)
 	organizationService := service.NewOrganizationService(organizationRepo)
 	transactionService := service.NewTransactionService(transactionRepo, adminRepo)
 
@@ -230,4 +230,7 @@ func NewRouter(router *echo.Echo) {
 	admin.GET("/articles-top", adminHandler.GetArticlesOrderedByBookmarks)
 	admin.GET("/volunteers-top", volunteerHandler.GetTopVolunteer)
 	admin.GET("/categories-top", adminHandler.GetCategoriesWithCount)
+
+	admin.POST("/import-fundraising", adminHandler.ImportFundraising)
+	admin.GET("/notifications", adminHandler.GetNotifications)
 }

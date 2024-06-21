@@ -6,9 +6,12 @@ import (
 	middleware "capstone/middlewares"
 	"capstone/repositories"
 	"context"
+	"encoding/csv"
 	"fmt"
 	"strconv"
 	"time"
+
+	"github.com/xuri/excelize/v2"
 )
 
 type AdminService interface {
@@ -47,6 +50,11 @@ type AdminService interface {
 	GetDataTotalContent() (map[string]interface{}, error)
 	GetArticlesOrderedByBookmarks(limit int) ([]entities.ArticleWithBookmarkCount, error)
 	GetCategoriesWithCount() ([]entities.FundraisingCategoryWithCount, error)
+
+	ImportFundraisingFromCSV(reader *csv.Reader) error
+	ImportFundraisingFromExcel(file *excelize.File) error
+
+	GetNotificationForAdmin() ([]entities.AdminNotification, error)
 }
 
 type TransactionData struct {
@@ -411,4 +419,65 @@ func (s *adminService) GetArticlesOrderedByBookmarks(limit int) ([]entities.Arti
 
 func (s *adminService) GetCategoriesWithCount() ([]entities.FundraisingCategoryWithCount, error) {
 	return s.adminRepository.GetCategoriesWithCount()
+}
+
+func (s *adminService) ImportFundraisingFromCSV(reader *csv.Reader) error {
+	records, err := reader.ReadAll()
+	if err != nil {
+		return err
+	}
+
+	for _, record := range records[1:] {
+		goalAmount, _ := strconv.Atoi(record[4])
+		startDate, _ := time.Parse("2006-01-02", record[5])
+		endDate, _ := time.Parse("2006-01-02", record[6])
+
+		fundraisingCategoryID, _ := strconv.ParseUint(record[7], 10, 64)
+		fundraisingOrgID, _ := strconv.ParseUint(record[8], 10, 64)
+
+		fundraising := entities.Fundraising{
+			Title:                 record[1],
+			ImageUrl:              record[2],
+			Description:           record[3],
+			GoalAmount:            goalAmount,
+			StartDate:             &startDate,
+			EndDate:               &endDate,
+			Status:                "unachieved",
+			FundraisingCategoryID: uint(fundraisingCategoryID),
+			OrganizationID:        uint(fundraisingOrgID),
+		}
+		s.adminRepository.Create(fundraising)
+	}
+
+	return nil
+}
+
+func (s *adminService) ImportFundraisingFromExcel(file *excelize.File) error {
+	rows, err := file.GetRows("Sheet1")
+	if err != nil {
+		return err
+	}
+
+	for _, row := range rows[1:] { // Skip header row
+		goalAmount, _ := strconv.Atoi(row[4])
+		startDate, _ := time.Parse("2006-01-02", row[6])
+		endDate, _ := time.Parse("2006-01-02", row[7])
+
+		fundraising := entities.Fundraising{
+			Title:       row[1],
+			ImageUrl:    row[2],
+			Description: row[3],
+			GoalAmount:  goalAmount,
+			StartDate:   &startDate,
+			EndDate:     &endDate,
+		}
+		s.adminRepository.Create(fundraising)
+	}
+
+	return nil
+}
+
+func (s *adminService) GetNotificationForAdmin() ([]entities.AdminNotification, error) {
+
+	return s.adminRepository.FindNotifications()
 }

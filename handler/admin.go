@@ -7,6 +7,7 @@ import (
 	middleware "capstone/middlewares"
 	"capstone/service"
 	"context"
+	"encoding/csv"
 	"net/http"
 	"strconv"
 	"time"
@@ -14,6 +15,7 @@ import (
 	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/labstack/echo/v4"
+	"github.com/xuri/excelize/v2"
 )
 
 type AdminHandler struct {
@@ -700,4 +702,43 @@ func (h *AdminHandler) GetCategoriesWithCount(c echo.Context) error {
 		return c.JSON(500, helper.ErrorResponse(false, "failed to get categories", err.Error()))
 	}
 	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "categories retrieved successfully", categories))
+}
+
+func (h *AdminHandler) ImportFundraising(c echo.Context) error {
+	file, err := c.FormFile("file")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "failed to get file", err.Error()))
+	}
+
+	src, err := file.Open()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to open file", err.Error()))
+	}
+	defer src.Close()
+
+	if file.Filename[len(file.Filename)-4:] == ".csv" {
+
+		reader := csv.NewReader(src)
+		return h.adminService.ImportFundraisingFromCSV(reader)
+	} else if file.Filename[len(file.Filename)-5:] == ".xlsx" {
+
+		f, err := excelize.OpenReader(src)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to open file", err.Error()))
+		}
+		return h.adminService.ImportFundraisingFromExcel(f)
+	}
+
+	return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid file format", err.Error()))
+}
+
+func (h *AdminHandler) GetNotifications(c echo.Context) error {
+	notifications, err := h.adminService.GetNotificationForAdmin()
+
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get notifications", err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "notifications retrieved successfully", notifications))
+
 }
