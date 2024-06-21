@@ -8,6 +8,8 @@ import (
 	"capstone/repositories"
 	"errors"
 	"fmt"
+
+	"github.com/alexedwards/argon2id"
 )
 
 type UserService interface {
@@ -75,11 +77,16 @@ func (s *userService) Register(request dto.RegisterRequest) (entities.User, erro
 		return entities.User{}, errors.New("fullname already exists")
 	}
 
+	passwordHash, err := argon2id.CreateHash(request.Password, &argon2id.Params{Memory: 64 * 1024, Iterations: 4, Parallelism: 4, SaltLength: 16, KeyLength: 32})
+	if err != nil {
+		return entities.User{}, err
+	}
+
 	user := entities.User{
 		Fullname: request.Fullname,
 		Username: request.Username,
 		Email:    request.Email,
-		Password: request.Password,
+		Password: passwordHash,
 		NoTelp:   request.NoTelp,
 		Avatar:   "https://res.cloudinary.com/dvrhf8d9t/image/upload/v1715517059/default-avatar_yt6eua.png",
 	}
@@ -90,7 +97,7 @@ func (s *userService) Register(request dto.RegisterRequest) (entities.User, erro
 		Message:   fmt.Sprintf("%s Bergabung ke Peduli Pintar", user.Username),
 	}
 
-	err := s.adminRepo.CreateNofication(notif)
+	err = s.adminRepo.CreateNofication(notif)
 	if err != nil {
 		return user, err
 	}
@@ -107,7 +114,15 @@ func (s *userService) Login(request dto.LoginRequest) (entities.User, string, st
 		return user, "", "", err
 	}
 
-	if user.Password != password {
+	if user.Password == password {
+		accessToken, refreshToken := middleware.GenerateToken(user.ID, user.Username, "user")
+		user.Token = accessToken
+		return user, accessToken, refreshToken, nil
+	}
+
+	match, err := argon2id.ComparePasswordAndHash(password, user.Password)
+
+	if !match {
 		return user, "", "", fmt.Errorf("wrong password")
 	}
 

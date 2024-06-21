@@ -26,6 +26,7 @@ require (
 )
 
 require (
+	github.com/alexedwards/argon2id v1.0.0
 	github.com/cloudinary/cloudinary-go/v2 v2.7.0
 	github.com/go-resty/resty/v2 v2.13.1
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
