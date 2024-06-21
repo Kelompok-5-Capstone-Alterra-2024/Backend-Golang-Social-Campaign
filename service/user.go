@@ -185,8 +185,13 @@ func (s *userService) ResetPassword(otp, newPassword string) error {
 		return errors.New("invalid or expired OTP")
 	}
 
+	passwordHash, err := argon2id.CreateHash(newPassword, &argon2id.Params{Memory: 64 * 1024, Iterations: 4, Parallelism: 4, SaltLength: 16, KeyLength: 32})
+	if err != nil {
+		return err
+	}
+
 	user.OTP = ""
-	user.Password = newPassword
+	user.Password = passwordHash
 
 	return s.userRepository.Update(user)
 }
