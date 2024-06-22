@@ -6,7 +6,7 @@ type ApplicationRequest struct {
 	IgImageURL string `json:"ig_image_url" form:"ig_image_url"`
 	YtImageURL string `json:"yt_image_url" form:"yt_image_url"`
 	Reason     string `json:"reason" form:"reason"`
-	Age        int    `json:"age" form:"age"`
+	Age        string `json:"age" form:"age"`
 	Job        string `json:"job" form:"job"`
 }
 
@@ -30,7 +30,7 @@ type ApplicationResponse struct {
 	UserFullname string `json:"user_fullname"`
 	VacancyID    uint   `json:"vacancy_id"`
 	Reason       string `json:"reason"`
-	Age          int    `json:"age"`
+	Age          string `json:"age"`
 	Job          string `json:"job"`
 	Status       string `json:"status"`
 }

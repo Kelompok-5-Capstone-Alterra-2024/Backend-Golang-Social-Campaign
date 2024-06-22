@@ -32,7 +32,7 @@ func (r *applicationRepository) Save(application entities.Application) (entities
 
 func (r *applicationRepository) FindByCustomerIDAndVacancyID(customerID, vacancyID uint) (entities.Application, error) {
 	var application entities.Application
-	err := r.db.Where("user_id = ? AND vacancy_id = ?", customerID, vacancyID).First(&application).Error
+	err := r.db.Preload("User").Preload("Volunteer").Where("user_id = ? AND vacancy_id = ?", customerID, vacancyID).First(&application).Error
 	return application, err
 }
 

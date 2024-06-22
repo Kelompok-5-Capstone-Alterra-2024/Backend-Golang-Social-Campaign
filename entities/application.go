@@ -14,5 +14,5 @@ type Application struct {
 	Volunteer  Volunteer `json:"volunteer" gorm:"foreignKey:VacancyID"`
 	Job        string    `json:"job" gorm:"type:varchar(255)"`
 	Reason     string    `json:"reason" gorm:"type:varchar(255)"`
-	Age        int       `json:"age" gorm:"type:int"`
+	Age        string    `json:"age" gorm:"type:varchar(255)"`
 }
