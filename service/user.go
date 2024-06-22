@@ -234,7 +234,34 @@ func (s *userService) ChangePassword(userid int, request dto.ChangePasswordReque
 		return err
 	}
 
-	if user.Password != request.CurrentPassword {
+	// if user.Password != request.CurrentPassword {
+	// 	return errors.New("wrong current password")
+	// }
+
+	// if request.NewPassword != request.ConfirmPassword {
+	// 	return errors.New("password doesn't match")
+	// }
+
+	// user.Password = request.NewPassword
+	// return s.userRepository.Update(user)
+
+	if user.Password == request.CurrentPassword {
+		passwordHash, err := argon2id.CreateHash(request.NewPassword, &argon2id.Params{Memory: 64 * 1024, Iterations: 4, Parallelism: 4, SaltLength: 16, KeyLength: 32})
+		if err != nil {
+			return err
+		}
+
+		user.Password = passwordHash
+		return s.userRepository.Update(user)
+	}
+
+	match, err := argon2id.ComparePasswordAndHash(request.CurrentPassword, user.Password)
+	if err != nil {
+		return err
+	}
+
+	// Jika tidak cocok dengan hash, cek secara langsung
+	if !match && user.Password != request.CurrentPassword {
 		return errors.New("wrong current password")
 	}
 
@@ -242,7 +269,13 @@ func (s *userService) ChangePassword(userid int, request dto.ChangePasswordReque
 		return errors.New("password doesn't match")
 	}
 
-	user.Password = request.NewPassword
+	// Hashing password baru sebelum disimpan
+	passwordHash, err := argon2id.CreateHash(request.NewPassword, &argon2id.Params{Memory: 64 * 1024, Iterations: 4, Parallelism: 4, SaltLength: 16, KeyLength: 32})
+	if err != nil {
+		return err
+	}
+
+	user.Password = passwordHash
 	return s.userRepository.Update(user)
 }
 
