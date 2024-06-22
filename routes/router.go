@@ -81,6 +81,8 @@ func NewRouter(router *echo.Echo) {
 	api.POST("/login", userHandler.Login)
 	api.POST("/forget-password", userHandler.ForgetPassword)
 	api.POST("/reset-password", userHandler.ResetPassword)
+	api.POST("/verify-otp", userHandler.VerifyOTP)
+	api.POST("/reset-password/:otp", userHandler.ResetPasswordParamOtp)
 
 	api.POST("/refresh-token", userHandler.RefreshToken)
 

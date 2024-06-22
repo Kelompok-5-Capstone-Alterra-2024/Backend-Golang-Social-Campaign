@@ -77,7 +77,20 @@ func (h *UserHandler) ForgetPassword(c echo.Context) error {
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "validation failed", err.Error()))
 	}
-	return c.JSON(200, helper.GeneralResponse(true, "Reset password link sent to your email"))
+	return c.JSON(200, helper.GeneralResponse(true, "OTP sent to your email"))
+}
+
+func (h *UserHandler) VerifyOTP(c echo.Context) error {
+	type OTPRequest struct {
+		OTP string `json:"otp"`
+	}
+	var request OTPRequest
+	c.Bind(&request)
+	_, err := h.userService.VerifyOTP(request.OTP)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "validation failed", err.Error()))
+	}
+	return c.JSON(200, helper.ResponseWithData(true, "OTP verified successfully", request.OTP))
 }
 
 func (h *UserHandler) ResetPassword(c echo.Context) error {
@@ -93,6 +106,22 @@ func (h *UserHandler) ResetPassword(c echo.Context) error {
 		return c.JSON(500, helper.ErrorResponse(false, "validation failed", "invalid or expired OTP"))
 	}
 	return c.JSON(200, helper.ResponseWithData(true, "Password changed successfully", request.OTP))
+}
+
+func (h *UserHandler) ResetPasswordParamOtp(c echo.Context) error {
+	otp := c.Param("otp")
+
+	var request dto.ResetPasswordRequest
+	c.Bind(&request)
+	if request.Password != request.ConfirmPass {
+		return c.JSON(500, helper.ErrorResponse(false, "validation failed", errors.New("password doesn't match").Error()))
+	}
+
+	err := h.userService.ResetPassword(otp, request.Password)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "validation failed", "invalid or expired OTP"))
+	}
+	return c.JSON(200, helper.GeneralResponse(true, "Password changed successfully"))
 }
 
 func (h *UserHandler) GetUserProfile(c echo.Context) error {

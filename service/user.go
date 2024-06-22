@@ -19,7 +19,8 @@ type UserService interface {
 	Login(request dto.LoginRequest) (entities.User, string, string, error)
 	GetUserByID(id uint) (entities.User, error)
 	GenerateResetToken(email string) error
-	ResetPassword(resetToken, newPassword string) error
+	VerifyOTP(otp string) (entities.User, error)
+	ResetPassword(otp, newPassword string) error
 	GenerateOTP(email string) error
 	GetUserProfile(id int) (entities.User, error)
 	EditProfile(userid int, request dto.EditProfileRequest) (entities.User, error)
@@ -210,12 +211,6 @@ func (s *userService) VerifyOTP(otp string) (entities.User, error) {
 
 	if user.OTP != otp {
 		return entities.User{}, errors.New("invalid or expired OTP")
-	}
-
-	// Clear the OTP after successful verification
-	user.OTP = ""
-	if err := s.userRepository.Update(user); err != nil {
-		return entities.User{}, err
 	}
 
 	return user, nil
