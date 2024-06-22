@@ -8,6 +8,7 @@ import (
 	"capstone/repositories"
 	"errors"
 	"fmt"
+	"unicode"
 
 	"github.com/alexedwards/argon2id"
 )
@@ -57,6 +58,10 @@ func (s *userService) Register(request dto.RegisterRequest) (entities.User, erro
 		return entities.User{}, fmt.Errorf("password doesn't match")
 	}
 
+	if err := validatePassword(request.Password); err != nil {
+		return entities.User{}, err
+	}
+
 	userEmail, _ := s.userRepository.FindByEmail(request.Email)
 	if userEmail.Email == request.Email {
 		return entities.User{}, errors.New("email already exists")
@@ -103,6 +108,39 @@ func (s *userService) Register(request dto.RegisterRequest) (entities.User, erro
 	}
 
 	return s.userRepository.Save(user)
+}
+
+func validatePassword(password string) error {
+	var (
+		hasMinLen  = false
+		hasUpper   = false
+		hasLower   = false
+		hasNumber  = false
+		hasSpecial = false
+	)
+
+	if len(password) >= 8 {
+		hasMinLen = true
+	}
+
+	for _, char := range password {
+		switch {
+		case unicode.IsUpper(char):
+			hasUpper = true
+		case unicode.IsLower(char):
+			hasLower = true
+		case unicode.IsNumber(char):
+			hasNumber = true
+		case unicode.IsPunct(char) || unicode.IsSymbol(char):
+			hasSpecial = true
+		}
+	}
+
+	if !hasMinLen || !hasUpper || !hasLower || !hasNumber || !hasSpecial {
+		return errors.New("password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character")
+	}
+
+	return nil
 }
 
 func (s *userService) Login(request dto.LoginRequest) (entities.User, string, string, error) {
@@ -162,6 +200,25 @@ func (s *userService) GenerateOTP(email string) error {
 	}
 
 	return helper.SendOtpResetPassword(email, otp)
+}
+
+func (s *userService) VerifyOTP(otp string) (entities.User, error) {
+	user, err := s.userRepository.FindByOTP(otp)
+	if err != nil {
+		return entities.User{}, err
+	}
+
+	if user.OTP != otp {
+		return entities.User{}, errors.New("invalid or expired OTP")
+	}
+
+	// Clear the OTP after successful verification
+	user.OTP = ""
+	if err := s.userRepository.Update(user); err != nil {
+		return entities.User{}, err
+	}
+
+	return user, nil
 }
 
 func (s *userService) ResetPassword(otp, newPassword string) error {
