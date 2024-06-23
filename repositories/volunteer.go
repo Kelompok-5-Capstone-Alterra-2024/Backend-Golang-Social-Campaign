@@ -43,7 +43,7 @@ func (r *volunteerRepository) FindAll(page int, limit int) ([]entities.Volunteer
 	var total int64
 	offset := (page - 1) * limit
 
-	err := r.db.Preload("Organization").Offset(offset).Limit(limit).Find(&volunteers).Count(&total).Error
+	err := r.db.Preload("Organization").Order("created_at desc").Offset(offset).Limit(limit).Find(&volunteers).Count(&total).Error
 	return volunteers, int(total), err
 }
 

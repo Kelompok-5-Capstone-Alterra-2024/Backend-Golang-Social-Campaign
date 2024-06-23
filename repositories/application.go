@@ -40,7 +40,7 @@ func (r *applicationRepository) FindAll(offset, limit int) ([]entities.Applicati
 	var applications []entities.Application
 	var total int64
 
-	err := r.db.Offset(offset).Limit(limit).Find(&applications).Count(&total).Error
+	err := r.db.Order("created_at desc").Offset(offset).Limit(limit).Find(&applications).Count(&total).Error
 	return applications, total, err
 }
 
