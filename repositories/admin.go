@@ -81,7 +81,7 @@ func (r *adminRepository) FindByUsername(username string) (entities.Admin, error
 
 func (r *adminRepository) FindAllFundraising(limit int, offset int) ([]entities.Fundraising, error) {
 	var fundraisings []entities.Fundraising
-	if err := r.db.Preload("Organization").Limit(limit).Offset(offset).Find(&fundraisings).Error; err != nil {
+	if err := r.db.Preload("Organization").Order("created_at desc").Limit(limit).Offset(offset).Find(&fundraisings).Error; err != nil {
 		return []entities.Fundraising{}, err
 	}
 	return fundraisings, nil
@@ -118,7 +118,7 @@ func (r *adminRepository) FindFundraisingByID(id int) (entities.Fundraising, err
 
 func (r *adminRepository) FindDonationsByFundraisingID(id int, limit int, offset int) ([]entities.DonationManual, error) {
 	var donations []entities.DonationManual
-	if err := r.db.Preload("User").Preload("Fundraising").Where("fundraising_id = ?", id).Limit(limit).Offset(offset).Find(&donations).Error; err != nil {
+	if err := r.db.Preload("User").Preload("Fundraising").Where("fundraising_id = ?", id).Order("created_at desc").Limit(limit).Offset(offset).Find(&donations).Error; err != nil {
 		return []entities.DonationManual{}, err
 	}
 	return donations, nil
@@ -165,7 +165,7 @@ func (r *adminRepository) DeleteOrganizationByID(id uint) error {
 func (r *adminRepository) GetFundraisingByOrganizationID(id int, limit, offest int) ([]entities.Fundraising, error) {
 
 	var fundraisings []entities.Fundraising
-	if err := r.db.Preload("Organization").Where("organization_id = ?", id).Offset(offest).Limit(limit).Find(&fundraisings).Error; err != nil {
+	if err := r.db.Preload("Organization").Where("organization_id = ?", id).Order("created_at desc").Offset(offest).Limit(limit).Find(&fundraisings).Error; err != nil {
 		return []entities.Fundraising{}, err
 	}
 	return fundraisings, nil
@@ -175,7 +175,7 @@ func (r *adminRepository) GetFundraisingByOrganizationID(id int, limit, offest i
 func (r *adminRepository) GetVolunteerByOrganizationID(id int, limit, offest int) ([]entities.Volunteer, error) {
 	var volunteers []entities.Volunteer
 
-	if err := r.db.Where("organization_id = ?", id).Offset(offest).Limit(limit).Find(&volunteers).Error; err != nil {
+	if err := r.db.Where("organization_id = ?", id).Order("created_at desc").Offset(offest).Limit(limit).Find(&volunteers).Error; err != nil {
 		return []entities.Volunteer{}, err
 	}
 
@@ -184,7 +184,7 @@ func (r *adminRepository) GetVolunteerByOrganizationID(id int, limit, offest int
 
 func (r *adminRepository) FindUsers(limit int, offset int) ([]entities.User, error) {
 	var users []entities.User
-	if err := r.db.Limit(limit).Offset(offset).Find(&users).Error; err != nil {
+	if err := r.db.Order("created_at desc").Limit(limit).Offset(offset).Find(&users).Error; err != nil {
 		return []entities.User{}, err
 	}
 	return users, nil
@@ -209,7 +209,7 @@ func (r *adminRepository) FindDonationsByUserID(id int, page int, limit int) ([]
 	var donations []entities.DonationManual
 	var total int64
 	offset := (page - 1) * limit
-	if err := r.db.Preload("Fundraising.Organization").Where("user_id = ?", id).Limit(limit).Offset(offset).Find(&donations).Error; err != nil {
+	if err := r.db.Preload("Fundraising.Organization").Where("user_id = ?", id).Order("created_at desc").Limit(limit).Offset(offset).Find(&donations).Error; err != nil {
 		return []entities.DonationManual{}, 0, err
 	}
 
@@ -222,7 +222,7 @@ func (r *adminRepository) FindVolunteersByUserID(id int, page int, limit int) ([
 	var applications []entities.Application
 	var total int64
 	offset := (page - 1) * limit
-	if err := r.db.Preload("Volunteer.Organization").Where("user_id = ?", id).Limit(limit).Offset(offset).Find(&applications).Error; err != nil {
+	if err := r.db.Preload("Volunteer.Organization").Where("user_id = ?", id).Order("created_at desc").Limit(limit).Offset(offset).Find(&applications).Error; err != nil {
 		return []entities.Application{}, 0, err
 	}
 
@@ -249,7 +249,7 @@ func (r *adminRepository) FindAllDonations(page int, limit int) ([]entities.Dona
 
 	offset := (page - 1) * limit
 
-	if err := r.db.Preload("User").Preload("Fundraising.Organization").Offset(offset).Limit(limit).Find(&donations).Error; err != nil {
+	if err := r.db.Preload("User").Preload("Fundraising.Organization").Order("created_at desc").Offset(offset).Limit(limit).Find(&donations).Error; err != nil {
 		return []entities.DonationManual{}, 0, err
 	}
 
