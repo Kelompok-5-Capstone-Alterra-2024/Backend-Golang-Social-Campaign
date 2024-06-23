@@ -37,7 +37,7 @@ func (r *transactionRepository) FindByID(id uint) (entities.Transaction, error) 
 
 func (r *transactionRepository) FindAll(limit int, offset int) ([]entities.Transaction, error) {
 	var transactions []entities.Transaction
-	if err := r.db.Preload("Fundraising.Organization").Limit(limit).Offset(offset).Find(&transactions).Error; err != nil {
+	if err := r.db.Preload("Fundraising.Organization").Order("created_at desc").Limit(limit).Offset(offset).Find(&transactions).Error; err != nil {
 		return transactions, err
 	}
 	return transactions, nil
