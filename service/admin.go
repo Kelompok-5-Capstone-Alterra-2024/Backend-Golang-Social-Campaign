@@ -15,7 +15,6 @@ import (
 )
 
 type AdminService interface {
-	// Login(request dto.LoginRequest) (entities.Admin, error)
 	Login(request dto.LoginRequest) (entities.Admin, string, string, error)
 	GetFundraisings(limit int, offset int) ([]entities.Fundraising, error)
 	CreateFudraising(ctx context.Context, fundraising entities.Fundraising) (entities.Fundraising, error)
@@ -239,7 +238,7 @@ func (s *adminService) AddAmountToUserDonation(id uint, amount int) (entities.Do
 
 	fundraising.CurrentProgress += donation.Amount
 	if fundraising.CurrentProgress == fundraising.GoalAmount {
-		fundraising.Status = "Achived"
+		fundraising.Status = "selesai"
 	}
 	_, err = s.adminRepository.UpdateFundraisingByID(fundraising.ID, fundraising)
 	if err != nil {

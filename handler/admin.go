@@ -120,7 +120,7 @@ func (h *AdminHandler) CreateFundraisingContent(c echo.Context) error {
 		EndDate:               &endDate,
 		FundraisingCategoryID: req.CategoryID,
 		OrganizationID:        req.OrganizationID,
-		Status:                "unachieved",
+		Status:                "aktif",
 	}
 
 	if err != nil {
