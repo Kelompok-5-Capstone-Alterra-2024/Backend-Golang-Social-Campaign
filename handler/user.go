@@ -225,7 +225,7 @@ func (h *UserHandler) GetHistoryVolunteerDetail(c echo.Context) error {
 		return c.JSON(404, helper.ErrorResponse(false, "History not found.", err.Error()))
 	}
 
-	return c.JSON(200, helper.ResponseWithData(true, "", history))
+	return c.JSON(200, helper.ResponseWithData(true, "Success get history volunteer", history))
 }
 
 func (h *UserHandler) GetHistoryDonation(c echo.Context) error {

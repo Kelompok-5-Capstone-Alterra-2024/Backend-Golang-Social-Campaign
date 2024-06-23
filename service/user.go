@@ -369,6 +369,9 @@ func (s *userService) GetHistoryVolunteerDetail(id int) (dto.UserVolunteerHistor
 		ImageURL:        Volunteers.ImageURL,
 		Location:        Volunteers.Location,
 		ContentActivity: Volunteers.ContentActivity,
+		StartDate:       Volunteers.StartDate,
+		EndDate:         Volunteers.EndDate,
+		Status:          Volunteers.Status,
 	}, nil
 }
 

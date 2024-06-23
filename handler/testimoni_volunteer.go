@@ -7,7 +7,6 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -56,15 +55,15 @@ func (h *TestimoniVolunteerHandler) CreateTestimoniVolunteer(c echo.Context) err
 	}
 
 	// Convert created_at to Asia/Jakarta timezone
-	loc, _ := time.LoadLocation("Asia/Jakarta")
-	createdAt := createdTestimoniVolunteer.CreatedAt.In(loc).Format("02/01/2006 15:04:05 MST")
+	// loc, _ := time.LoadLocation("Asia/Jakarta")
+	// createdAt := createdTestimoniVolunteer.CreatedAt.In(loc).Format("02/01/2006 15:04:05 MST")
 
 	response := map[string]interface{}{
 		"user_id":      createdTestimoniVolunteer.UserID,
 		"volunteer_id": createdTestimoniVolunteer.VacancyID,
 		"testimoni":    createdTestimoniVolunteer.Testimoni,
 		"rating":       createdTestimoniVolunteer.Rating,
-		"date":         createdAt,
+		"date":         createdTestimoniVolunteer.CreatedAt,
 	}
 
 	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "testimoni volunteer created successfully", response))

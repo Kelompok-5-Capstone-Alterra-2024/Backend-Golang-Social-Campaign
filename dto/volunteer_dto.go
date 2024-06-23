@@ -175,9 +175,11 @@ func ToVolunteerResponse(volunteer entities.Volunteer, application []entities.Ap
 	for _, testimoni := range testimoni {
 		testimoniResponse = append(testimoniResponse, VolunteerTestimoniResponse{
 			UserTestimoni: UserCommentResponse{
+				UserID:   testimoni.User.ID,
 				Avatar:   testimoni.User.Avatar,
 				Username: testimoni.User.Username,
 			},
+			ID:        testimoni.ID,
 			Body:      testimoni.Testimoni,
 			Rating:    testimoni.Rating,
 			CreatedAt: testimoni.CreatedAt.Format("2006-01-02"),
