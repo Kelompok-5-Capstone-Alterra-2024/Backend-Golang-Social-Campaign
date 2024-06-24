@@ -6,14 +6,11 @@ import (
 	"capstone/helper"
 	middleware "capstone/middlewares"
 	"capstone/service"
-	"context"
 	"encoding/csv"
 	"net/http"
 	"strconv"
 	"time"
 
-	"github.com/cloudinary/cloudinary-go/v2"
-	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/labstack/echo/v4"
 	"github.com/xuri/excelize/v2"
 )
@@ -94,12 +91,15 @@ func (h *AdminHandler) CreateFundraisingContent(c echo.Context) error {
 		return c.JSON(400, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
-	fileHeader, _ := c.FormFile("image_url")
-	file, _ := fileHeader.Open()
-	ctx := context.Background()
-	urlCloudinary := "cloudinary://633714464826515:u1W6hqq-Gb8y-SMpXe7tzs4mH44@dvrhf8d9t"
-	cloudinaryUsecase, _ := cloudinary.NewFromURL(urlCloudinary)
-	response, _ := cloudinaryUsecase.Upload.Upload(ctx, file, uploader.UploadParams{})
+	imgFile, err := c.FormFile("image_url")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid image url", err.Error()))
+	}
+
+	imageUrl, err := helper.UploadToCloudinary(imgFile)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to upload image", err.Error()))
+	}
 
 	startDate, err := time.Parse("2006-01-02", req.StartDate)
 	if err != nil {
@@ -112,7 +112,7 @@ func (h *AdminHandler) CreateFundraisingContent(c echo.Context) error {
 	}
 
 	fundraising := entities.Fundraising{
-		ImageUrl:              response.SecureURL,
+		ImageUrl:              imageUrl,
 		Title:                 req.Title,
 		GoalAmount:            req.TargetAmount,
 		Description:           req.Description,
