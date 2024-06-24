@@ -11,13 +11,13 @@
 
   <h3 align="center">Peduli Pintar</h3>
 
-  <p align="center">
-    Project Capstone Program Immersive Alterra Academy
+<p align="center">
+    Final Project Capstone Program Immersive Alterra Academy
     <br />
-    <a href="[https://documenter.getpostman.com/view/21327885/2sA3QpBswH](https://documenter.getpostman.com/view/21327885/2sA3QpBswH#intro)"><strong>Explore the docs Open API »</strong></a>
+    <a href="https://documenter.getpostman.com/view/21327885/2sA3QpBswH#intro"><strong>Explore the docs Open API »</strong></a>
     <br />
-  </p>
-</div>
+</p>
+
 
 
 <!-- ABOUT THE PROJECT -->
