@@ -17,12 +17,6 @@ func NewRouter(router *echo.Echo) {
 	var jwt = echojwt.JWT([]byte(os.Getenv("SECRET_KEY")))
 
 	routeMiddleware.LogMiddleware(router)
-
-	// router.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-	// 	AllowOrigins: []string{"*"},
-	// 	AllowMethods: []string{echo.GET, echo.POST, echo.PUT, echo.DELETE, echo.OPTIONS},
-	// 	AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization, echo.HeaderAccessControlAllowOrigin},
-	// }))
 	router.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
 		AllowMethods: []string{echo.GET, echo.POST, echo.PUT, echo.DELETE},
@@ -46,6 +40,8 @@ func NewRouter(router *echo.Echo) {
 	organizationRepo := repositories.NewOrganizationRepository(database.DB)
 	transactionRepo := repositories.NewTransactionRepository(database.DB)
 
+	chatbotRepo := repositories.NewChatbotRepository(database.DB)
+
 	userService := service.NewUserService(userRepo, adminRepo)
 	adminService := service.NewAdminService(adminRepo, userRepo)
 	volunteerService := service.NewVolunteerService(volunteerRepo)
@@ -61,6 +57,8 @@ func NewRouter(router *echo.Echo) {
 	organizationService := service.NewOrganizationService(organizationRepo)
 	transactionService := service.NewTransactionService(transactionRepo, adminRepo)
 
+	chatbotService := service.NewChatbotService(chatbotRepo)
+
 	userHandler := handler.NewUserHandler(userService, fundraisingService)
 	adminHandler := handler.NewAdminHandler(adminService, volunteerService, articleService, commentService)
 	volunteerHandler := handler.NewVolunteerHandler(volunteerService, applicationService, testimoniVolunteerService)
@@ -74,6 +72,8 @@ func NewRouter(router *echo.Echo) {
 	donationManualHandler := handler.NewDonationManualHandler(donationManualService, userService, fundraisingService)
 	organizatonHandler := handler.NewOrganizationHandler(organizationService)
 	transactionHandler := handler.NewTransactionHandler(transactionService)
+
+	chatbotHandler := handler.NewChatBotHandler(chatbotService)
 
 	api := router.Group("/api/v1")
 
@@ -174,6 +174,9 @@ func NewRouter(router *echo.Echo) {
 	api.GET("/testimoni-volunteers", testimoniVolunteerHandler.GetAllTestimoniVolunteers)
 	api.GET("/volunteer/:id/testimoni-volunteers", testimoniVolunteerHandler.GetAllTestimoniVolunteersByVacancyID)
 	api.DELETE("/testimoni-volunteers/:id", testimoniVolunteerHandler.DeleteTestimoniVolunteer)
+
+	api.POST("/chatbot", chatbotHandler.CreateChatBot)
+	api.GET("/chatbot/:chat_id", chatbotHandler.GetChatBot)
 
 	// Admin
 	admin := router.Group("api/v1/admin")
