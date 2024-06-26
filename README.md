@@ -1,3 +1,4 @@
+
 <div id="top"></div>
 
 <!-- PROJECT LOGO -->
@@ -11,18 +12,23 @@
 
   <h3 align="center">Peduli Pintar</h3>
 
-  <p align="center">
-    Project Capstone Program Immersive Alterra Academy
+<p align="center">
+    Final Project Capstone Program Immersive Alterra Academy
     <br />
-    <a href="https://documenter.getpostman.com/view/21327885/2sA3QpBswH"><strong>Explore the docs Open API »</strong></a>
+    <a href="https://documenter.getpostman.com/view/21327885/2sA3QpBswH#intro"><strong>Explore the docs Open API »</strong></a>
     <br />
-  </p>
+</p>
 </div>
-
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 **Peduli Lindungi** is a platform designed to facilitate the community in donating, volunteering, and reading articles related to social and humanitarian activities. The platform aims to build a caring and active community involved in various social activities.
+
+### Mobile App Preview
+<img src="https://github.com/Kelompok-5-Capstone-Alterra-2024/Backend-Golang-Social-Campaign/assets/114483889/5ef2b792-374a-4680-8dd4-503da6c2b280" width="960" height="500">
+
+### Website Preview
+<img src="https://github.com/Kelompok-5-Capstone-Alterra-2024/Backend-Golang-Social-Campaign/assets/114483889/731d5b6c-fc2a-487d-8b51-63add7e53830" width="960" height="500">
 
 ### Features Overview
 In the application, there are 2 roles: User and Admin.
@@ -135,7 +141,7 @@ $ go run main.go
 <!-- ERD -->
 ## ERD
 <a href="https://lucid.app/lucidchart/fe4c6c45-5053-467f-8fec-b1c0d1d9c291/edit?viewport_loc=-1805%2C-1184%2C7742%2C3878%2CSfR4hQLHwG25&invitationId=inv_5f45b9e5-78db-4caa-95d2-366a5308b19c">
-    <img src="https://github.com/Kelompok-5-Capstone-Alterra-2024/Backend-Golang-Social-Campaign/assets/114483889/eda58258-d614-476e-b799-02790e2656ce" width="900" height="900">
+    <img src="https://github.com/Kelompok-5-Capstone-Alterra-2024/Backend-Golang-Social-Campaign/assets/114483889/a4827381-1c0e-498d-8658-5ec6fe59d327" width="900" height="900">
 </a>
 
 <!-- end -->
