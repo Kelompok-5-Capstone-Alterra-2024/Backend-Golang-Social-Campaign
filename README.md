@@ -1,3 +1,4 @@
+
 <div id="top"></div>
 
 <!-- PROJECT LOGO -->
@@ -17,12 +18,17 @@
     <a href="https://documenter.getpostman.com/view/21327885/2sA3QpBswH#intro"><strong>Explore the docs Open API »</strong></a>
     <br />
 </p>
-
-
+</div>
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 **Peduli Lindungi** is a platform designed to facilitate the community in donating, volunteering, and reading articles related to social and humanitarian activities. The platform aims to build a caring and active community involved in various social activities.
+
+### Mobile App Preview
+<img src="https://github.com/Kelompok-5-Capstone-Alterra-2024/Backend-Golang-Social-Campaign/assets/114483889/5ef2b792-374a-4680-8dd4-503da6c2b280" width="960" height="500">
+
+### Website Preview
+<img src="https://github.com/Kelompok-5-Capstone-Alterra-2024/Backend-Golang-Social-Campaign/assets/114483889/731d5b6c-fc2a-487d-8b51-63add7e53830" width="960" height="500">
 
 ### Features Overview
 In the application, there are 2 roles: User and Admin.
