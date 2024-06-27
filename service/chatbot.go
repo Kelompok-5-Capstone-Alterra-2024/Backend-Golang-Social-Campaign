@@ -1,16 +1,13 @@
 package service
 
 import (
-	"bytes"
 	"capstone/dto"
 	"capstone/repositories"
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net/http"
+	"context"
 	"os"
 
 	"github.com/google/uuid"
+	"github.com/sashabaranov/go-openai"
 )
 
 type ChatbotService interface {
@@ -66,76 +63,76 @@ func (s *chatbotService) Create(chatbot dto.Chatbot) (dto.Chatbot, error) {
 		Message: chatbot.Message,
 	})
 
-	var openAIPayload []map[string]string
-	for _, v := range payloadChatbot {
-		openAIPayload = append(openAIPayload, map[string]string{
-			"role":    v.Role,
-			"content": v.Message,
-		})
-	}
-
-	// var openAIPayload []openai.ChatCompletionMessage
+	// var openAIPayload []map[string]string
 	// for _, v := range payloadChatbot {
-	// 	openAIPayload = append(openAIPayload, openai.ChatCompletionMessage{
-	// 		Role:    v.Role,
-	// 		Content: v.Message,
+	// 	openAIPayload = append(openAIPayload, map[string]string{
+	// 		"role":    v.Role,
+	// 		"content": v.Message,
 	// 	})
 	// }
 
-	// client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
-	// resp, err := client.CreateChatCompletion(
-	// 	context.Background(),
-	// 	openai.ChatCompletionRequest{
-	// 		Model:    openai.GPT3Dot5Turbo,
-	// 		Messages: openAIPayload,
-	// 	},
-	// )
+	var openAIPayload []openai.ChatCompletionMessage
+	for _, v := range payloadChatbot {
+		openAIPayload = append(openAIPayload, openai.ChatCompletionMessage{
+			Role:    v.Role,
+			Content: v.Message,
+		})
+	}
 
+	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
+	resp, err := client.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model:    openai.GPT3Dot5Turbo,
+			Messages: openAIPayload,
+		},
+	)
+
+	if err != nil {
+		return dto.Chatbot{}, err
+	}
+
+	// openaiURL := "https://api.openai.com/v1/chat/completions"
+	// openaiRequest := map[string]interface{}{
+	// 	"model":    "gpt-4",
+	// 	"messages": openAIPayload,
+	// }
+
+	// requestBody, err := json.Marshal(openaiRequest)
 	// if err != nil {
 	// 	return dto.Chatbot{}, err
 	// }
 
-	openaiURL := "https://api.openai.com/v1/chat/completions"
-	openaiRequest := map[string]interface{}{
-		"model":    "gpt-4",
-		"messages": openAIPayload,
-	}
+	// req, err := http.NewRequest("POST", openaiURL, bytes.NewBuffer(requestBody))
+	// if err != nil {
+	// 	return dto.Chatbot{}, err
+	// }
 
-	requestBody, err := json.Marshal(openaiRequest)
-	if err != nil {
-		return dto.Chatbot{}, err
-	}
+	// req.Header.Set("Content-Type", "application/json")
+	// req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", os.Getenv("OPENAI_API_KEY")))
 
-	req, err := http.NewRequest("POST", openaiURL, bytes.NewBuffer(requestBody))
-	if err != nil {
-		return dto.Chatbot{}, err
-	}
+	// client := &http.Client{}
+	// resp, err := client.Do(req)
+	// if err != nil {
+	// 	return dto.Chatbot{}, err
+	// }
+	// defer resp.Body.Close()
 
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", os.Getenv("OPENAI_API_KEY")))
+	// body, err := ioutil.ReadAll(resp.Body)
+	// if err != nil {
+	// 	return dto.Chatbot{}, err
+	// }
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return dto.Chatbot{}, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return dto.Chatbot{}, err
-	}
-
-	var openaiResp dto.OpenaiResponse
-	if err := json.Unmarshal(body, &openaiResp); err != nil {
-		return dto.Chatbot{}, err
-	}
+	// var openaiResp dto.OpenaiResponse
+	// if err := json.Unmarshal(body, &openaiResp); err != nil {
+	// 	return dto.Chatbot{}, err
+	// }
 
 	var chatBotAssistant dto.Chatbot
 	chatBotAssistant.ID = uuid.New().String()
 	chatBotAssistant.ChatID = ID
 	chatBotAssistant.Role = "assistant"
-	chatBotAssistant.Message = openaiResp.Choices[0].Message.Content
+	chatBotAssistant.Message = resp.Choices[0].Message.Content
 	res, err := s.repo.Create(chatBotAssistant)
 	if err != nil {
 		return dto.Chatbot{}, err
