@@ -1,9 +1,13 @@
 package service
 
 import (
+	"bytes"
 	"capstone/dto"
 	"capstone/repositories"
-	"context"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
 
 	"github.com/google/uuid"
@@ -71,16 +75,52 @@ func (s *chatbotService) Create(chatbot dto.Chatbot) (dto.Chatbot, error) {
 		})
 	}
 
-	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
-	resp, err := client.CreateChatCompletion(
-		context.Background(),
-		openai.ChatCompletionRequest{
-			Model:    openai.GPT4,
-			Messages: openAIPayload,
-		},
-	)
+	// client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
+	// resp, err := client.CreateChatCompletion(
+	// 	context.Background(),
+	// 	openai.ChatCompletionRequest{
+	// 		Model:    openai.GPT4,
+	// 		Messages: openAIPayload,
+	// 	},
+	// )
 
+	// if err != nil {
+	// 	return dto.Chatbot{}, err
+	// }
+
+	openaiURL := "https://api.openai.com/v1/chat/completions"
+	openaiRequest := map[string]interface{}{
+		"model":    "gpt-4",
+		"messages": openAIPayload,
+	}
+
+	requestBody, err := json.Marshal(openaiRequest)
 	if err != nil {
+		return dto.Chatbot{}, err
+	}
+
+	req, err := http.NewRequest("POST", openaiURL, bytes.NewBuffer(requestBody))
+	if err != nil {
+		return dto.Chatbot{}, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", os.Getenv("OPENAI_API_KEY")))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return dto.Chatbot{}, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return dto.Chatbot{}, err
+	}
+
+	var openaiResp dto.OpenaiResponse
+	if err := json.Unmarshal(body, &openaiResp); err != nil {
 		return dto.Chatbot{}, err
 	}
 
@@ -88,7 +128,7 @@ func (s *chatbotService) Create(chatbot dto.Chatbot) (dto.Chatbot, error) {
 	chatBotAssistant.ID = uuid.New().String()
 	chatBotAssistant.ChatID = ID
 	chatBotAssistant.Role = "assistant"
-	chatBotAssistant.Message = resp.Choices[0].Message.Content
+	chatBotAssistant.Message = openaiResp.Choices[0].Message.Content
 	res, err := s.repo.Create(chatBotAssistant)
 	if err != nil {
 		return dto.Chatbot{}, err
