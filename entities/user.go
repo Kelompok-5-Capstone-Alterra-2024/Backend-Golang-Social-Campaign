@@ -22,7 +22,7 @@ type UserBookmarkVolunteerVacancy struct {
 	UserID               uint      `json:"-"`
 	User                 User      `json:"user" gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
 	VolunteerVacanciesID uint      `json:"-"`
-	Volunteer            Volunteer `json:"volunteer" gorm:"foreignKey:VolunteerVacancyID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
+	Volunteer            Volunteer `json:"volunteer" gorm:"foreignKey:VolunteerVacanciesID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
 }
 
 type UserBookmarkFundraising struct {
@@ -39,6 +39,11 @@ type UserBookmarkArticle struct {
 	User      User    `json:"user" gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
 	ArticleID uint    `json:"-"`
 	Article   Article `json:"article" gorm:"foreignKey:ArticleID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
+}
+
+type ArticleWithBookmarkCount struct {
+	Article
+	BookmarkCount int `json:"bookmark_count"`
 }
 
 // type OTP struct {

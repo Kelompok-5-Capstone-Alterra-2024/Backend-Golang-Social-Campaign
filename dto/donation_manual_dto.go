@@ -30,9 +30,11 @@ func ToManualDonationResponse(donation entities.DonationManual) ManualDonationRe
 type HistoryDonationManualResponse struct {
 	ID               uint   `json:"id" `
 	Amount           int    `json:"amount" `
+	ImageURL         string `json:"image_url" `
 	FundraisingTitle string `json:"fundraising_title" `
 	OrganizationName string `json:"organization_name" `
 	Status           string `json:"status" `
+	PaymentMethod    string `json:"payment_method" `
 	CreatedAt        string `json:"created_at" `
 }
 
@@ -40,9 +42,11 @@ func ToHistoryDonationManualResponse(donation entities.DonationManual) HistoryDo
 	return HistoryDonationManualResponse{
 		ID:               donation.ID,
 		Amount:           donation.Amount,
+		ImageURL:         donation.Fundraising.ImageUrl,
 		FundraisingTitle: donation.Fundraising.Title,
 		OrganizationName: donation.Fundraising.Organization.Name,
 		Status:           donation.Status,
+		PaymentMethod:    "Transfer Bank",
 		CreatedAt:        donation.CreatedAt.Format("2006-01-02"),
 	}
 }

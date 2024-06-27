@@ -17,18 +17,10 @@ func NewRouter(router *echo.Echo) {
 	var jwt = echojwt.JWT([]byte(os.Getenv("SECRET_KEY")))
 
 	routeMiddleware.LogMiddleware(router)
-
-	// router.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-	// 	AllowOrigins: []string{"*"},
-	// 	AllowMethods: []string{echo.GET, echo.POST, echo.PUT, echo.DELETE, echo.OPTIONS},
-	// 	AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization, echo.HeaderAccessControlAllowOrigin},
-	// }))
 	router.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
 		AllowMethods: []string{echo.GET, echo.POST, echo.PUT, echo.DELETE},
 	}))
-
-	// router.Use(middleware.CORS())
 
 	// Repositories
 	userRepo := repositories.NewUserRepository(database.DB)
@@ -44,11 +36,14 @@ func NewRouter(router *echo.Echo) {
 	donationRepo := repositories.NewDonationRepository(database.DB)
 	donationManualRepo := repositories.NewDonationManualRepository(database.DB)
 	organizationRepo := repositories.NewOrganizationRepository(database.DB)
+	transactionRepo := repositories.NewTransactionRepository(database.DB)
 
-	userService := service.NewUserService(userRepo)
+	chatbotRepo := repositories.NewChatbotRepository(database.DB)
+
+	userService := service.NewUserService(userRepo, adminRepo)
 	adminService := service.NewAdminService(adminRepo, userRepo)
 	volunteerService := service.NewVolunteerService(volunteerRepo)
-	applicationService := service.NewApplicationService(applicationRepo)
+	applicationService := service.NewApplicationService(applicationRepo, volunteerRepo)
 	articleService := service.NewArticleService(articleRepo)
 	commentService := service.NewCommentService(commentRepo)
 	likesCommentService := service.NewLikesCommentService(likesCommentRepo)
@@ -56,21 +51,27 @@ func NewRouter(router *echo.Echo) {
 
 	fundraisingService := service.NewFundraisingService(fundraisingRepo)
 	donationService := service.NewDonationService(donationRepo, fundraisingRepo)
-	donationManualService := service.NewDonationManualService(donationManualRepo, fundraisingRepo)
+	donationManualService := service.NewDonationManualService(donationManualRepo, fundraisingRepo, adminRepo)
 	organizationService := service.NewOrganizationService(organizationRepo)
+	transactionService := service.NewTransactionService(transactionRepo, adminRepo)
 
-	userHandler := handler.NewUserHandler(userService)
+	chatbotService := service.NewChatbotService(chatbotRepo)
+
+	userHandler := handler.NewUserHandler(userService, fundraisingService)
 	adminHandler := handler.NewAdminHandler(adminService, volunteerService, articleService, commentService)
-	volunteerHandler := handler.NewVolunteerHandler(volunteerService, applicationService)
+	volunteerHandler := handler.NewVolunteerHandler(volunteerService, applicationService, testimoniVolunteerService)
 	applicationHandler := handler.NewApplicationHandler(applicationService)
 	articleHandler := handler.NewArticleHandler(articleService)
 	commentHandler := handler.NewCommentHandler(commentService)
 	likesCommentHandler := handler.NewLikesCommentHandler(likesCommentService)
 	testimoniVolunteerHandler := handler.NewTestimoniVolunteerHandler(testimoniVolunteerService)
-	fundraisingHandler := handler.NewFundraisingHandler(fundraisingService, donationService)
+	fundraisingHandler := handler.NewFundraisingHandler(fundraisingService, donationManualService)
 	donationHandler := handler.NewDonationHandler(donationService, userService)
 	donationManualHandler := handler.NewDonationManualHandler(donationManualService, userService, fundraisingService)
 	organizatonHandler := handler.NewOrganizationHandler(organizationService)
+	transactionHandler := handler.NewTransactionHandler(transactionService)
+
+	chatbotHandler := handler.NewChatBotHandler(chatbotService)
 
 	api := router.Group("/api/v1")
 
@@ -78,6 +79,19 @@ func NewRouter(router *echo.Echo) {
 	api.POST("/login", userHandler.Login)
 	api.POST("/forget-password", userHandler.ForgetPassword)
 	api.POST("/reset-password", userHandler.ResetPassword)
+	api.POST("/verify-otp", userHandler.VerifyOTP)
+	api.POST("/reset-password/:otp", userHandler.ResetPasswordParamOtp)
+
+	api.POST("/refresh-token", userHandler.RefreshToken)
+
+	api.POST("/chatbot", chatbotHandler.CreateChatBot)
+	api.GET("/chatbot/:chat_id", chatbotHandler.GetChatBot)
+
+	api.POST("/transactions/notification", donationHandler.GetPaymentCallback)
+
+	api.Use(jwt, routeMiddleware.UserMiddleware)
+
+	api.GET("/notifications", userHandler.GetNotificationFundraising)
 
 	api.GET("/profile", userHandler.GetUserProfile)
 	api.PUT("/profile/edit", userHandler.EditProfile)
@@ -86,7 +100,6 @@ func NewRouter(router *echo.Echo) {
 	api.GET("/profile/history/fundraisings", userHandler.GetHistoryDonation)
 	api.GET("/history/volunteers", userHandler.GetHistoryVolunteer)
 	api.GET("/history/volunteers/:id", userHandler.GetHistoryVolunteerDetail)
-	api.POST("/transactions/notification", donationHandler.GetPaymentCallback)
 
 	api.GET("/profile/bookmark/fundraisings", userHandler.GetBookmarkFundraising)
 	api.POST("/fundraisings/bookmark/:id", userHandler.CreateBookmarkFundraising)
@@ -96,9 +109,9 @@ func NewRouter(router *echo.Echo) {
 	api.POST("/articles/bookmark/:id", userHandler.CreateBookmarkArticle)
 	api.DELETE("/articles/bookmark/:id", userHandler.DeleteBookmarkArticle)
 
-	api.POST("/refresh-token", userHandler.RefreshToken)
-
-	api.Use(jwt, routeMiddleware.UserMiddleware)
+	api.GET("/profile/bookmark/volunteers", userHandler.GetUserBookmarkVolunteer)
+	api.POST("/volunteers/bookmark/:id", userHandler.CreateBookmarkVolunteer)
+	api.DELETE("/volunteers/bookmark/:id", userHandler.DeleteBookmarkVolunteer)
 
 	api.GET("/organizations", organizatonHandler.GetOrganizations)
 	api.GET("/fundraising/organizations/:id", organizatonHandler.GetFundraisingsOrganizationByID)
@@ -116,8 +129,8 @@ func NewRouter(router *echo.Echo) {
 	api.GET("/history/donations-manual", donationManualHandler.GetDonationManualByUserID)
 	api.GET("/history/donations-manual/:id", donationManualHandler.GetDonationManualByID)
 
-	api.POST("/donations-manual/comments/:comment_id/like", donationManualHandler.LikeComment)
-	api.DELETE("/donations-manual/comments/:comment_id/unlike", donationManualHandler.UnlikeComment)
+	api.POST("/donations-manual/comments/:id/like", donationManualHandler.LikeComment)
+	api.DELETE("/donations-manual/comments/:id/unlike", donationManualHandler.UnlikeComment)
 
 	api.GET("/history/donations", donationHandler.GetUserDonation)
 	api.GET("/history/donations/:id", donationHandler.GetDonationByID)
@@ -146,21 +159,16 @@ func NewRouter(router *echo.Echo) {
 	// Comment routes
 	api.POST("/articles/:id/comments", commentHandler.CreateComment)
 	api.GET("/articles/:id/comments", commentHandler.GetCommentsByArticleID)
-	// api.PUT("/comments/:id", commentHandler.UpdateComment)
-	// api.GET("/comments/:id", commentHandler.GetCommentByID)
-	// api.GET("/comments", commentHandler.GetAllComments)
-	// api.DELETE("/comments/:id", commentHandler.DeleteComment)
 
 	// LikesComment routes
 	api.POST("/article/comments/:id/like", likesCommentHandler.CreateLikesComment)
 	api.DELETE("/article/comments/:id/unlike", likesCommentHandler.DeleteLikesComment)
-	// api.GET("/likes-comments/:id", likesCommentHandler.GetLikesCommentByID)
-	// api.GET("/likes-comments", likesCommentHandler.GetAllLikesComments)
 
 	// TestimoniVolunteer routes
 	api.POST("/volunteer/:id/testimoni-volunteers", testimoniVolunteerHandler.CreateTestimoniVolunteer)
 	api.GET("/testimoni-volunteers/:id", testimoniVolunteerHandler.GetTestimoniVolunteerByID)
 	api.GET("/testimoni-volunteers", testimoniVolunteerHandler.GetAllTestimoniVolunteers)
+	api.GET("/volunteer/:id/testimoni-volunteers", testimoniVolunteerHandler.GetAllTestimoniVolunteersByVacancyID)
 	api.DELETE("/testimoni-volunteers/:id", testimoniVolunteerHandler.DeleteTestimoniVolunteer)
 
 	// Admin
@@ -188,6 +196,10 @@ func NewRouter(router *echo.Echo) {
 	admin.GET("/donations", adminHandler.GetAllDonationManual)
 	admin.POST("/donations/:id", adminHandler.InputAmountDonationManual)
 
+	admin.POST("/fundraising/:id/distributions", transactionHandler.CreateTransaction)
+	admin.GET("/transactions-history", transactionHandler.GetTransactions)
+	admin.GET("/transactions/:id", transactionHandler.GetTransactionByID)
+
 	admin.POST("/organizations", organizatonHandler.CreateOrganization)
 	admin.GET("/organizations", adminHandler.GetAllOrganizations)
 	admin.GET("/organizations/:id", adminHandler.GetOrganizationByID)
@@ -209,7 +221,14 @@ func NewRouter(router *echo.Echo) {
 	admin.POST("/articles", articleHandler.CreateArticle)
 	admin.PUT("/articles/:id", articleHandler.UpdateArticle)
 	admin.DELETE("/articles/:id", articleHandler.DeleteArticle)
-
 	admin.GET("/articles/:id/comments", commentHandler.GetCommentsByArticleID)
-	// test
+
+	admin.GET("/data-total-content", adminHandler.GetDataTotalContent)
+	admin.GET("/transactions-daily", adminHandler.GetTransactionsSummary)
+	admin.GET("/articles-top", adminHandler.GetArticlesOrderedByBookmarks)
+	admin.GET("/volunteers-top", volunteerHandler.GetTopVolunteer)
+	admin.GET("/categories-top", adminHandler.GetCategoriesWithCount)
+
+	admin.POST("/import-fundraising", adminHandler.ImportFundraising)
+	admin.GET("/notifications", adminHandler.GetNotifications)
 }

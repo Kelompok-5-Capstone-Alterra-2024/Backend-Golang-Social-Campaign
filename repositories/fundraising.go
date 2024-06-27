@@ -32,7 +32,7 @@ func (r *fundraisingRepository) Update(fundraising entities.Fundraising) (entiti
 
 func (r *fundraisingRepository) FindAll(limit int, offset int) ([]entities.Fundraising, error) {
 	var fundraisings []entities.Fundraising
-	if err := r.db.Preload("FundraisingCategory").Preload("Organization").Limit(limit).Offset(offset).Find(&fundraisings).Error; err != nil {
+	if err := r.db.Preload("FundraisingCategory").Preload("Organization").Order("created_at desc").Where("status = ?", "aktif").Limit(limit).Offset(offset).Find(&fundraisings).Error; err != nil {
 		return []entities.Fundraising{}, err
 	}
 	return fundraisings, nil
@@ -40,7 +40,7 @@ func (r *fundraisingRepository) FindAll(limit int, offset int) ([]entities.Fundr
 
 func (r *fundraisingRepository) FindTopFundraisings() ([]entities.Fundraising, error) {
 	var fundraisings []entities.Fundraising
-	if err := r.db.Preload("FundraisingCategory").Preload("Organization").Order("current_progress desc").Limit(3).Find(&fundraisings).Error; err != nil {
+	if err := r.db.Preload("FundraisingCategory").Preload("Organization").Order("current_progress desc").Where("status = ?", "aktif").Limit(3).Find(&fundraisings).Error; err != nil {
 		return []entities.Fundraising{}, err
 	}
 	return fundraisings, nil

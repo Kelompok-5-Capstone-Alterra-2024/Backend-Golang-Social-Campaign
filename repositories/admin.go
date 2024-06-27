@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"capstone/entities"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -13,7 +14,8 @@ type AdminRepository interface {
 	DeleteFundraising(id uint) error
 	UpdateFundraisingByID(id uint, fundraising entities.Fundraising) (entities.Fundraising, error)
 	FindFundraisingByID(id int) (entities.Fundraising, error)
-	FindDonationsByFundraisingID(id int, limit int, offset int) ([]entities.Donation, error)
+	FindDonationsByFundraisingID(id int, limit int, offset int) ([]entities.DonationManual, error)
+	DistributeFundFundraising(id uint, amount int) (entities.Fundraising, error)
 
 	FindOrganizations(limit int, offset int) ([]entities.Organization, error)
 	FindOrganizationByID(id int) (entities.Organization, error)
@@ -32,10 +34,43 @@ type AdminRepository interface {
 	FindAllDonations(page, limit int) ([]entities.DonationManual, int, error)
 	AddAmountToUserDonation(id uint, amount int) (entities.DonationManual, error)
 	FindFundraisingByDonationID(id int) (entities.Fundraising, error)
+
+	// Dashboard
+	FindDonationsLastSevenDays() ([]entities.DonationManual, error)
+	GetDailyTransactionStats() ([]TransactionStat, error)
+	GetTransactionsLast7Days() ([]entities.Transaction, error)
+	GetTotalAmountByDate(date time.Time) (float64, error)
+	GetTotalAmountDonations() (int, error)
+	GetTotalUserVolunteers() (int, error)
+	GetTotalArticles() (int, error)
+	GetTotalTransactions() (int, error)
+	GetArticlesOrderedByBookmarks(limit int) ([]entities.ArticleWithBookmarkCount, error)
+	// GetDonationsAmountForPreviousDay() (float64, error)
+	// GetVolunteersForPreviousDay() (int64, error)
+	// GetArticlesForPreviousDay() (int64, error)
+	// GetDonationsForPreviousDay() (int64, error)
+	GetTodayDonations() (float64, error)
+	GetYesterdayTotalDonations() (float64, error)
+	GetTodayVolunteer() (float64, error)
+	GetYesterdayTotalVolunteer() (float64, error)
+	GetTodayArticle() (float64, error)
+	GetYesterdayTotalArticle() (float64, error)
+	GetTodayTransaction() (float64, error)
+	GetYesterdayTotalTransaction() (float64, error)
+	GetCategoriesWithCount() ([]entities.FundraisingCategoryWithCount, error)
+
+	FindNotifications() ([]entities.AdminNotification, error)
+	CreateNofication(entities.AdminNotification) error
+	UpdateNotification(entities.AdminNotification) error
 }
 
 type adminRepository struct {
 	db *gorm.DB
+}
+
+// UpdateNotification implements AdminRepository.
+func (*adminRepository) UpdateNotification(entities.AdminNotification) error {
+	panic("unimplemented")
 }
 
 func NewAdminRepository(db *gorm.DB) *adminRepository {
@@ -52,7 +87,7 @@ func (r *adminRepository) FindByUsername(username string) (entities.Admin, error
 
 func (r *adminRepository) FindAllFundraising(limit int, offset int) ([]entities.Fundraising, error) {
 	var fundraisings []entities.Fundraising
-	if err := r.db.Preload("Organization").Limit(limit).Offset(offset).Find(&fundraisings).Error; err != nil {
+	if err := r.db.Preload("Organization").Order("created_at desc").Limit(limit).Offset(offset).Find(&fundraisings).Error; err != nil {
 		return []entities.Fundraising{}, err
 	}
 	return fundraisings, nil
@@ -87,17 +122,25 @@ func (r *adminRepository) FindFundraisingByID(id int) (entities.Fundraising, err
 	return fundraising, nil
 }
 
-func (r *adminRepository) FindDonationsByFundraisingID(id int, limit int, offset int) ([]entities.Donation, error) {
-	var donations []entities.Donation
-	if err := r.db.Preload("User").Preload("Fundraising").Where("fundraising_id = ?", id).Limit(limit).Offset(offset).Find(&donations).Error; err != nil {
-		return []entities.Donation{}, err
+func (r *adminRepository) FindDonationsByFundraisingID(id int, limit int, offset int) ([]entities.DonationManual, error) {
+	var donations []entities.DonationManual
+	if err := r.db.Preload("User").Preload("Fundraising").Where("fundraising_id = ?", id).Order("created_at desc").Limit(limit).Offset(offset).Find(&donations).Error; err != nil {
+		return []entities.DonationManual{}, err
 	}
 	return donations, nil
 }
 
+func (r *adminRepository) DistributeFundFundraising(id uint, amount int) (entities.Fundraising, error) {
+	var fundraising entities.Fundraising
+	if err := r.db.Model(&fundraising).Where("id = ?", id).Update("current_progress", amount).Error; err != nil {
+		return entities.Fundraising{}, err
+	}
+	return fundraising, nil
+}
+
 func (r *adminRepository) FindOrganizations(limit int, offset int) ([]entities.Organization, error) {
 	var organizations []entities.Organization
-	if err := r.db.Limit(limit).Offset(offset).Find(&organizations).Error; err != nil {
+	if err := r.db.Limit(limit).Offset(offset).Order("created_at desc").Find(&organizations).Error; err != nil {
 		return []entities.Organization{}, err
 	}
 	return organizations, nil
@@ -128,7 +171,7 @@ func (r *adminRepository) DeleteOrganizationByID(id uint) error {
 func (r *adminRepository) GetFundraisingByOrganizationID(id int, limit, offest int) ([]entities.Fundraising, error) {
 
 	var fundraisings []entities.Fundraising
-	if err := r.db.Preload("Organization").Where("organization_id = ?", id).Offset(offest).Limit(limit).Find(&fundraisings).Error; err != nil {
+	if err := r.db.Preload("Organization").Where("organization_id = ?", id).Order("created_at desc").Offset(offest).Limit(limit).Find(&fundraisings).Error; err != nil {
 		return []entities.Fundraising{}, err
 	}
 	return fundraisings, nil
@@ -138,7 +181,7 @@ func (r *adminRepository) GetFundraisingByOrganizationID(id int, limit, offest i
 func (r *adminRepository) GetVolunteerByOrganizationID(id int, limit, offest int) ([]entities.Volunteer, error) {
 	var volunteers []entities.Volunteer
 
-	if err := r.db.Where("organization_id = ?", id).Offset(offest).Limit(limit).Find(&volunteers).Error; err != nil {
+	if err := r.db.Where("organization_id = ?", id).Order("created_at desc").Offset(offest).Limit(limit).Find(&volunteers).Error; err != nil {
 		return []entities.Volunteer{}, err
 	}
 
@@ -147,7 +190,7 @@ func (r *adminRepository) GetVolunteerByOrganizationID(id int, limit, offest int
 
 func (r *adminRepository) FindUsers(limit int, offset int) ([]entities.User, error) {
 	var users []entities.User
-	if err := r.db.Limit(limit).Offset(offset).Find(&users).Error; err != nil {
+	if err := r.db.Order("created_at desc").Limit(limit).Offset(offset).Find(&users).Error; err != nil {
 		return []entities.User{}, err
 	}
 	return users, nil
@@ -172,7 +215,7 @@ func (r *adminRepository) FindDonationsByUserID(id int, page int, limit int) ([]
 	var donations []entities.DonationManual
 	var total int64
 	offset := (page - 1) * limit
-	if err := r.db.Preload("Fundraising.Organization").Where("user_id = ?", id).Limit(limit).Offset(offset).Find(&donations).Error; err != nil {
+	if err := r.db.Preload("Fundraising.Organization").Where("user_id = ?", id).Order("created_at desc").Limit(limit).Offset(offset).Find(&donations).Error; err != nil {
 		return []entities.DonationManual{}, 0, err
 	}
 
@@ -185,7 +228,7 @@ func (r *adminRepository) FindVolunteersByUserID(id int, page int, limit int) ([
 	var applications []entities.Application
 	var total int64
 	offset := (page - 1) * limit
-	if err := r.db.Preload("Volunteer.Organization").Where("user_id = ?", id).Limit(limit).Offset(offset).Find(&applications).Error; err != nil {
+	if err := r.db.Preload("Volunteer.Organization").Where("user_id = ?", id).Order("created_at desc").Limit(limit).Offset(offset).Find(&applications).Error; err != nil {
 		return []entities.Application{}, 0, err
 	}
 
@@ -212,7 +255,7 @@ func (r *adminRepository) FindAllDonations(page int, limit int) ([]entities.Dona
 
 	offset := (page - 1) * limit
 
-	if err := r.db.Preload("User").Preload("Fundraising.Organization").Offset(offset).Limit(limit).Find(&donations).Error; err != nil {
+	if err := r.db.Preload("User").Preload("Fundraising.Organization").Order("created_at desc").Offset(offset).Limit(limit).Find(&donations).Error; err != nil {
 		return []entities.DonationManual{}, 0, err
 	}
 
@@ -222,7 +265,7 @@ func (r *adminRepository) FindAllDonations(page int, limit int) ([]entities.Dona
 
 func (r *adminRepository) AddAmountToUserDonation(id uint, amount int) (entities.DonationManual, error) {
 	var donation entities.DonationManual
-	if err := r.db.Model(&donation).Where("id = ?", id).Update("amount", amount).Updates(map[string]interface{}{"status": "success"}).Error; err != nil {
+	if err := r.db.Model(&donation).Where("id = ?", id).Update("amount", amount).Updates(map[string]interface{}{"status": "sukses"}).Error; err != nil {
 		return entities.DonationManual{}, err
 	}
 	return donation, nil
@@ -235,4 +278,255 @@ func (r *adminRepository) FindFundraisingByDonationID(id int) (entities.Fundrais
 		return entities.Fundraising{}, err
 	}
 	return donation.Fundraising, nil
+}
+
+func (r *adminRepository) FindDonationsLastSevenDays() ([]entities.DonationManual, error) {
+	var donations []entities.DonationManual
+	if err := r.db.Where("created_at > ?", time.Now().AddDate(0, 0, -7)).Where("status = ?", "sukses").Find(&donations).Error; err != nil {
+		return []entities.DonationManual{}, err
+	}
+	return donations, nil
+}
+
+type TransactionStat struct {
+	Date        time.Time `json:"date"`
+	TotalAmount float64   `json:"total_amount"`
+}
+
+func (r *adminRepository) GetDailyTransactionStats() ([]TransactionStat, error) {
+	var stats []TransactionStat
+
+	query := `
+        SELECT DATE(created_at) as date, SUM(amount) as total_amount
+        FROM transactions
+        WHERE created_at >= ?
+        GROUP BY DATE(created_at)
+        ORDER BY DATE(created_at) ASC
+    `
+
+	rows, err := r.db.Raw(query, time.Now().AddDate(0, 0, -7)).Rows()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var stat TransactionStat
+		if err := rows.Scan(&stat.Date, &stat.TotalAmount); err != nil {
+			return nil, err
+		}
+		stats = append(stats, stat)
+	}
+
+	return stats, nil
+}
+
+func (r *adminRepository) GetTransactionsLast7Days() ([]entities.Transaction, error) {
+	var transactions []entities.Transaction
+
+	query := `
+        SELECT * FROM transactions
+        WHERE created_at >= ?
+        ORDER BY created_at ASC
+    `
+
+	if err := r.db.Raw(query, time.Now().AddDate(0, 0, -7)).Scan(&transactions).Error; err != nil {
+		return nil, err
+	}
+
+	return transactions, nil
+}
+
+func (r *adminRepository) GetTotalAmountByDate(date time.Time) (float64, error) {
+	var totalAmount float64
+
+	query := `
+        SELECT COALESCE(SUM(amount), 0) FROM transactions
+        WHERE DATE(created_at) = DATE(?)
+    `
+
+	if err := r.db.Raw(query, date).Scan(&totalAmount).Error; err != nil {
+		return 0, err
+	}
+
+	return totalAmount, nil
+}
+
+func (r *adminRepository) GetTotalAmountDonations() (int, error) {
+	var total int64
+	if err := r.db.Model(&entities.DonationManual{}).Select("SUM(amount)").Scan(&total).Error; err != nil {
+		return 0, err
+	}
+	return int(total), nil
+}
+
+func (r *adminRepository) GetTotalUserVolunteers() (int, error) {
+	var total int64
+	if err := r.db.Model(&entities.Application{}).Select("COUNT(id)").Scan(&total).Error; err != nil {
+		return 0, err
+	}
+	return int(total), nil
+}
+
+func (r *adminRepository) GetTotalArticles() (int, error) {
+	var total int64
+	if err := r.db.Model(&entities.Article{}).Select("COUNT(id)").Scan(&total).Error; err != nil {
+		return 0, err
+	}
+	return int(total), nil
+}
+
+func (r *adminRepository) GetTotalTransactions() (int, error) {
+	var total int64
+	if err := r.db.Model(&entities.Transaction{}).Select("COUNT(id)").Scan(&total).Error; err != nil {
+		return 0, err
+	}
+	return int(total), nil
+}
+
+func (r *adminRepository) GetArticlesOrderedByBookmarks(limit int) ([]entities.ArticleWithBookmarkCount, error) {
+
+	var topArticles []entities.ArticleWithBookmarkCount
+
+	// Query untuk mengambil artikel beserta jumlah bookmarknya
+	result := r.db.Table("articles").
+		Select("articles.*, COUNT(user_bookmark_articles.article_id) AS bookmark_count").
+		Joins("LEFT JOIN user_bookmark_articles ON articles.id = user_bookmark_articles.article_id").
+		Group("articles.id").
+		Order("bookmark_count DESC").
+		Limit(limit).
+		Scan(&topArticles)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return topArticles, nil
+
+}
+
+func (r *adminRepository) GetTodayVolunteer() (float64, error) {
+	var todayVolunteers float64
+	err := r.db.Raw(`
+        SELECT COUNT(id) FROM applications WHERE DATE(created_at) = CURDATE()
+    `).Scan(&todayVolunteers).Error
+	return todayVolunteers, err
+}
+
+func (r *adminRepository) GetYesterdayTotalVolunteer() (float64, error) {
+	var yesterdayTotalVolunteers float64
+	err := r.db.Raw(`
+        SELECT COUNT(id) FROM applications WHERE DATE(created_at) < CURDATE()
+    `).Scan(&yesterdayTotalVolunteers).Error
+	return yesterdayTotalVolunteers, err
+}
+
+func (r *adminRepository) GetTodayArticle() (float64, error) {
+	var todayVolunteers float64
+	err := r.db.Raw(`
+        SELECT COUNT(id) FROM articles WHERE DATE(created_at) = CURDATE()
+    `).Scan(&todayVolunteers).Error
+	return todayVolunteers, err
+}
+
+func (r *adminRepository) GetYesterdayTotalArticle() (float64, error) {
+	var yesterdayTotalVolunteers float64
+	err := r.db.Raw(`
+        SELECT COUNT(id) FROM articles WHERE DATE(created_at) < CURDATE()
+    `).Scan(&yesterdayTotalVolunteers).Error
+	return yesterdayTotalVolunteers, err
+}
+
+func (r *adminRepository) GetTodayTransaction() (float64, error) {
+	var todayVolunteers float64
+	err := r.db.Raw(`
+        SELECT COUNT(id) FROM transactions WHERE DATE(created_at) = CURDATE()
+    `).Scan(&todayVolunteers).Error
+	return todayVolunteers, err
+}
+
+func (r *adminRepository) GetYesterdayTotalTransaction() (float64, error) {
+	var yesterdayTotalVolunteers float64
+	err := r.db.Raw(`
+        SELECT COUNT(id) FROM transactions WHERE DATE(created_at) < CURDATE()
+    `).Scan(&yesterdayTotalVolunteers).Error
+	return yesterdayTotalVolunteers, err
+}
+
+func (r *adminRepository) GetTodayDonations() (float64, error) {
+	var todayDonations float64
+	err := r.db.Raw(`
+        SELECT COALESCE(SUM(amount), 0) 
+        FROM donation_manuals
+        WHERE status = 'sukses' AND
+        DATE(created_at) = CURDATE()
+    `).Scan(&todayDonations).Error
+	return todayDonations, err
+}
+
+func (r *adminRepository) GetYesterdayTotalDonations() (float64, error) {
+	var yesterdayTotalDonations float64
+	err := r.db.Raw(`
+        SELECT COALESCE(SUM(amount), 0) 
+        FROM donation_manuals
+        WHERE status = 'sukses' AND
+        DATE(created_at) < DATE(NOW())
+    `).Scan(&yesterdayTotalDonations).Error
+	return yesterdayTotalDonations, err
+}
+
+func (r *adminRepository) GetCategoriesWithCount() ([]entities.FundraisingCategoryWithCount, error) {
+	type Result struct {
+		ID    uint
+		Name  string
+		Count int
+	}
+
+	var results []Result
+	err := r.db.Raw(`
+		SELECT fundraising_categories.id, fundraising_categories.name, COUNT(fundraisings.id) as count
+		FROM fundraising_categories
+		LEFT JOIN fundraisings ON fundraisings.fundraising_category_id = fundraising_categories.id
+		GROUP BY fundraising_categories.id
+		ORDER BY count DESC
+	`).Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	var categoriesWithCount []entities.FundraisingCategoryWithCount
+	for _, result := range results {
+		category := entities.FundraisingCategory{}
+		category.ID = result.ID
+		category.Name = result.Name
+		categoriesWithCount = append(categoriesWithCount, entities.FundraisingCategoryWithCount{
+			Category: category,
+			Count:    result.Count,
+		})
+	}
+
+	return categoriesWithCount, nil
+}
+
+func (r *adminRepository) FindNotifications() ([]entities.AdminNotification, error) {
+	var notifications []entities.AdminNotification
+	if err := r.db.Order("created_at desc").Find(&notifications).Error; err != nil {
+		return nil, err
+	}
+	return notifications, nil
+}
+
+func (r *adminRepository) CreateNofication(notification entities.AdminNotification) error {
+	if err := r.db.Create(&notification).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *adminRepository) UpdateNofication(notification entities.AdminNotification) error {
+	if err := r.db.Save(&notification).Error; err != nil {
+		return err
+	}
+	return nil
 }

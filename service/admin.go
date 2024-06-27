@@ -6,11 +6,15 @@ import (
 	middleware "capstone/middlewares"
 	"capstone/repositories"
 	"context"
+	"encoding/csv"
 	"fmt"
+	"strconv"
+	"time"
+
+	"github.com/xuri/excelize/v2"
 )
 
 type AdminService interface {
-	// Login(request dto.LoginRequest) (entities.Admin, error)
 	Login(request dto.LoginRequest) (entities.Admin, string, string, error)
 	GetFundraisings(limit int, offset int) ([]entities.Fundraising, error)
 	CreateFudraising(ctx context.Context, fundraising entities.Fundraising) (entities.Fundraising, error)
@@ -18,7 +22,8 @@ type AdminService interface {
 	DeleteFundraising(id uint) error
 	UpdateFundraising(id uint, fundraising entities.Fundraising) (entities.Fundraising, error)
 	GetFundraisingByID(id int) (entities.Fundraising, error)
-	GetDonationByFundraisingID(id int, limit int, offset int) ([]entities.Donation, error)
+	GetDonationByFundraisingID(id int, limit int, offset int) ([]entities.DonationManual, error)
+	DistributeFundFundraising(id uint, amount int) (entities.Fundraising, error)
 
 	GetOrganizations(limit int, offset int) ([]entities.Organization, error)
 	GetOrganizationByID(id int) (entities.Organization, error)
@@ -37,6 +42,25 @@ type AdminService interface {
 
 	GetAllDonations(page, limit int) ([]entities.DonationManual, int, error)
 	AddAmountToUserDonation(id uint, amount int) (entities.DonationManual, error)
+
+	GetDailyDonationSummary() (map[string]float64, error)
+	GetDailyTransactionStats() ([]TransactionData, error)
+	GetTransactionsSummary() ([]entities.Transaction, float64, float64, string, error)
+	GetDataTotalContent() (map[string]interface{}, error)
+	GetArticlesOrderedByBookmarks(limit int) ([]entities.ArticleWithBookmarkCount, error)
+	GetCategoriesWithCount() ([]entities.FundraisingCategoryWithCount, error)
+
+	ImportFundraisingFromCSV(reader *csv.Reader) error
+	ImportFundraisingFromExcel(file *excelize.File) error
+
+	GetNotificationForAdmin() ([]entities.AdminNotification, error)
+}
+
+type TransactionData struct {
+	Date       time.Time `json:"date"`
+	Amount     float64   `json:"amount"`
+	Percentage float64   `json:"percentage"`
+	Month      string    `json:"month"`
 }
 
 type adminService struct {
@@ -47,24 +71,6 @@ type adminService struct {
 func NewAdminService(adminRepository repositories.AdminRepository, userRepository repositories.UserRepository) *adminService {
 	return &adminService{adminRepository, userRepository}
 }
-
-// func (s *adminService) Login(request dto.LoginRequest) (entities.Admin, error) {
-// 	username := request.Username
-// 	password := request.Password
-
-// 	admin, err := s.adminRepository.FindByUsername(username)
-// 	if err != nil {
-// 		return admin, err
-// 	}
-
-// 	if admin.Password != password {
-// 		return admin, errors.New("wrong password")
-// 	}
-
-// 	admin.Token = middleware.GenerateToken(admin.ID, admin.Username, "admin")
-
-// 	return admin, nil
-// }
 
 func (s *adminService) Login(request dto.LoginRequest) (entities.Admin, string, string, error) {
 	username := request.Username
@@ -121,8 +127,30 @@ func (s *adminService) GetFundraisingByID(id int) (entities.Fundraising, error) 
 	return s.adminRepository.FindFundraisingByID(id)
 }
 
-func (s *adminService) GetDonationByFundraisingID(id int, limit int, offset int) ([]entities.Donation, error) {
+func (s *adminService) GetDonationByFundraisingID(id int, limit int, offset int) ([]entities.DonationManual, error) {
 	return s.adminRepository.FindDonationsByFundraisingID(id, limit, offset)
+}
+
+func (s *adminService) DistributeFundFundraising(id uint, amount int) (entities.Fundraising, error) {
+	fund, err := s.adminRepository.FindFundraisingByID(int(id))
+
+	if err != nil {
+		return fund, err
+	}
+
+	donation, err := s.adminRepository.DistributeFundFundraising(id, amount)
+
+	if err != nil {
+		return donation, err
+	}
+
+	fund.CurrentProgress -= amount
+	updatedFund, err := s.adminRepository.UpdateFundraisingByID(id, fund)
+
+	if err != nil {
+		return updatedFund, err
+	}
+	return updatedFund, nil
 }
 
 func (s *adminService) GetOrganizations(limit int, offset int) ([]entities.Organization, error) {
@@ -210,13 +238,256 @@ func (s *adminService) AddAmountToUserDonation(id uint, amount int) (entities.Do
 
 	fundraising.CurrentProgress += donation.Amount
 	if fundraising.CurrentProgress == fundraising.GoalAmount {
-		fundraising.Status = "Achived"
+		fundraising.Status = "selesai"
 	}
 	_, err = s.adminRepository.UpdateFundraisingByID(fundraising.ID, fundraising)
 	if err != nil {
 		return entities.DonationManual{}, err
 	}
 
+	notif := entities.AdminNotification{
+		UserName:  donation.User.Username,
+		AvatarURL: donation.User.Avatar,
+		Message:   fmt.Sprintf("%s melakukan donasi sebesar Rp. %d", donation.User.Username, donation.Amount),
+	}
+
+	err = s.adminRepository.UpdateNotification(notif)
+	if err != nil {
+		return entities.DonationManual{}, err
+	}
+
 	return entities.DonationManual{}, nil
 
+}
+
+func (s *adminService) GetDailyDonationSummary() (map[string]float64, error) {
+	donation, err := s.adminRepository.FindDonationsLastSevenDays()
+
+	if err != nil {
+		return nil, err
+	}
+
+	// data per hari dalam rentang 7 hari terakhir
+	dailySummary := make(map[string]float64)
+	for _, d := range donation {
+		date := d.CreatedAt.Format("2006-01-02")
+		dailySummary[date] += float64(d.Amount)
+	}
+
+	return dailySummary, nil
+
+}
+
+func (s *adminService) GetDailyTransactionStats() ([]TransactionData, error) {
+	stats, err := s.adminRepository.GetDailyTransactionStats()
+	if err != nil {
+		return nil, err
+	}
+
+	var data []TransactionData
+	var totalAmountUntilYesterday float64
+
+	for i, stat := range stats {
+		percentage := 0.0
+		if i > 0 {
+			percentage = (stat.TotalAmount / totalAmountUntilYesterday) * 100
+		}
+
+		formattedPercentage, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", percentage), 64)
+
+		data = append(data, TransactionData{
+			Date:       stat.Date,
+			Amount:     stat.TotalAmount,
+			Percentage: formattedPercentage,
+			Month:      stat.Date.Month().String(),
+		})
+		totalAmountUntilYesterday += stat.TotalAmount
+	}
+
+	return data, nil
+}
+
+func (s *adminService) GetTransactionsSummary() ([]entities.Transaction, float64, float64, string, error) {
+	transactions, err := s.adminRepository.GetTransactionsLast7Days()
+	if err != nil {
+		return nil, 0, 0, "", err
+	}
+
+	var totalAmount float64
+	for _, transaction := range transactions {
+		totalAmount += float64(transaction.Amount)
+	}
+
+	today := time.Now()
+	yesterday := today.AddDate(0, 0, -1)
+
+	totalAmountToday, err := s.adminRepository.GetTotalAmountByDate(today)
+	if err != nil {
+		return nil, 0, 0, "", err
+	}
+
+	totalAmountYesterday, err := s.adminRepository.GetTotalAmountByDate(yesterday)
+	if err != nil {
+		return nil, 0, 0, "", err
+	}
+
+	percentage := 0.0
+	if totalAmountYesterday > 0 {
+		percentage = (totalAmountToday / totalAmountYesterday) * 100
+	}
+
+	month := today.Month().String()
+
+	return transactions, totalAmount, percentage, month, nil
+}
+
+func (s *adminService) GetDataTotalContent() (map[string]interface{}, error) {
+	totalAmountDonations, err := s.adminRepository.GetTotalAmountDonations()
+	if err != nil {
+		return nil, err
+	}
+
+	totalUserVolunteers, err := s.adminRepository.GetTotalUserVolunteers()
+	if err != nil {
+		return nil, err
+	}
+
+	totalArticles, err := s.adminRepository.GetTotalArticles()
+	if err != nil {
+		return nil, err
+	}
+
+	totalDonations, err := s.adminRepository.GetTotalTransactions()
+	if err != nil {
+		return nil, err
+	}
+
+	todayDonations, err := s.adminRepository.GetTodayDonations()
+	if err != nil {
+		return nil, err
+	}
+
+	yesterdayDonations, err := s.adminRepository.GetYesterdayTotalDonations()
+	if err != nil {
+		return nil, err
+	}
+
+	todayVolunteer, err := s.adminRepository.GetTodayVolunteer()
+	if err != nil {
+		return nil, err
+	}
+
+	yesterdayVolunteer, err := s.adminRepository.GetYesterdayTotalVolunteer()
+	if err != nil {
+		return nil, err
+	}
+
+	todayArticle, err := s.adminRepository.GetTodayArticle()
+	if err != nil {
+		return nil, err
+	}
+
+	yesterdayArticle, err := s.adminRepository.GetYesterdayTotalArticle()
+	if err != nil {
+		return nil, err
+	}
+
+	todayTransaction, err := s.adminRepository.GetTodayTransaction()
+	if err != nil {
+		return nil, err
+	}
+
+	yesterdayTransaction, err := s.adminRepository.GetYesterdayTotalTransaction()
+	if err != nil {
+		return nil, err
+	}
+
+	percentageDonation := todayDonations / yesterdayDonations * 100
+	percentageVolunteer := todayVolunteer / yesterdayVolunteer * 100
+	percentageArticle := todayArticle / yesterdayArticle * 100
+	percentageTransaction := todayTransaction / yesterdayTransaction * 100
+
+	data := map[string]interface{}{
+		"total_donations_amount": totalAmountDonations,
+		"persentage_donation":    fmt.Sprintf("%.2f%%", percentageDonation),
+		"total_user_volunteers":  totalUserVolunteers,
+		"persentage_volunteer":   fmt.Sprintf("%.2f%%", percentageVolunteer),
+		"total_articles":         totalArticles,
+		"persentage_article":     fmt.Sprintf("%.2f%%", percentageArticle),
+		"total_transaction":      totalDonations,
+		"persentage_transaction": fmt.Sprintf("%.2f%%", percentageTransaction),
+	}
+
+	return data, nil
+
+}
+
+func (s *adminService) GetArticlesOrderedByBookmarks(limit int) ([]entities.ArticleWithBookmarkCount, error) {
+
+	return s.adminRepository.GetArticlesOrderedByBookmarks(limit)
+}
+
+func (s *adminService) GetCategoriesWithCount() ([]entities.FundraisingCategoryWithCount, error) {
+	return s.adminRepository.GetCategoriesWithCount()
+}
+
+func (s *adminService) ImportFundraisingFromCSV(reader *csv.Reader) error {
+	records, err := reader.ReadAll()
+	if err != nil {
+		return err
+	}
+
+	for _, record := range records[1:] {
+		goalAmount, _ := strconv.Atoi(record[4])
+		startDate, _ := time.Parse("2006-01-02", record[5])
+		endDate, _ := time.Parse("2006-01-02", record[6])
+
+		fundraisingCategoryID, _ := strconv.ParseUint(record[7], 10, 64)
+		fundraisingOrgID, _ := strconv.ParseUint(record[8], 10, 64)
+
+		fundraising := entities.Fundraising{
+			Title:                 record[1],
+			ImageUrl:              record[2],
+			Description:           record[3],
+			GoalAmount:            goalAmount,
+			StartDate:             &startDate,
+			EndDate:               &endDate,
+			Status:                "unachieved",
+			FundraisingCategoryID: uint(fundraisingCategoryID),
+			OrganizationID:        uint(fundraisingOrgID),
+		}
+		s.adminRepository.Create(fundraising)
+	}
+
+	return nil
+}
+
+func (s *adminService) ImportFundraisingFromExcel(file *excelize.File) error {
+	rows, err := file.GetRows("Sheet1")
+	if err != nil {
+		return err
+	}
+
+	for _, row := range rows[1:] { // Skip header row
+		goalAmount, _ := strconv.Atoi(row[4])
+		startDate, _ := time.Parse("2006-01-02", row[6])
+		endDate, _ := time.Parse("2006-01-02", row[7])
+
+		fundraising := entities.Fundraising{
+			Title:       row[1],
+			ImageUrl:    row[2],
+			Description: row[3],
+			GoalAmount:  goalAmount,
+			StartDate:   &startDate,
+			EndDate:     &endDate,
+		}
+		s.adminRepository.Create(fundraising)
+	}
+
+	return nil
+}
+
+func (s *adminService) GetNotificationForAdmin() ([]entities.AdminNotification, error) {
+
+	return s.adminRepository.FindNotifications()
 }

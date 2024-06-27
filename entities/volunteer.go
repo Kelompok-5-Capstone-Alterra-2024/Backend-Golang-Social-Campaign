@@ -13,6 +13,7 @@ type Volunteer struct {
 	Organization         Organization `json:"organization" gorm:"foreignKey:OrganizationID"`
 	ContentActivity      string       `json:"content_activity" gorm:"type:text"`
 	Location             string       `json:"location" gorm:"type:varchar(255)"`
+	LinkWA               string       `json:"link_wa" gorm:"type:varchar(255)"`
 	StartDate            time.Time    `json:"start_date" gorm:"datetime"`
 	EndDate              time.Time    `json:"end_date" gorm:"datetime"`
 	TargetVolunteer      int          `json:"target_volunteer"`

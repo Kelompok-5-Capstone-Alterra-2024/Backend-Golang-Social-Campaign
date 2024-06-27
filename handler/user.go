@@ -13,11 +13,12 @@ import (
 )
 
 type UserHandler struct {
-	userService service.UserService
+	userService        service.UserService
+	fundraisingService service.FundraisingService
 }
 
-func NewUserHandler(userService service.UserService) *UserHandler {
-	return &UserHandler{userService}
+func NewUserHandler(userService service.UserService, fundraisingService service.FundraisingService) *UserHandler {
+	return &UserHandler{userService, fundraisingService}
 }
 
 func (h *UserHandler) Register(c echo.Context) error {
@@ -30,33 +31,6 @@ func (h *UserHandler) Register(c echo.Context) error {
 	return c.JSON(200, helper.GeneralResponse(true, "User registered successfully"))
 }
 
-// func (h *UserHandler) Login(c echo.Context) error {
-// 	var request dto.LoginRequest
-// 	c.Bind(&request)
-// 	loggedUser, err := h.userService.Login(request)
-// 	if err != nil {
-// 		return c.JSON(500, helper.ErrorResponse(false, "validation failed", "invalid credentials"))
-// 	}
-
-// 	return c.JSON(200, helper.ResponseWithData(true, "User logged in successfully", loggedUser.Token))
-// }
-
-// func (h *UserHandler) Login(c echo.Context) error {
-// 	var request dto.LoginRequest
-// 	c.Bind(&request)
-// 	_, accessToken, refreshToken, err := h.userService.Login(request)
-// 	if err != nil {
-// 		return c.JSON(500, helper.ErrorResponse(false, "validation failed", "invalid credentials"))
-// 	}
-
-// 	response := map[string]string{
-// 		"access_token":  accessToken,
-// 		"refresh_token": refreshToken,
-// 	}
-// 	return c.JSON(200, helper.ResponseWithData(true, "User logged in successfully", response))
-// }
-
-// handler/user.go
 func (h *UserHandler) Login(c echo.Context) error {
 	var request dto.LoginRequest
 	c.Bind(&request)
@@ -103,7 +77,20 @@ func (h *UserHandler) ForgetPassword(c echo.Context) error {
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "validation failed", err.Error()))
 	}
-	return c.JSON(200, helper.GeneralResponse(true, "Reset password link sent to your email"))
+	return c.JSON(200, helper.GeneralResponse(true, "OTP sent to your email"))
+}
+
+func (h *UserHandler) VerifyOTP(c echo.Context) error {
+	type OTPRequest struct {
+		OTP string `json:"otp"`
+	}
+	var request OTPRequest
+	c.Bind(&request)
+	_, err := h.userService.VerifyOTP(request.OTP)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "validation failed", err.Error()))
+	}
+	return c.JSON(200, helper.ResponseWithData(true, "OTP verified successfully", request.OTP))
 }
 
 func (h *UserHandler) ResetPassword(c echo.Context) error {
@@ -116,9 +103,25 @@ func (h *UserHandler) ResetPassword(c echo.Context) error {
 
 	err := h.userService.ResetPassword(request.OTP, request.Password)
 	if err != nil {
-		return c.JSON(500, helper.ErrorResponse(false, "validation failed", err.Error()))
+		return c.JSON(500, helper.ErrorResponse(false, "validation failed", "invalid or expired OTP"))
 	}
-	return c.JSON(200, helper.GeneralResponse(true, "Password reset successfully"))
+	return c.JSON(200, helper.ResponseWithData(true, "Password changed successfully", request.OTP))
+}
+
+func (h *UserHandler) ResetPasswordParamOtp(c echo.Context) error {
+	otp := c.Param("otp")
+
+	var request dto.ResetPasswordRequest
+	c.Bind(&request)
+	if request.Password != request.ConfirmPass {
+		return c.JSON(500, helper.ErrorResponse(false, "validation failed", errors.New("password doesn't match").Error()))
+	}
+
+	err := h.userService.ResetPassword(otp, request.Password)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "validation failed", "invalid or expired OTP"))
+	}
+	return c.JSON(200, helper.GeneralResponse(true, "Password changed successfully"))
 }
 
 func (h *UserHandler) GetUserProfile(c echo.Context) error {
@@ -136,6 +139,9 @@ func (h *UserHandler) GetUserProfile(c echo.Context) error {
 		ID:       userProfile.ID,
 		Avatar:   userProfile.Avatar,
 		Username: userProfile.Username,
+		Fullname: userProfile.Fullname,
+		Email:    userProfile.Email,
+		NoTelp:   userProfile.NoTelp,
 	}
 
 	return c.JSON(200, helper.ResponseWithData(true, "Profile retrieved successfully", response))
@@ -149,6 +155,17 @@ func (h *UserHandler) EditProfile(c echo.Context) error {
 		return c.JSON(401, helper.ErrorResponse(false, "Unauthorized.", err.Error()))
 	}
 
+	imgFile, err := c.FormFile("avatar_url")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid image url", err.Error()))
+	}
+
+	imageUrl, err := helper.UploadToCloudinary(imgFile)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to upload image", err.Error()))
+	}
+
+	request.Avatar = imageUrl
 	editProfile, err := h.userService.EditProfile(userID, request)
 	if err != nil {
 		return c.JSON(500, helper.ErrorResponse(false, "validation failed", err.Error()))
@@ -208,7 +225,7 @@ func (h *UserHandler) GetHistoryVolunteerDetail(c echo.Context) error {
 		return c.JSON(404, helper.ErrorResponse(false, "History not found.", err.Error()))
 	}
 
-	return c.JSON(200, helper.ResponseWithData(true, "", history))
+	return c.JSON(200, helper.ResponseWithData(true, "Success get history volunteer", history))
 }
 
 func (h *UserHandler) GetHistoryDonation(c echo.Context) error {
@@ -229,6 +246,11 @@ func (h *UserHandler) CreateBookmarkFundraising(c echo.Context) error {
 	fundraisingID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid ID format", err.Error()))
+	}
+
+	_, err = h.fundraisingService.FindFundraisingByID(fundraisingID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to add bookmark", err.Error()))
 	}
 
 	userID, err := helper.GetUserIDFromJWT(c)
@@ -363,24 +385,83 @@ func (h *UserHandler) GetBookmarkArticle(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "success get bookmarks", response, page, limit, int64(len(response))))
 }
 
-// func (h *UserHandler) RefreshToken(c echo.Context) error {
-// 	refreshToken := c.Request().Header.Get("Refresh-Token")
-// 	if refreshToken == "" {
-// 		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
-// 			"message": "Refresh token missing",
-// 		})
-// 	}
+func (h *UserHandler) GetUserBookmarkVolunteer(c echo.Context) error {
+	userID, err := helper.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.JSON(401, helper.ErrorResponse(false, "unauthorized", err.Error()))
+	}
 
-// 	newAccessToken, newRefreshToken, err := middleware.RefreshToken(refreshToken)
-// 	if err != nil {
-// 		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
-// 			"message": "Invalid refresh token",
-// 		})
-// 	}
+	limitStr := c.QueryParam("limit")
+	pageStr := c.QueryParam("page")
 
-// 	response := map[string]string{
-// 		"access_token":  newAccessToken,
-// 		"refresh_token": newRefreshToken,
-// 	}
-// 	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "Token refreshed successfully", response))
-// }
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		limit = 6
+	}
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	offset := (page - 1) * limit
+
+	bookmarks, err := h.userService.GetUserVolunteerBookmark(uint(userID), limit, offset)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to get bookmarks", err.Error()))
+	}
+
+	response := dto.ToAllUserVolunteerBookmarkResponse(bookmarks)
+
+	return c.JSON(http.StatusOK, helper.ResponseWithPagination("success", "success get bookmarks", response, page, limit, int64(len(response))))
+}
+
+func (h *UserHandler) CreateBookmarkVolunteer(c echo.Context) error {
+	volunteerID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid ID format", err.Error()))
+	}
+
+	userID, err := helper.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.JSON(401, helper.ErrorResponse(false, "unauthorized", err.Error()))
+	}
+
+	err = h.userService.AddUserVolunteerBookmark(uint(volunteerID), uint(userID))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to add bookmark", err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "bookmark added successfully"))
+}
+
+func (h *UserHandler) DeleteBookmarkVolunteer(c echo.Context) error {
+	volunteerID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid ID format", err.Error()))
+	}
+
+	userID, err := helper.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.JSON(401, helper.ErrorResponse(false, "unauthorized", err.Error()))
+	}
+
+	err = h.userService.DeleteUserVolunteerBookmark(uint(volunteerID), uint(userID))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to delete bookmark", err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "bookmark deleted successfully"))
+}
+
+func (h *UserHandler) GetNotificationFundraising(c echo.Context) error {
+	notifications, err := h.userService.GetNotificationFundraising()
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to get notifications", err.Error()))
+	}
+
+	response := dto.ToAllUserNotificationResponse(notifications)
+
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "success get notifications", response))
+}

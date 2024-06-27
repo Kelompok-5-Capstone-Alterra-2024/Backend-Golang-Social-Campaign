@@ -31,6 +31,13 @@ type UserRepository interface {
 	AddUserArticleBookmark(user entities.UserBookmarkArticle) error
 	DeleteUserArticleBookmark(id uint, userid uint) error
 	IsArticleBookmark(id uint, userid uint) (bool, error)
+
+	FindUserVolunteerBookmark(id uint, limit int, offset int) ([]entities.UserBookmarkVolunteerVacancy, error)
+	AddUserVolunteerBookmark(user entities.UserBookmarkVolunteerVacancy) error
+	DeleteUserVolunteerBookmark(id uint, userid uint) error
+	IsVolunteerBookmark(id uint, userid uint) (bool, error)
+
+	GetNotificationFundraising() ([]entities.Fundraising, error)
 }
 
 type userRepository struct {
@@ -204,4 +211,47 @@ func (r *userRepository) IsArticleBookmark(id uint, userid uint) (bool, error) {
 		return false, err
 	}
 	return count > 0, nil
+}
+
+func (r *userRepository) FindUserVolunteerBookmark(id uint, limit int, offset int) ([]entities.UserBookmarkVolunteerVacancy, error) {
+
+	var bookmark []entities.UserBookmarkVolunteerVacancy
+
+	if err := r.db.Preload("Volunteer.Organization").Limit(limit).Offset(offset).Where("user_id = ?", id).Find(&bookmark).Error; err != nil {
+		return bookmark, err
+	}
+
+	return bookmark, nil
+}
+
+func (r *userRepository) AddUserVolunteerBookmark(user entities.UserBookmarkVolunteerVacancy) error {
+
+	return r.db.Create(&user).Error
+}
+
+func (r *userRepository) DeleteUserVolunteerBookmark(id uint, userid uint) error {
+
+	return r.db.Where("volunteer_vacancies_id = ? AND user_id = ?", id, userid).Delete(&entities.UserBookmarkVolunteerVacancy{}).Error
+
+}
+
+func (r *userRepository) IsVolunteerBookmark(id uint, userid uint) (bool, error) {
+
+	var count int64
+
+	if err := r.db.Model(&entities.UserBookmarkVolunteerVacancy{}).Where("volunteer_vacancies_id = ? AND user_id = ?", id, userid).Count(&count).Error; err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
+
+func (r *userRepository) GetNotificationFundraising() ([]entities.Fundraising, error) {
+	var donation []entities.Fundraising
+	if err := r.db.Preload("Organization").Order("created_at desc").Limit(10).Find(&donation).Error; err != nil {
+		return donation, err
+	}
+
+	return donation, nil
+
 }

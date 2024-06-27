@@ -4,6 +4,7 @@ import (
 	"capstone/entities"
 	"capstone/repositories"
 	"context"
+	"errors"
 )
 
 type FundraisingService interface {
@@ -31,7 +32,13 @@ func (s *fundraisingService) FindTopFundraisings() ([]entities.Fundraising, erro
 }
 
 func (s *fundraisingService) FindFundraisingByID(id int) (entities.Fundraising, error) {
-	return s.fundraisingRepository.FindByID(id)
+	fundraising, err := s.fundraisingRepository.FindByID(id)
+
+	if err != nil {
+		return entities.Fundraising{}, errors.New("fundraising not found")
+	}
+
+	return fundraising, nil
 }
 
 func (s *fundraisingService) FindAllFundraisingCategories() ([]entities.FundraisingCategory, error) {

@@ -11,6 +11,7 @@ type VolunteerRequest struct {
 	Title                string `json:"title" form:"title"`
 	ContentActivity      string `json:"content_activity" form:"content_activity"`
 	Location             string `json:"location" form:"location"`
+	LinkWA               string `json:"link_wa" form:"link_wa"`
 	StarDate             string `json:"start_date" form:"start_date"`
 	EndDate              string `json:"end_date" form:"end_date"`
 	TargetVolunteer      int    `json:"target_volunteer" form:"target_volunteer"`
@@ -60,6 +61,7 @@ func (r *VolunteerRequest) ToEntity(imgUrl string) (entities.Volunteer, error) {
 		Title:                r.Title,
 		ContentActivity:      r.ContentActivity,
 		Location:             r.Location,
+		LinkWA:               r.LinkWA,
 		StartDate:            startDate,
 		EndDate:              endDate,
 		TargetVolunteer:      r.TargetVolunteer,
@@ -70,18 +72,55 @@ func (r *VolunteerRequest) ToEntity(imgUrl string) (entities.Volunteer, error) {
 }
 
 type VolunteerResponse struct {
-	ID                  uint                   `json:"id"`
-	Organization        VolunteerOrg           `json:"organization"`
-	Title               string                 `json:"title"`
-	ContentActivity     string                 `json:"content_activity"`
-	Location            string                 `json:"location"`
-	StartDate           string                 `json:"start_date"`
-	EndDate             string                 `json:"end_date"`
-	TargetVolunteer     int                    `json:"target_volunteer"`
-	RegisteredVolunteer int                    `json:"registered_volunteer"`
-	RegisTionDeadline   string                 `json:"registration_deadline"`
-	ImageURL            string                 `json:"image_url"`
-	UserRegistered      UserRegisteredResponse `json:"user_registered"`
+	ID                  uint                         `json:"id"`
+	Organization        VolunteerOrg                 `json:"organization"`
+	Title               string                       `json:"title"`
+	ContentActivity     string                       `json:"content_activity"`
+	Location            string                       `json:"location"`
+	LinkWA              string                       `json:"link_wa"`
+	StartDate           string                       `json:"start_date"`
+	EndDate             string                       `json:"end_date"`
+	TargetVolunteer     int                          `json:"target_volunteer"`
+	RegisteredVolunteer int                          `json:"registered_volunteer"`
+	RegisTionDeadline   string                       `json:"registration_deadline"`
+	ImageURL            string                       `json:"image_url"`
+	UserRegistered      UserRegisteredResponse       `json:"user_registered"`
+	Testimoni           []VolunteerTestimoniResponse `json:"testimoni"`
+}
+
+type VolunteerTestimoniResponse struct {
+	ID            uint                `json:"id"`
+	UserTestimoni UserCommentResponse `json:"user_testimoni"`
+	Body          string              `json:"body"`
+	Rating        string              `json:"rating"`
+	CreatedAt     string              `json:"created_at"`
+}
+
+func ToUserCommentResponse(user entities.User) UserCommentResponse {
+	return UserCommentResponse{
+		UserID:   user.ID,
+		Avatar:   user.Avatar,
+		Username: user.Username,
+	}
+}
+
+func ToVolunteerTestimoniResponse(testimoni entities.TestimoniVolunteer) VolunteerTestimoniResponse {
+	return VolunteerTestimoniResponse{
+		ID:            testimoni.ID,
+		UserTestimoni: ToUserCommentResponse(testimoni.User),
+		Body:          testimoni.Testimoni,
+		Rating:        testimoni.Rating,
+		CreatedAt:     testimoni.CreatedAt.Format("2006-01-02"),
+	}
+}
+
+func ToAllVolunteerTestimoniResponse(testimoni []entities.TestimoniVolunteer) []VolunteerTestimoniResponse {
+	result := []VolunteerTestimoniResponse{}
+	for _, t := range testimoni {
+		result = append(result, ToVolunteerTestimoniResponse(t))
+	}
+
+	return result
 }
 
 type VolunteerOrg struct {
@@ -101,7 +140,7 @@ type UserAvatarRegisteredResponse struct {
 	Avatar string `json:"avatar"`
 }
 
-func ToVolunteerResponse(volunteer entities.Volunteer, application []entities.Application) VolunteerResponse {
+func ToVolunteerResponse(volunteer entities.Volunteer, application []entities.Application, testimoni []entities.TestimoniVolunteer) VolunteerResponse {
 
 	uniqueUserAvatars := map[uint]string{}
 	for _, app := range application {
@@ -132,12 +171,28 @@ func ToVolunteerResponse(volunteer entities.Volunteer, application []entities.Ap
 		IsVerified: volunteer.Organization.IsVerified,
 	}
 
+	testimoniResponse := []VolunteerTestimoniResponse{}
+	for _, testimoni := range testimoni {
+		testimoniResponse = append(testimoniResponse, VolunteerTestimoniResponse{
+			UserTestimoni: UserCommentResponse{
+				UserID:   testimoni.User.ID,
+				Avatar:   testimoni.User.Avatar,
+				Username: testimoni.User.Username,
+			},
+			ID:        testimoni.ID,
+			Body:      testimoni.Testimoni,
+			Rating:    testimoni.Rating,
+			CreatedAt: testimoni.CreatedAt.Format("2006-01-02"),
+		})
+	}
+
 	return VolunteerResponse{
 		ID:                  volunteer.ID,
 		Organization:        volunteerOrg,
 		Title:               volunteer.Title,
 		ContentActivity:     volunteer.ContentActivity,
 		Location:            volunteer.Location,
+		LinkWA:              volunteer.LinkWA,
 		StartDate:           volunteer.StartDate.Format("2006-01-02"),
 		EndDate:             volunteer.EndDate.Format("2006-01-02"),
 		TargetVolunteer:     volunteer.TargetVolunteer,
@@ -145,6 +200,7 @@ func ToVolunteerResponse(volunteer entities.Volunteer, application []entities.Ap
 		RegisTionDeadline:   volunteer.RegistrationDeadline.Format("2006-01-02"),
 		ImageURL:            volunteer.ImageURL,
 		UserRegistered:      userRegisteredResponse,
+		Testimoni:           testimoniResponse,
 	}
 }
 

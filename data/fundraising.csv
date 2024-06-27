@@ -1,0 +1,2 @@
+id,title,image_url,description,goal_amount,start_date,end_date,categoryID,organizationID
+1,Fundraising Title 1,http://example.com/image1.jpg,Description of Fundraising 1,1000000,2024-08-01,2024-08-23,1,2

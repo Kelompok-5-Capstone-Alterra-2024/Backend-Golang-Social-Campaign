@@ -67,8 +67,8 @@ type FundraisingOrg struct {
 }
 
 type UserDonatedResponse struct {
-	UserAvatarDonatedResponse UserAvatarDonatedResponse `json:"user_avatar_donated"`
-	TotalUserDonated          int                       `json:"total_user_donated"`
+	UserAvatarDonatedResponse []UserAvatarDonatedResponse `json:"user_avatar_donated"`
+	TotalUserDonated          int                         `json:"total_user_donated"`
 }
 
 type UserAvatarDonatedResponse struct {
@@ -77,6 +77,7 @@ type UserAvatarDonatedResponse struct {
 }
 
 type FundraisingCommentResponse struct {
+	ID                  uint                `json:"id"`
 	UserCommentResponse UserCommentResponse `json:"user_comment"`
 	Body                string              `json:"body"`
 	TotalLikes          int                 `json:"total_likes"`
@@ -84,25 +85,28 @@ type FundraisingCommentResponse struct {
 }
 
 type UserCommentResponse struct {
+	UserID   uint   `json:"user_id"`
 	Avatar   string `json:"avatar"`
 	Username string `json:"username"`
 }
 
-func ToFundraisingResponse(fundraising entities.Fundraising, comments []entities.DonationComment, donations []entities.Donation) FundraisingResponse {
+func ToFundraisingResponse(fundraising entities.Fundraising, comments []entities.DonationManualComment, donations []entities.DonationManual) FundraisingResponse {
 
 	uniqueUserAvatars := make(map[uint]string)
 	for _, donation := range donations {
 		uniqueUserAvatars[donation.UserID] = donation.User.Avatar
 	}
 
-	// Get the avatar of the first unique user who donated
-	var userAvatarDonatedResponse UserAvatarDonatedResponse
+	// Get the avatar of the first four unique user who donated
+	userAvatarDonatedResponse := []UserAvatarDonatedResponse{}
 	for userID, avatar := range uniqueUserAvatars {
-		userAvatarDonatedResponse = UserAvatarDonatedResponse{
+		if len(userAvatarDonatedResponse) == 4 {
+			break
+		}
+		userAvatarDonatedResponse = append(userAvatarDonatedResponse, UserAvatarDonatedResponse{
 			UserID: userID,
 			Avatar: avatar,
-		}
-		break
+		})
 	}
 
 	userDonatedResponse := UserDonatedResponse{
@@ -120,9 +124,11 @@ func ToFundraisingResponse(fundraising entities.Fundraising, comments []entities
 	commentResponses := make([]FundraisingCommentResponse, len(comments))
 	for i, comment := range comments {
 		commentResponses[i] = FundraisingCommentResponse{
+			ID: comment.ID,
 			UserCommentResponse: UserCommentResponse{
-				Avatar:   comment.Donation.User.Avatar,
-				Username: comment.Donation.User.Username,
+				UserID:   comment.DonationManual.User.ID,
+				Avatar:   comment.DonationManual.User.Avatar,
+				Username: comment.DonationManual.User.Username,
 			},
 			Body:       comment.Comment,
 			TotalLikes: comment.TotalLikes,

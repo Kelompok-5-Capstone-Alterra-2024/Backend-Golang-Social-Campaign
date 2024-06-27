@@ -46,7 +46,7 @@ func (r *articleRepository) FindAll(page, limit int) ([]entities.Article, int, e
 
 	offset := (page - 1) * limit
 
-	if err := r.db.Offset(offset).Limit(limit).Find(&articles).Error; err != nil {
+	if err := r.db.Order("created_at desc").Offset(offset).Limit(limit).Find(&articles).Error; err != nil {
 		return nil, 0, err
 	}
 

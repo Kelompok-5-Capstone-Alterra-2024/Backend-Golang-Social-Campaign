@@ -46,7 +46,7 @@ func (r *donationManualRepository) SaveComment(donationComment entities.Donation
 
 func (r *donationManualRepository) GetCommentsByDonationID(id int) ([]entities.DonationManualComment, error) {
 	var donationComments []entities.DonationManualComment
-	if err := r.db.Preload("DonationManual.User").Preload("DonationManual.Fundraising").Joins("JOIN donation_manuals ON donation_manuals.id = donation_manual_comments.donation_manual_id").Where("donation_manuals.fundraising_id = ? = ?", id).Find(&donationComments).Error; err != nil {
+	if err := r.db.Preload("DonationManual.User").Preload("DonationManual.Fundraising").Joins("JOIN donation_manuals ON donation_manuals.id = donation_manual_comments.donation_manual_id").Where("donation_manuals.fundraising_id = ?", id).Find(&donationComments).Error; err != nil {
 		return donationComments, err
 	}
 
@@ -93,11 +93,10 @@ func (r *donationManualRepository) RemoveLike(ctx context.Context, commentID uin
 }
 
 func (r *donationManualRepository) IsLiked(ctx context.Context, commentID uint, userID uint) (bool, error) {
-	var like entities.LikeDonationManualComment
-	if err := r.db.WithContext(ctx).Where("donation_manual_comment_id = ? AND user_id = ?", commentID, userID).First(&like).Error; err != nil {
-		return false, err
-	}
-	return true, nil
+	var count int64
+	err := r.db.WithContext(ctx).Model(&entities.LikeDonationManualComment{}).Where("donation_manual_comment_id = ? AND user_id = ?", commentID, userID).Count(&count).Error
+
+	return count > 0, err
 }
 
 func (r *donationManualRepository) IncrementLike(ctx context.Context, commentID uint) error {

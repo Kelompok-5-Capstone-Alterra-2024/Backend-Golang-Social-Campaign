@@ -37,6 +37,9 @@ type UserProfileResponse struct {
 	ID       uint   `json:"user_id"`
 	Avatar   string `json:"avatar_url"`
 	Username string `json:"username"`
+	Fullname string `json:"full_name"`
+	Email    string `json:"email"`
+	NoTelp   string `json:"no_telp"`
 }
 
 type EditProfileRequest struct {
@@ -55,19 +58,24 @@ type ChangePasswordRequest struct {
 }
 
 type UserVolunteerHistory struct {
-	ID       uint      `json:"id"`
-	Title    string    `json:"title"`
-	ImageURL string    `json:"image_url"`
-	Location string    `json:"location"`
-	Date     time.Time `json:"date"`
+	ID        uint      `json:"id"`
+	Title     string    `json:"title"`
+	ImageURL  string    `json:"image_url"`
+	Location  string    `json:"location"`
+	StartDate time.Time `json:"start_date"`
+	EndDate   time.Time `json:"end_date"`
+	Status    string    `json:"status"`
 }
 
 type UserVolunteerHistoryDetail struct {
-	ID              uint   `json:"id"`
-	Title           string `json:"title"`
-	ImageURL        string `json:"image_url"`
-	Location        string `json:"location"`
-	ContentActivity string `json:"content_activity"`
+	ID              uint      `json:"id"`
+	Title           string    `json:"title"`
+	ImageURL        string    `json:"image_url"`
+	Location        string    `json:"location"`
+	ContentActivity string    `json:"content_activity"`
+	StartDate       time.Time `json:"start_date"`
+	EndDate         time.Time `json:"end_date"`
+	Status          string    `json:"status"`
 }
 
 type UserDonationHistory struct {
@@ -115,6 +123,7 @@ type UserArticleBookmark struct {
 	ArticleID uint   `json:"article_id"`
 	Title     string `json:"title"`
 	ImageURL  string `json:"image_url"`
+	Content   string `json:"content"`
 	Date      string `json:"date"`
 }
 
@@ -124,6 +133,7 @@ func ToUserArticleBookmarkResponse(articleBookmark entities.UserBookmarkArticle)
 		ArticleID: articleBookmark.ArticleID,
 		Title:     articleBookmark.Article.Title,
 		ImageURL:  articleBookmark.Article.ImageURL,
+		Content:   articleBookmark.Article.Content,
 		Date:      articleBookmark.Article.CreatedAt.Format("2006-01-02"),
 	}
 }
@@ -132,6 +142,63 @@ func ToAllUserArticleBookmarkResponse(articles []entities.UserBookmarkArticle) [
 	var result []UserArticleBookmark
 	for _, article := range articles {
 		result = append(result, ToUserArticleBookmarkResponse(article))
+	}
+	return result
+}
+
+type OrgVolunteer struct {
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
+}
+
+type UserVolunteerBookmark struct {
+	ID                   uint         `json:"id"`
+	VolunteerID          uint         `json:"volunteer_id"`
+	Organization         OrgVolunteer `json:"organization"`
+	Title                string       `json:"title"`
+	ImageURL             string       `json:"image_url"`
+	RegistrationDeadline string       `json:"registration_deadline"`
+}
+
+func ToUserVolunteerBookmarkResponse(volunteerBookmark entities.UserBookmarkVolunteerVacancy) UserVolunteerBookmark {
+	return UserVolunteerBookmark{
+		ID:                   volunteerBookmark.ID,
+		VolunteerID:          volunteerBookmark.VolunteerVacanciesID,
+		Organization:         OrgVolunteer{ID: volunteerBookmark.Volunteer.OrganizationID, Name: volunteerBookmark.Volunteer.Organization.Name},
+		Title:                volunteerBookmark.Volunteer.Title,
+		ImageURL:             volunteerBookmark.Volunteer.ImageURL,
+		RegistrationDeadline: volunteerBookmark.Volunteer.RegistrationDeadline.Format("2006-01-02"),
+	}
+}
+
+func ToAllUserVolunteerBookmarkResponse(volunteers []entities.UserBookmarkVolunteerVacancy) []UserVolunteerBookmark {
+	var result []UserVolunteerBookmark
+	for _, volunteer := range volunteers {
+		result = append(result, ToUserVolunteerBookmarkResponse(volunteer))
+	}
+	return result
+}
+
+type UserNotification struct {
+	FundraisingID uint   `json:"fundraising_id"`
+	Title         string `json:"title"`
+	OrgAvatar     string `json:"org_avatar"`
+	CreatedAt     string `json:"created_at"`
+}
+
+func ToUserNotificationResponse(notification entities.Fundraising) UserNotification {
+	return UserNotification{
+		FundraisingID: notification.ID,
+		Title:         notification.Title,
+		OrgAvatar:     notification.Organization.Avatar,
+		CreatedAt:     notification.CreatedAt.Format("2006-01-02"),
+	}
+}
+
+func ToAllUserNotificationResponse(notifications []entities.Fundraising) []UserNotification {
+	var result []UserNotification
+	for _, notification := range notifications {
+		result = append(result, ToUserNotificationResponse(notification))
 	}
 	return result
 }

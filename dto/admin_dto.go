@@ -2,6 +2,15 @@ package dto
 
 import "capstone/entities"
 
+type DistributeFundFundraisingRequest struct {
+	FundraisingID uint   `json:"fundraising_id" form:"fundraising_id"`
+	Amount        int    `json:"amount" form:"amount"`
+	BankName      string `json:"bank_name" form:"bank_name"`
+	NoRekening    string `json:"no_rekening" form:"no_rekening"`
+	Name          string `json:"name" form:"name"`
+	ImagePayment  string `json:"image_payment" form:"image_payment"`
+}
+
 type AdminFundraisingsResponse struct {
 	ID               uint   `json:"id"`
 	Title            string `json:"title"`
@@ -69,20 +78,20 @@ type AdminFundraisingDonationResponse struct {
 	FundraisingDescription string `json:"fundraising_description"`
 }
 
-func ToAdminFundraisingDonationResponse(donation entities.Donation) AdminFundraisingDonationResponse {
+func ToAdminFundraisingDonationResponse(donation entities.DonationManual) AdminFundraisingDonationResponse {
 	return AdminFundraisingDonationResponse{
 		ID:                     donation.ID,
 		FundraisingID:          donation.FundraisingID,
 		UserID:                 donation.UserID,
 		UserName:               donation.User.Fullname,
 		CurrentAmount:          donation.Fundraising.CurrentProgress,
-		PaymentMethod:          donation.PaymentMethod,
+		PaymentMethod:          "Transfer Bank",
 		DonatedDate:            donation.CreatedAt.Format("2006-01-02"),
 		FundraisingDescription: donation.Fundraising.Description,
 	}
 }
 
-func ToAdminAllFundraisingDonationResponse(donations []entities.Donation) []AdminFundraisingDonationResponse {
+func ToAdminAllFundraisingDonationResponse(donations []entities.DonationManual) []AdminFundraisingDonationResponse {
 	var result []AdminFundraisingDonationResponse
 	for _, donation := range donations {
 		result = append(result, ToAdminFundraisingDonationResponse(donation))
@@ -178,6 +187,7 @@ type AdminOrganizationsResponse struct {
 	Instagram  string `json:"instagram"`
 	NoRekening string `json:"no_rek"`
 	IsVerified bool   `json:"is_verified"`
+	Avatar     string `json:"avatar"`
 }
 
 func ToAdminOrganizationsResponse(organization entities.Organization) AdminOrganizationsResponse {
@@ -189,6 +199,7 @@ func ToAdminOrganizationsResponse(organization entities.Organization) AdminOrgan
 		Instagram:  organization.Instagram,
 		NoRekening: organization.NoRekening,
 		IsVerified: organization.IsVerified,
+		Avatar:     organization.Avatar,
 	}
 }
 
@@ -446,4 +457,34 @@ func ToAdminAllDonationResponses(donations []entities.DonationManual) []AdminDon
 		result = append(result, ToAdminDonationResponses(donation))
 	}
 	return result
+}
+
+type TransactionSummary struct {
+	Transaction []TransactionData `json:"transaction"`
+	TotalAmount float64           `json:"total_amount"`
+	Moth        string            `json:"moth"`
+	Percentage  float64           `json:"percentage"`
+}
+
+type TransactionData struct {
+	Date   string  `json:"date"`
+	Amount float64 `json:"amount"`
+}
+
+func ToTransactionSummary(transactions []entities.Transaction, totalAmount float64, month string, percentage float64) TransactionSummary {
+	var transactionData []TransactionData
+
+	for _, transaction := range transactions {
+		transactionData = append(transactionData, TransactionData{
+			Date:   transaction.CreatedAt.Format("2006-01-02"),
+			Amount: float64(transaction.Amount),
+		})
+	}
+
+	return TransactionSummary{
+		Transaction: transactionData,
+		TotalAmount: totalAmount,
+		Moth:        month,
+		Percentage:  percentage,
+	}
 }

@@ -18,11 +18,16 @@ type Fundraising struct {
 	Status                string              `json:"status" gorm:"type:varchar(255)"`
 	GoalAmount            int                 `json:"goal_amount" gorm:"type:int"`
 	CurrentProgress       int                 `json:"current_progress" gorm:"type:int"`
-	StartDate             time.Time           `json:"start_date" gorm:"datetime"`
-	EndDate               time.Time           `json:"end_date" gorm:"datetime"`
+	StartDate             *time.Time          `json:"start_date" gorm:"datetime"`
+	EndDate               *time.Time          `json:"end_date" gorm:"datetime"`
 }
 
 type FundraisingCategory struct {
 	gorm.Model
 	Name string `json:"name" gorm:"type:varchar(255)"`
+}
+
+type FundraisingCategoryWithCount struct {
+	Category FundraisingCategory `json:"category"`
+	Count    int                 `json:"count"`
 }

@@ -6,14 +6,13 @@ import (
 	"capstone/helper"
 	middleware "capstone/middlewares"
 	"capstone/service"
-	"context"
+	"encoding/csv"
 	"net/http"
 	"strconv"
 	"time"
 
-	"github.com/cloudinary/cloudinary-go/v2"
-	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/labstack/echo/v4"
+	"github.com/xuri/excelize/v2"
 )
 
 type AdminHandler struct {
@@ -26,16 +25,6 @@ type AdminHandler struct {
 func NewAdminHandler(adminService service.AdminService, volunteerService service.VolunteerService, articleService service.ArticleService, commentService service.CommentService) *AdminHandler {
 	return &AdminHandler{adminService, volunteerService, articleService, commentService}
 }
-
-// func (h *AdminHandler) Login(c echo.Context) error {
-// 	var request dto.LoginRequest
-// 	c.Bind(&request)
-// 	admin, err := h.adminService.Login(request)
-// 	if err != nil {
-// 		return c.JSON(500, helper.ErrorResponse(false, "validation failed", "invalid username or password"))
-// 	}
-// 	return c.JSON(200, helper.ResponseWithData(true, "Admin logged in successfully", admin.Token))
-// }
 
 func (h *AdminHandler) Login(c echo.Context) error {
 	var request dto.LoginRequest
@@ -102,12 +91,15 @@ func (h *AdminHandler) CreateFundraisingContent(c echo.Context) error {
 		return c.JSON(400, helper.ErrorResponse(false, "invalid request", err.Error()))
 	}
 
-	fileHeader, _ := c.FormFile("image_url")
-	file, _ := fileHeader.Open()
-	ctx := context.Background()
-	urlCloudinary := "cloudinary://633714464826515:u1W6hqq-Gb8y-SMpXe7tzs4mH44@dvrhf8d9t"
-	cloudinaryUsecase, _ := cloudinary.NewFromURL(urlCloudinary)
-	response, _ := cloudinaryUsecase.Upload.Upload(ctx, file, uploader.UploadParams{})
+	imgFile, err := c.FormFile("image_url")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid image url", err.Error()))
+	}
+
+	imageUrl, err := helper.UploadToCloudinary(imgFile)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to upload image", err.Error()))
+	}
 
 	startDate, err := time.Parse("2006-01-02", req.StartDate)
 	if err != nil {
@@ -120,15 +112,15 @@ func (h *AdminHandler) CreateFundraisingContent(c echo.Context) error {
 	}
 
 	fundraising := entities.Fundraising{
-		ImageUrl:              response.SecureURL,
+		ImageUrl:              imageUrl,
 		Title:                 req.Title,
 		GoalAmount:            req.TargetAmount,
 		Description:           req.Description,
-		StartDate:             startDate,
-		EndDate:               endDate,
+		StartDate:             &startDate,
+		EndDate:               &endDate,
 		FundraisingCategoryID: req.CategoryID,
 		OrganizationID:        req.OrganizationID,
-		Status:                "unachieved",
+		Status:                "aktif",
 	}
 
 	if err != nil {
@@ -194,8 +186,8 @@ func (h *AdminHandler) EditFundraising(c echo.Context) error {
 		Title:                 req.Title,
 		GoalAmount:            req.TargetAmount,
 		Description:           req.Description,
-		StartDate:             startDate,
-		EndDate:               endDate,
+		StartDate:             &startDate,
+		EndDate:               &endDate,
 		FundraisingCategoryID: req.CategoryID,
 		OrganizationID:        req.OrganizationID,
 	}
@@ -243,6 +235,26 @@ func (h *AdminHandler) GetDonationsByFundraisingID(c echo.Context) error {
 
 	response := dto.ToAdminAllFundraisingDonationResponse(donations)
 	return c.JSON(200, helper.ResponseWithData(true, "donation retrieved successfully", response))
+}
+
+func (h *AdminHandler) DistributeFundFundraising(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid ID format", err.Error()))
+	}
+
+	var req dto.DistributeFundFundraisingRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(400, helper.ErrorResponse(false, "invalid request", err.Error()))
+	}
+
+	_, err = h.adminService.DistributeFundFundraising(uint(id), req.Amount)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to distribute fund", err.Error()))
+	}
+
+	return c.JSON(200, helper.GeneralResponse(true, "fund distributed successfully"))
+
 }
 
 func (h *AdminHandler) GetAllOrganizations(c echo.Context) error {
@@ -629,4 +641,104 @@ func (h *AdminHandler) InputAmountDonationManual(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, helper.GeneralResponse(true, "donation amount added successfully"))
+}
+
+func (h *AdminHandler) GetDailyDonationSummary(c echo.Context) error {
+
+	donations, err := h.adminService.GetDailyTransactionStats()
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get donations", err.Error()))
+	}
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "donations retrieved successfully", donations))
+}
+
+func (h *AdminHandler) GetTransactionsSummary(c echo.Context) error {
+	transactions, totalAmount, percentage, month, err := h.adminService.GetTransactionsSummary()
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get transactions", err.Error()))
+	}
+
+	response := dto.ToTransactionSummary(transactions, totalAmount, month, percentage)
+
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "transactions retrieved successfully", response))
+}
+
+func (h *AdminHandler) GetDataTotalContent(c echo.Context) error {
+
+	data, err := h.adminService.GetDataTotalContent()
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get data", err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "data retrieved successfully", data))
+}
+
+func (h *AdminHandler) GetArticlesOrderedByBookmarks(c echo.Context) error {
+
+	articles, err := h.adminService.GetArticlesOrderedByBookmarks(3)
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get articles", err.Error()))
+	}
+
+	response := make([]map[string]interface{}, 0)
+	for _, article := range articles {
+		articleData := map[string]interface{}{
+			"id":             article.ID,
+			"title":          article.Title,
+			"content":        article.Content,
+			"image_url":      article.ImageURL,
+			"bookmark_count": article.BookmarkCount,
+		}
+		response = append(response, articleData)
+	}
+
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "articles retrieved successfully", response))
+
+}
+
+func (h *AdminHandler) GetCategoriesWithCount(c echo.Context) error {
+	categories, err := h.adminService.GetCategoriesWithCount()
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get categories", err.Error()))
+	}
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "categories retrieved successfully", categories))
+}
+
+func (h *AdminHandler) ImportFundraising(c echo.Context) error {
+	file, err := c.FormFile("file")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "failed to get file", err.Error()))
+	}
+
+	src, err := file.Open()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to open file", err.Error()))
+	}
+	defer src.Close()
+
+	if file.Filename[len(file.Filename)-4:] == ".csv" {
+
+		reader := csv.NewReader(src)
+		return h.adminService.ImportFundraisingFromCSV(reader)
+	} else if file.Filename[len(file.Filename)-5:] == ".xlsx" {
+
+		f, err := excelize.OpenReader(src)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(false, "failed to open file", err.Error()))
+		}
+		return h.adminService.ImportFundraisingFromExcel(f)
+	}
+
+	return c.JSON(http.StatusBadRequest, helper.ErrorResponse(false, "invalid file format", err.Error()))
+}
+
+func (h *AdminHandler) GetNotifications(c echo.Context) error {
+	notifications, err := h.adminService.GetNotificationForAdmin()
+
+	if err != nil {
+		return c.JSON(500, helper.ErrorResponse(false, "failed to get notifications", err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "notifications retrieved successfully", notifications))
+
 }

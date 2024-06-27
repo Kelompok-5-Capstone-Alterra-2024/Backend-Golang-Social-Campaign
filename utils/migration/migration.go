@@ -10,7 +10,7 @@ import (
 func Migration() {
 	// List of all entities to be migrated
 	// s
-	if err := database.DB.AutoMigrate(&entities.User{}, &entities.Fundraising{}, &entities.FundraisingCategory{}, &entities.Organization{}, &entities.Donation{}, &entities.DonationComment{}, &entities.LikeDonationComment{}, &entities.DonationManual{}, &entities.DonationManualComment{}, &entities.LikeDonationManualComment{}, &entities.Admin{}, &entities.Volunteer{}, &entities.Application{}, &entities.Article{}, &entities.Comment{}, &entities.LikesComment{}, &entities.TestimoniVolunteer{}, &entities.UserBookmarkArticle{}, &entities.UserBookmarkFundraising{}, &entities.UserBookmarkVolunteerVacancy{}); err != nil {
+	if err := database.DB.AutoMigrate(&entities.User{}, &entities.Fundraising{}, &entities.FundraisingCategory{}, &entities.Organization{}, &entities.Donation{}, &entities.DonationComment{}, &entities.LikeDonationComment{}, &entities.DonationManual{}, &entities.DonationManualComment{}, &entities.LikeDonationManualComment{}, &entities.Admin{}, &entities.Volunteer{}, &entities.Application{}, &entities.Article{}, &entities.Comment{}, &entities.LikesComment{}, &entities.TestimoniVolunteer{}, &entities.UserBookmarkArticle{}, &entities.UserBookmarkFundraising{}, &entities.UserBookmarkVolunteerVacancy{}, &entities.Transaction{}, &entities.AdminNotification{}, &entities.Chatbot{}); err != nil {
 		log.Fatal("Database migration failed")
 	}
 

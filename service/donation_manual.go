@@ -5,6 +5,7 @@ import (
 	"capstone/entities"
 	"capstone/repositories"
 	"context"
+	"fmt"
 )
 
 type DonationManualService interface {
@@ -20,10 +21,11 @@ type DonationManualService interface {
 type donationManualService struct {
 	donationManualRepository repositories.DonationManualRepository
 	fundraisingRepo          repositories.FundraisingRepository
+	adminRepo                repositories.AdminRepository
 }
 
-func NewDonationManualService(donationManualRepository repositories.DonationManualRepository, fundraisingRepo repositories.FundraisingRepository) *donationManualService {
-	return &donationManualService{donationManualRepository, fundraisingRepo}
+func NewDonationManualService(donationManualRepository repositories.DonationManualRepository, fundraisingRepo repositories.FundraisingRepository, adminRepo repositories.AdminRepository) *donationManualService {
+	return &donationManualService{donationManualRepository, fundraisingRepo, adminRepo}
 }
 
 func (s *donationManualService) CreateManualDonation(donationRequest dto.ManualDonationRequest) (entities.DonationManual, error) {
@@ -39,6 +41,17 @@ func (s *donationManualService) CreateManualDonation(donationRequest dto.ManualD
 	// }
 
 	newDonation, err := s.donationManualRepository.Save(donation)
+	if err != nil {
+		return newDonation, err
+	}
+
+	notif := entities.AdminNotification{
+		UserName:  donationRequest.User.Username,
+		AvatarURL: donationRequest.User.Avatar,
+		Message:   fmt.Sprintf("%s melakukan donasi sebesar Rp. %d", newDonation.User.Username, newDonation.Amount),
+	}
+
+	err = s.adminRepo.CreateNofication(notif)
 	if err != nil {
 		return newDonation, err
 	}
