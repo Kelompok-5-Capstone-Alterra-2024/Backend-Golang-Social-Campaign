@@ -61,10 +61,16 @@ type AdminRepository interface {
 
 	FindNotifications() ([]entities.AdminNotification, error)
 	CreateNofication(entities.AdminNotification) error
+	UpdateNotification(entities.AdminNotification) error
 }
 
 type adminRepository struct {
 	db *gorm.DB
+}
+
+// UpdateNotification implements AdminRepository.
+func (*adminRepository) UpdateNotification(entities.AdminNotification) error {
+	panic("unimplemented")
 }
 
 func NewAdminRepository(db *gorm.DB) *adminRepository {
@@ -513,6 +519,13 @@ func (r *adminRepository) FindNotifications() ([]entities.AdminNotification, err
 
 func (r *adminRepository) CreateNofication(notification entities.AdminNotification) error {
 	if err := r.db.Create(&notification).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *adminRepository) UpdateNofication(notification entities.AdminNotification) error {
+	if err := r.db.Save(&notification).Error; err != nil {
 		return err
 	}
 	return nil

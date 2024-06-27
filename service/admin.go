@@ -245,6 +245,17 @@ func (s *adminService) AddAmountToUserDonation(id uint, amount int) (entities.Do
 		return entities.DonationManual{}, err
 	}
 
+	notif := entities.AdminNotification{
+		UserName:  donation.User.Username,
+		AvatarURL: donation.User.Avatar,
+		Message:   fmt.Sprintf("%s melakukan donasi sebesar Rp. %d", donation.User.Username, donation.Amount),
+	}
+
+	err = s.adminRepository.UpdateNotification(notif)
+	if err != nil {
+		return entities.DonationManual{}, err
+	}
+
 	return entities.DonationManual{}, nil
 
 }

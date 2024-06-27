@@ -15,7 +15,6 @@ import (
 
 type UserService interface {
 	Register(request dto.RegisterRequest) (entities.User, error)
-	// Login(request dto.LoginRequest) (entities.User, error)
 	Login(request dto.LoginRequest) (entities.User, string, string, error)
 	GetUserByID(id uint) (entities.User, error)
 	GenerateResetToken(email string) error
@@ -190,14 +189,14 @@ func (s *userService) GenerateResetToken(email string) error {
 func (s *userService) GenerateOTP(email string) error {
 	user, err := s.userRepository.FindByEmail(email)
 	if err != nil {
-		return err
+		return errors.New("email not found")
 	}
 	otp := helper.GenerateRandomOTP(6)
 	user.OTP = otp
 
 	err = s.userRepository.Update(user)
 	if err != nil {
-		return err
+		return errors.New("email not found")
 	}
 
 	return helper.SendOtpResetPassword(email, otp)

@@ -87,6 +87,8 @@ func NewRouter(router *echo.Echo) {
 	api.POST("/chatbot", chatbotHandler.CreateChatBot)
 	api.GET("/chatbot/:chat_id", chatbotHandler.GetChatBot)
 
+	api.POST("/transactions/notification", donationHandler.GetPaymentCallback)
+
 	api.Use(jwt, routeMiddleware.UserMiddleware)
 
 	api.GET("/notifications", userHandler.GetNotificationFundraising)
@@ -98,7 +100,6 @@ func NewRouter(router *echo.Echo) {
 	api.GET("/profile/history/fundraisings", userHandler.GetHistoryDonation)
 	api.GET("/history/volunteers", userHandler.GetHistoryVolunteer)
 	api.GET("/history/volunteers/:id", userHandler.GetHistoryVolunteerDetail)
-	api.POST("/transactions/notification", donationHandler.GetPaymentCallback)
 
 	api.GET("/profile/bookmark/fundraisings", userHandler.GetBookmarkFundraising)
 	api.POST("/fundraisings/bookmark/:id", userHandler.CreateBookmarkFundraising)
@@ -158,16 +159,10 @@ func NewRouter(router *echo.Echo) {
 	// Comment routes
 	api.POST("/articles/:id/comments", commentHandler.CreateComment)
 	api.GET("/articles/:id/comments", commentHandler.GetCommentsByArticleID)
-	// api.PUT("/comments/:id", commentHandler.UpdateComment)
-	// api.GET("/comments/:id", commentHandler.GetCommentByID)
-	// api.GET("/comments", commentHandler.GetAllComments)
-	// api.DELETE("/comments/:id", commentHandler.DeleteComment)
 
 	// LikesComment routes
 	api.POST("/article/comments/:id/like", likesCommentHandler.CreateLikesComment)
 	api.DELETE("/article/comments/:id/unlike", likesCommentHandler.DeleteLikesComment)
-	// api.GET("/likes-comments/:id", likesCommentHandler.GetLikesCommentByID)
-	// api.GET("/likes-comments", likesCommentHandler.GetAllLikesComments)
 
 	// TestimoniVolunteer routes
 	api.POST("/volunteer/:id/testimoni-volunteers", testimoniVolunteerHandler.CreateTestimoniVolunteer)

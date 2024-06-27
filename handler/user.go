@@ -465,25 +465,3 @@ func (h *UserHandler) GetNotificationFundraising(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "success get notifications", response))
 }
-
-// func (h *UserHandler) RefreshToken(c echo.Context) error {
-// 	refreshToken := c.Request().Header.Get("Refresh-Token")
-// 	if refreshToken == "" {
-// 		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
-// 			"message": "Refresh token missing",
-// 		})
-// 	}
-
-// 	newAccessToken, newRefreshToken, err := middleware.RefreshToken(refreshToken)
-// 	if err != nil {
-// 		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
-// 			"message": "Invalid refresh token",
-// 		})
-// 	}
-
-// 	response := map[string]string{
-// 		"access_token":  newAccessToken,
-// 		"refresh_token": newRefreshToken,
-// 	}
-// 	return c.JSON(http.StatusOK, helper.ResponseWithData(true, "Token refreshed successfully", response))
-// }
