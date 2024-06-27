@@ -11,7 +11,6 @@ import (
 	"os"
 
 	"github.com/google/uuid"
-	"github.com/sashabaranov/go-openai"
 )
 
 type ChatbotService interface {
@@ -67,13 +66,21 @@ func (s *chatbotService) Create(chatbot dto.Chatbot) (dto.Chatbot, error) {
 		Message: chatbot.Message,
 	})
 
-	var openAIPayload []openai.ChatCompletionMessage
+	var openAIPayload []map[string]string
 	for _, v := range payloadChatbot {
-		openAIPayload = append(openAIPayload, openai.ChatCompletionMessage{
-			Role:    v.Role,
-			Content: v.Message,
+		openAIPayload = append(openAIPayload, map[string]string{
+			"role":    v.Role,
+			"content": v.Message,
 		})
 	}
+
+	// var openAIPayload []openai.ChatCompletionMessage
+	// for _, v := range payloadChatbot {
+	// 	openAIPayload = append(openAIPayload, openai.ChatCompletionMessage{
+	// 		Role:    v.Role,
+	// 		Content: v.Message,
+	// 	})
+	// }
 
 	// client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
 	// resp, err := client.CreateChatCompletion(
