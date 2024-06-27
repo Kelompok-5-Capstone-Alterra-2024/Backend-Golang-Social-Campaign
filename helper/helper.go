@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"os"
 
 	"mime/multipart"
 	"strconv"
@@ -217,8 +216,8 @@ func GenerateRandomOTP(otpLent int) string {
 }
 func GetPaymentUrl(donation entities.PaymentTransaction, user entities.User) (string, error) {
 	midClient := midtrans.NewClient()
-	server := os.Getenv("MIDTRANS_SERVER_KEY")
-	client := os.Getenv("MIDTRANS_CLIENT_KEY")
+	server := "SB-Mid-server-x_R3_BBoJmSU_bRRxcBWV9pg"
+	client := "SB-Mid-client-YStDTAnO_VeyBKdH"
 	midClient.ServerKey = server
 	midClient.ClientKey = client
 	midClient.APIEnvType = midtrans.Sandbox
