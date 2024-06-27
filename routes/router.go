@@ -22,8 +22,6 @@ func NewRouter(router *echo.Echo) {
 		AllowMethods: []string{echo.GET, echo.POST, echo.PUT, echo.DELETE},
 	}))
 
-	// router.Use(middleware.CORS())
-
 	// Repositories
 	userRepo := repositories.NewUserRepository(database.DB)
 	adminRepo := repositories.NewAdminRepository(database.DB)
@@ -85,6 +83,9 @@ func NewRouter(router *echo.Echo) {
 	api.POST("/reset-password/:otp", userHandler.ResetPasswordParamOtp)
 
 	api.POST("/refresh-token", userHandler.RefreshToken)
+
+	api.POST("/chatbot", chatbotHandler.CreateChatBot)
+	api.GET("/chatbot/:chat_id", chatbotHandler.GetChatBot)
 
 	api.Use(jwt, routeMiddleware.UserMiddleware)
 
@@ -174,9 +175,6 @@ func NewRouter(router *echo.Echo) {
 	api.GET("/testimoni-volunteers", testimoniVolunteerHandler.GetAllTestimoniVolunteers)
 	api.GET("/volunteer/:id/testimoni-volunteers", testimoniVolunteerHandler.GetAllTestimoniVolunteersByVacancyID)
 	api.DELETE("/testimoni-volunteers/:id", testimoniVolunteerHandler.DeleteTestimoniVolunteer)
-
-	api.POST("/chatbot", chatbotHandler.CreateChatBot)
-	api.GET("/chatbot/:chat_id", chatbotHandler.GetChatBot)
 
 	// Admin
 	admin := router.Group("api/v1/admin")
